@@ -170,6 +170,7 @@ public class DashboardAdminService {
         GROUP BY vs.id
         ORDER BY items_paid DESC, revenue_paid DESC, title COLLATE utf8mb4_unicode_ci ASC
     """;
+
         var q = em.createNativeQuery(sql);
         q.setParameter("from", java.sql.Timestamp.valueOf(from.atStartOfDay()));
         q.setParameter("toEx", java.sql.Timestamp.valueOf(to.plusDays(1).atStartOfDay()));

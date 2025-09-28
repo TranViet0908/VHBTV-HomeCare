@@ -1,0 +1,127 @@
+<!-- templates/admin/payments/reconcile.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Đối soát thanh toán</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+  <div th:replace="/admin/fragments/sidebar :: sidebar"></div>
+
+  <div class="flex-1 min-h-screen ml-64">
+    <div th:replace="/admin/fragments/header :: header"></div>
+
+    <main class="p-6"
+          th:with="fromIso=${from != null ? #temporals.format(from,'yyyy-MM-dd''T''HH:mm') : null},
+                   toIso=${to != null ? #temporals.format(to,'yyyy-MM-dd''T''HH:mm') : null}">
+      <div class="mb-6 flex items-center justify-between">
+        <h1 class="text-3xl font-bold text-gray-900">Đối soát thanh toán</h1>
+        <a th:href="@{/admin/payments}" class="text-indigo-600 hover:underline">Về danh sách</a>
+      </div>
+
+      <!-- Bộ lọc kỳ đối soát -->
+      <form method="get" th:action="@{/admin/payments/reconcile}"
+            class="bg-white rounded-xl border p-4 mb-6 grid gap-3 md:grid-cols-6">
+        <div>
+          <label class="text-sm text-gray-600">Từ</label>
+          <input type="datetime-local" name="from" th:value="${fromIso}" class="px-3 py-2 border rounded-lg w-full">
+        </div>
+        <div>
+          <label class="text-sm text-gray-600">Đến</label>
+          <input type="datetime-local" name="to" th:value="${toIso}" class="px-3 py-2 border rounded-lg w-full">
+        </div>
+        <div>
+          <label class="text-sm text-gray-600">Provider</label>
+          <select name="provider" class="px-3 py-2 border rounded-lg w-full">
+            <option value="" th:selected="${provider == null}">-- tất cả --</option>
+            <option th:each="pv : ${providers}" th:value="${pv}" th:text="${pv}"
+                    th:selected="${provider != null and provider == pv}"></option>
+          </select>
+        </div>
+        <div>
+          <label class="text-sm text-gray-600">Currency</label>
+          <select name="currency" class="px-3 py-2 border rounded-lg w-full">
+            <option value="" th:selected="${currency == null}">-- tất cả --</option>
+            <option value="VND" th:selected="${currency=='VND'}">VND</option>
+            <option value="USD" th:selected="${currency=='USD'}">USD</option>
+          </select>
+        </div>
+        <div class="md:col-span-2 flex items-end gap-2">
+          <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Áp dụng</button>
+          <a th:href="@{/admin/payments/reconcile}" class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">Xóa lọc</a>
+        </div>
+      </form>
+
+      <!-- Thống kê tổng quan -->
+      <div class="grid md:grid-cols-4 gap-4" th:if="${summary != null}">
+        <div class="bg-white rounded-xl border p-4">
+          <div class="text-sm text-gray-600">Số giao dịch</div>
+          <div class="mt-1 text-2xl font-bold" th:text="${summary.countAll}">0</div>
+        </div>
+        <div class="bg-white rounded-xl border p-4">
+          <div class="text-sm text-gray-600">Đã thanh toán</div>
+          <div class="mt-1 text-2xl font-bold" th:text="${summary.countPaid}">0</div>
+          <div class="text-sm text-gray-500"
+               th:text="${summary.sumPaid != null ? #numbers.formatDecimal(summary.sumPaid,0,'POINT',0,'POINT') + ' ₫' : '0 ₫'}">0 ₫</div>
+        </div>
+        <div class="bg-white rounded-xl border p-4">
+          <div class="text-sm text-gray-600">Chờ xử lý</div>
+          <div class="mt-1 text-2xl font-bold" th:text="${summary.countPending}">0</div>
+          <div class="text-sm text-gray-500"
+               th:text="${summary.sumPending != null ? #numbers.formatDecimal(summary.sumPending,0,'POINT',0,'POINT') + ' ₫' : '0 ₫'}">0 ₫</div>
+        </div>
+        <div class="bg-white rounded-xl border p-4">
+          <div class="text-sm text-gray-600">Hoàn tiền / thất bại</div>
+          <div class="mt-1 text-2xl font-bold" th:text="${summary.countProblem}">0</div>
+          <div class="text-sm text-gray-500"
+               th:text="${summary.sumProblem != null ? #numbers.formatDecimal(summary.sumProblem,0,'POINT',0,'POINT') + ' ₫' : '0 ₫'}">0 ₫</div>
+        </div>
+      </div>
+      <div class="mb-6" th:if="${summary == null}">
+        <div class="p-3 bg-amber-50 text-amber-800 rounded">Chưa có dữ liệu tổng hợp.</div>
+      </div>
+
+      <!-- Bảng theo provider -->
+      <div class="bg-white rounded-xl border overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Provider</th>
+              <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600">Số GD</th>
+              <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600">Đã thanh toán</th>
+              <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600">Đang chờ</th>
+              <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600">Hoàn tiền / fail</th>
+              <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600">Tổng số tiền</th>
+            </tr>
+            </thead>
+            <tbody th:if="${rows != null and !#lists.isEmpty(rows)}" class="divide-y">
+            <tr th:each="r : ${rows}">
+              <td class="px-6 py-3 text-sm" th:text="${r.provider}">VNPAY</td>
+              <td class="px-6 py-3 text-sm text-right" th:text="${r.countAll}">0</td>
+              <td class="px-6 py-3 text-sm text-right"
+                  th:text="${r.sumPaid != null ? #numbers.formatDecimal(r.sumPaid,0,'POINT',0,'POINT') + ' ₫' : '0 ₫'}">0 ₫</td>
+              <td class="px-6 py-3 text-sm text-right"
+                  th:text="${r.sumPending != null ? #numbers.formatDecimal(r.sumPending,0,'POINT',0,'POINT') + ' ₫' : '0 ₫'}">0 ₫</td>
+              <td class="px-6 py-3 text-sm text-right"
+                  th:text="${r.sumProblem != null ? #numbers.formatDecimal(r.sumProblem,0,'POINT',0,'POINT') + ' ₫' : '0 ₫'}">0 ₫</td>
+              <td class="px-6 py-3 text-sm text-right"
+                  th:text="${r.sumAll != null ? #numbers.formatDecimal(r.sumAll,0,'POINT',0,'POINT') + ' ₫' : '0 ₫'}">0 ₫</td>
+            </tr>
+            </tbody>
+            <tbody th:if="${rows == null or #lists.isEmpty(rows)}">
+            <tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">Chưa có dữ liệu đối soát.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <div th:replace="/admin/fragments/footer :: footer"></div>
+  </div>
+</div>
+</body>
+</html>

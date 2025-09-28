@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Sửa Kỹ năng - VHBTV Homecare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        function toSlug(str){
+          if(!str) return '';
+          let s = str.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+          s = s.replace(/\s+/g,'-').replace(/[^-\w]/g,'-').replace(/-+/g,'-').replace(/^-+|-+$/g,'');
+          return s.toLowerCase();
+        }
+        function syncSlug(){
+          const name = document.getElementById('name').value;
+          const slug = document.getElementById('slug');
+          if(!slug.dataset.touched){ slug.value = toSlug(name); }
+        }
+        function touchSlug(){ document.getElementById('slug').dataset.touched = '1'; }
+    </script>
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+    <div th:replace="/admin/fragments/sidebar :: sidebar"></div>
+
+    <div class="flex-1 min-h-screen ml-64">
+        <div th:replace="/admin/fragments/header :: header"></div>
+
+        <main class="p-6" th:object="${skill}">
+            <div class="mb-6 flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Sửa Kỹ năng</h1>
+                    <p class="text-gray-600">ID: <span th:text="*{id}">1</span></p>
+                </div>
+                <a class="px-4 py-2 bg-gray-100 rounded-lg" th:href="@{/admin/vendor-skills}">Quay lại</a>
+            </div>
+
+            <div class="bg-white rounded-xl border overflow-hidden">
+                <div class="px-6 py-4 border-b bg-gray-50">
+                    <h3 class="font-semibold">Thông tin</h3>
+                </div>
+
+                <form class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6" method="post"
+                      th:action="@{'/admin/vendor-skills/' + *{id} + '/edit'}">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium mb-1">Vendor *</label>
+                        <select name="vendorId" class="w-full px-4 py-2 border rounded-lg" required>
+                            <option th:each="v : ${vendors}"
+                                    th:value="${v.user.id}"
+                                    th:selected="${*{vendorId} == v.user.id}"
+                                    th:text="${v.displayName != null ? v.displayName : (v.legalName != null ? v.legalName : 'User #' + v.user.id)}"></option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1" for="name">Tên kỹ năng *</label>
+                        <input id="name" name="name" class="w-full px-4 py-2 border rounded-lg" required maxlength="150"
+                               th:value="*{name}" oninput="syncSlug()">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1" for="slug">Slug</label>
+                        <input id="slug" name="slug" class="w-full px-4 py-2 border rounded-lg" maxlength="180"
+                               th:value="*{slug}" oninput="touchSlug()">
+                        <p class="text-xs text-gray-500 mt-1">Để trống để tự sinh theo tên.</p>
+                    </div>
+
+                    <div class="md:col-span-2 flex items-center justify-end space-x-3 pt-4 border-t">
+                        <a class="px-4 py-2 border rounded-lg" th:href="@{/admin/vendor-skills}">Hủy</a>
+                        <button class="px-5 py-2 bg-blue-600 text-white rounded-lg" type="submit">Cập nhật</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+        <div th:replace="/admin/fragments/footer :: footer"></div>
+    </div>
+</div>
+</body>
+</html>

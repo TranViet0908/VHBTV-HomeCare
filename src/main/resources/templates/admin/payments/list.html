@@ -1,0 +1,217 @@
+<!-- templates/admin/payments/list.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Thanh toán</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+  <div th:replace="/admin/fragments/sidebar :: sidebar"></div>
+
+  <div class="flex-1 min-h-screen ml-64">
+    <div th:replace="/admin/fragments/header :: header"></div>
+
+    <main class="p-6"
+          th:with="fromIso=${from != null ? #temporals.format(from,'yyyy-MM-dd''T''HH:mm') : null},
+                   toIso=${to != null ? #temporals.format(to,'yyyy-MM-dd''T''HH:mm') : null}">
+      <div class="mb-6 flex items-center justify-between">
+        <h1 class="text-3xl font-bold text-gray-900">Thanh toán</h1>
+        <a class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+           th:href="@{/admin/payments/reconcile}">Đối soát</a>
+      </div>
+
+      <div class="mb-4 p-3 rounded bg-green-50 text-green-800" th:if="${success}" th:text="${success}"></div>
+      <div class="mb-4 p-3 rounded bg-red-50 text-red-800" th:if="${error}" th:text="${error}"></div>
+
+      <form class="bg-white rounded-xl border p-4 mb-6 grid gap-3 md:grid-cols-6" method="get"
+            th:action="@{/admin/payments}">
+        <input name="page" type="hidden" value="0"/>
+        <input name="size" th:value="${page != null ? page.size : 10}" type="hidden"/>
+
+        <div class="md:col-span-2">
+          <label class="text-sm text-gray-600">Tìm (mã GD / mã đơn)</label>
+          <input class="px-3 py-2 border rounded-lg w-full" name="q" placeholder="TXN... / SO-..." th:value="${q}">
+        </div>
+
+        <div>
+          <label class="text-sm text-gray-600">Trạng thái</label>
+          <select class="px-3 py-2 border rounded-lg w-full" name="status">
+            <option th:selected="${status == null or #strings.isEmpty(status)}" value="">-- tất cả --</option>
+            <option th:selected="${status=='PENDING'}" value="PENDING">PENDING</option>
+            <option th:selected="${status=='PAID'}" value="PAID">PAID</option>
+            <option th:selected="${status=='FAILED'}" value="FAILED">FAILED</option>
+            <option th:selected="${status=='REFUNDED'}" value="REFUNDED">REFUNDED</option>
+          </select>
+        </div>
+
+        <div th:if="${providers != null}">
+          <label class="text-sm text-gray-600">Cổng thanh toán</label>
+          <select class="px-3 py-2 border rounded-lg w-full" name="provider">
+            <option th:selected="${provider == null}" value="">-- tất cả --</option>
+            <option th:each="pv : ${providers}" th:selected="${provider != null and provider == pv}" th:text="${pv}"
+                    th:value="${pv}"></option>
+          </select>
+        </div>
+        <div th:if="${providers == null}">
+          <label class="text-sm text-gray-600">Cổng thanh toán</label>
+          <input class="px-3 py-2 border rounded-lg w-full" name="provider" placeholder="VNPAY / MOMO / COD"
+                 th:value="${provider}">
+        </div>
+
+        <div>
+          <label class="text-sm text-gray-600">Currency</label>
+          <select class="px-3 py-2 border rounded-lg w-full" name="currency">
+            <option th:selected="${currency == null}" value="">-- tất cả --</option>
+            <option th:selected="${currency=='VND'}" value="VND">VND</option>
+            <option th:selected="${currency=='USD'}" value="USD">USD</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-sm text-gray-600">Từ</label>
+          <input class="px-3 py-2 border rounded-lg w-full" name="from" th:value="${fromIso}" type="datetime-local">
+        </div>
+        <div>
+          <label class="text-sm text-gray-600">Đến</label>
+          <input class="px-3 py-2 border rounded-lg w-full" name="to" th:value="${toIso}" type="datetime-local">
+        </div>
+
+        <div>
+          <label class="text-sm text-gray-600">Min amount</label>
+          <input class="px-3 py-2 border rounded-lg w-full" name="minAmount" step="1000" th:value="${minAmount}"
+                 type="number">
+        </div>
+        <div>
+          <label class="text-sm text-gray-600">Max amount</label>
+          <input class="px-3 py-2 border rounded-lg w-full" name="maxAmount" step="1000" th:value="${maxAmount}"
+                 type="number">
+        </div>
+
+        <div>
+          <label class="text-sm text-gray-600">Mã đơn</label>
+          <input class="px-3 py-2 border rounded-lg w-full" name="serviceOrderId" th:value="${serviceOrderId}"
+                 type="number">
+        </div>
+
+        <div class="md:col-span-2 flex items-end gap-2">
+          <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">Lọc</button>
+          <a class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg" th:href="@{/admin/payments}">Xóa lọc</a>
+        </div>
+      </form>
+
+      <div class="bg-white rounded-xl border overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Payment ID</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Mã đơn</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Provider</th>
+              <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600">Số tiền</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Currency</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Trạng thái</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Mã GD</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Paid at</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Tạo lúc</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Thao tác</th>
+            </tr>
+            </thead>
+
+            <tbody class="divide-y" th:if="${page != null and page.totalElements > 0}">
+            <tr class="hover:bg-gray-50" th:each="p : ${page.content}">
+              <td class="px-6 py-3 text-sm" th:text="${p.id}">1</td>
+
+              <!-- Mã đơn: chỉ hiển thị khi payTargetType = SERVICE_ORDER -->
+              <td class="px-6 py-3 text-sm">
+                <a class="text-indigo-600 hover:underline"
+                   th:href="@{|/admin/service-orders/${p.payTargetId}|}"
+                   th:if="${p.payTargetType != null and p.payTargetType.name() == 'SERVICE_ORDER'}"
+                   th:text="${p.payTargetId}">—</a>
+                <span th:if="${p.payTargetType == null or p.payTargetType.name() != 'SERVICE_ORDER'}">—</span>
+              </td>
+
+              <td class="px-6 py-3 text-sm" th:text="${p.provider}">VNPAY</td>
+              <td class="px-6 py-3 text-sm text-right font-semibold"
+                  th:text="${p.amount != null ? #numbers.formatDecimal(p.amount,0,'POINT',0,'POINT') + ' ₫' : '0 ₫'}">0
+                ₫
+              </td>
+              <td class="px-6 py-3 text-sm" th:text="${p.currency}">VND</td>
+              <td class="px-6 py-3 text-sm">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                      th:classappend="${
+                        p.status}=='PAID' ? ' bg-green-100 text-green-800' :
+                        (${p.status}=='PENDING' ? ' bg-yellow-100 text-yellow-800' :
+                        (${p.status}=='FAILED' ? ' bg-red-100 text-red-800' : ' bg-blue-100 text-blue-800'))"
+                      th:text="${p.status}">PENDING</span>
+              </td>
+              <td class="px-6 py-3 text-sm" th:text="${p.transactionRef}">TXN123</td>
+              <td class="px-6 py-3 text-sm"
+                  th:text="${p.paidAt != null ? #temporals.format(p.paidAt,'dd/MM/yyyy HH:mm') : '—'}">—
+              </td>
+              <td class="px-6 py-3 text-sm"
+                  th:text="${p.createdAt != null ? #temporals.format(p.createdAt,'dd/MM/yyyy HH:mm') : '—'}">—
+              </td>
+              <td class="px-6 py-3 text-sm">
+                <a class="px-3 py-1 bg-indigo-600 text-white rounded whitespace-nowrap"
+                   th:href="@{|/admin/payments/${p.id}|}">Chi tiết</a>
+              </td>
+            </tr>
+            </tbody>
+
+            <tbody th:if="${page == null or page.totalElements == 0}">
+            <tr>
+              <td class="px-6 py-10 text-center text-gray-500" colspan="10">Không có thanh toán.</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="p-4 border-t flex items-center justify-between" th:if="${page != null}">
+          <div class="text-sm text-gray-600">
+            Trang <span th:text="${page.number + 1}">1</span>/<span th:text="${page.totalPages}">1</span>
+            • Tổng <span th:text="${page.totalElements}">0</span>
+          </div>
+          <div class="space-x-2">
+            <a class="px-3 py-1 border rounded"
+               th:href="@{/admin/payments(
+      page=${page.number - 1},
+      size=${page.size},
+      q=${#strings.isEmpty(q) ? null : q},
+      status=${#strings.isEmpty(status) ? null : status},
+      provider=${#strings.isEmpty(provider) ? null : provider},
+      currency=${#strings.isEmpty(currency) ? null : currency},
+      from=${from != null ? #temporals.format(from,'yyyy-MM-dd''T''HH:mm') : null},
+      to=${to != null ? #temporals.format(to,'yyyy-MM-dd''T''HH:mm') : null},
+      minAmount=${minAmount},
+      maxAmount=${maxAmount},
+      serviceOrderId=${serviceOrderId}
+   )}"
+               th:if="${page.hasPrevious()}">Trước</a>
+            <a class="px-3 py-1 border rounded"
+               th:href="@{/admin/payments(
+      page=${page.number + 1},
+      size=${page.size},
+      q=${#strings.isEmpty(q) ? null : q},
+      status=${#strings.isEmpty(status) ? null : status},
+      provider=${#strings.isEmpty(provider) ? null : provider},
+      currency=${#strings.isEmpty(currency) ? null : currency},
+      from=${from != null ? #temporals.format(from,'yyyy-MM-dd''T''HH:mm') : null},
+      to=${to != null ? #temporals.format(to,'yyyy-MM-dd''T''HH:mm') : null},
+      minAmount=${minAmount},
+      maxAmount=${maxAmount},
+      serviceOrderId=${serviceOrderId}
+   )}"
+               th:if="${page.hasNext()}">Sau</a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div th:replace="/admin/fragments/footer :: footer"></div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!-- /templates/vendor/layouts/sidebar.html -->
+<aside th:fragment="vendorSidebar"
+       class="w-64 flex-none bg-white shadow-sm min-h-screen border-r">
+  <nav class="p-4 space-y-2">
+    <a th:href="@{/vendor}"
+       class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl transition-all"
+       th:classappend="${nav}=='dashboard' ? ' sidebar-active'
+                      : ' text-gray-600 hover:bg-gray-50 hover:text-gray-900'">
+      <i class="fas fa-layer-group w-5"></i><span class="font-medium">Tổng quan</span>
+    </a>
+
+    <a th:href="@{/vendor/orders}"
+       class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl transition-all"
+       th:classappend="${nav}=='orders' ? ' sidebar-active'
+                      : ' text-gray-600 hover:bg-gray-50 hover:text-gray-900'">
+      <i class="fas fa-receipt w-5"></i><span class="font-medium">Đơn hàng</span>
+    </a>
+
+    <!-- Các module nội trang dashboard: dùng tab + highlight tự động bởi JS trong dashboard.html -->
+    <a href="#schedule" onclick="showTab('schedule')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
+      <i class="fas fa-calendar-check w-5"></i><span class="font-medium">Lịch làm việc</span>
+    </a>
+    <a href="#services" onclick="showTab('services')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
+      <i class="fas fa-tools w-5"></i><span class="font-medium">Dịch vụ của tôi</span>
+    </a>
+    <a href="#skills" onclick="showTab('skills')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
+      <i class="fas fa-code w-5"></i><span class="font-medium">Kỹ năng</span>
+    </a>
+    <a href="#media" onclick="showTab('media')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
+      <i class="fas fa-images w-5"></i><span class="font-medium">Phương tiện dịch vụ</span>
+    </a>
+    <a href="#coupons" onclick="showTab('coupons')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
+      <i class="fas fa-percent w-5"></i><span class="font-medium">Mã giảm giá</span>
+    </a>
+    <a href="#payments" onclick="showTab('payments')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
+      <i class="fas fa-dollar-sign w-5"></i><span class="font-medium">Thanh toán & Doanh thu</span>
+    </a>
+    <a href="#reports" onclick="showTab('reports')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
+      <i class="fas fa-chart-line w-5"></i><span class="font-medium">Thống kê & Báo cáo</span>
+    </a>
+    <a href="#service-reviews" onclick="showTab('service-reviews')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
+      <i class="fas fa-star w-5"></i><span class="font-medium">Đánh giá dịch vụ</span>
+    </a>
+    <a href="#vendor-reviews" onclick="showTab('vendor-reviews')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
+      <i class="fas fa-user-check w-5"></i><span class="font-medium">Đánh giá nhà cung cấp</span>
+    </a>
+    <a href="#chats" onclick="showTab('chats')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
+      <i class="fas fa-comments w-5"></i><span class="font-medium">Trò chuyện</span><span class="ml-auto bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded-full">2</span>
+    </a>
+    <a href="#search-export" onclick="showTab('search-export')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
+      <i class="fas fa-search w-5"></i><span class="font-medium">Tra cứu & Xuất báo cáo</span>
+    </a>
+
+    <div class="pt-4 border-t border-gray-200 mt-4">
+      <a href="#profile" onclick="showTab('profile')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
+        <i class="fas fa-id-badge w-5"></i><span class="font-medium">Hồ sơ & Xác minh</span>
+      </a>
+      <a href="#settings" onclick="showTab('settings')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
+        <i class="fas fa-cog w-5"></i><span class="font-medium">Cài đặt</span>
+      </a>
+    </div>
+  </nav>
+</aside>

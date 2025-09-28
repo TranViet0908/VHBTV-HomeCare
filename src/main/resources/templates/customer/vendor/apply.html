@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký nhà cung cấp - VHBTV HomeCare</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .hero-pattern{
+            background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            background-image:
+                radial-gradient(circle at 25% 25%, #667eea 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, #764ba2 0%, transparent 50%);
+        }
+        .animate-float{ animation: float 3s ease-in-out infinite; }
+        @keyframes float{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
+
+        /* Card sáng tách biệt nền tổng */
+        .surface-card{
+            background: rgba(255,255,255,0.96);
+            border: 1px solid rgba(15,23,42,0.06);
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 45px rgba(2,6,23,0.25);
+        }
+
+        .form-group{ transition: all .3s ease; }
+        .form-group:hover{ transform: translateY(-2px); }
+
+        input:focus,textarea:focus{ box-shadow: 0 0 0 3px rgba(251,191,36,0.35); }
+
+        /* Không hiệu ứng mờ dần của nút submit */
+        .no-fade{ transition: none !important; }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+<!-- Hero Background Section -->
+<div class="hero-pattern py-20">
+    <div class="container mx-auto px-4 lg:px-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <div class="animate-float mb-8">
+                    <div class="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-lg">
+                        <i class="fas fa-user-plus text-indigo-700 text-3xl"></i>
+                    </div>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                    Đăng ký trở thành
+                    <span class="block text-indigo-700">nhà cung cấp dịch vụ</span>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-800 leading-relaxed max-w-3xl mx-auto">
+                    Gia nhập VHBTV HomeCare và kết nối với hàng nghìn khách hàng đang tìm kiếm dịch vụ chất lượng
+                </p>
+            </div>
+
+            <!-- Form Container -->
+            <div class="surface-card p-8 md:p-12">
+                <form th:action="@{/customer/vendor/apply/submit}" method="post" class="space-y-4">
+                    <!-- CSRF Token -->
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" name="userId" th:value="${userId}">
+                    <!-- Personal Information Section -->
+                    <div class="mb-10">
+                        <div class="flex items-center mb-6">
+                            <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-user text-white text-sm"></i>
+                            </div>
+                            <h2 class="text-2xl font-bold text-gray-900">Thông tin cá nhân</h2>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-3">
+                                    Tên hiển thị <span class="text-yellow-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input name="displayName" required
+                                           class="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                                           placeholder="Nhập tên hiển thị của bạn"/>
+                                    <i class="fas fa-user absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-3">
+                                    Họ tên <span class="text-yellow-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input name="fullName" required
+                                           class="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                                           placeholder="Nhập họ tên đầy đủ"/>
+                                    <i class="fas fa-id-card absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information Section -->
+                    <div class="mb-10">
+                        <div class="flex items-center mb-6">
+                            <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-envelope text-white text-sm"></i>
+                            </div>
+                            <h2 class="text-2xl font-bold text-gray-900">Thông tin liên hệ</h2>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-3">Email</label>
+                                <div class="relative">
+                                    <input name="email" type="email"
+                                           class="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                                           placeholder="your.email@example.com"/>
+                                    <i class="fas fa-envelope absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-3">Số điện thoại</label>
+                                <div class="relative">
+                                    <input name="phone"
+                                           class="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                                           placeholder="0123 456 789"/>
+                                    <i class="fas fa-phone absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Location Information Section -->
+                    <div class="mb-10">
+                        <div class="flex items-center mb-6">
+                            <div class="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-map-marker-alt text-white text-sm"></i>
+                            </div>
+                            <h2 class="text-2xl font-bold text-gray-900">Thông tin địa điểm</h2>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-3">Địa chỉ</label>
+                                <div class="relative">
+                                    <input name="address"
+                                           class="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                                           placeholder="Nhập địa chỉ chi tiết"/>
+                                    <i class="fas fa-map-marker-alt absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="form-group">
+                                    <label class="block text-sm font-medium text-gray-700 mb-3">Khu vực</label>
+                                    <div class="relative">
+                                        <input name="region"
+                                               class="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                                               placeholder="Tỉnh/Thành phố"/>
+                                        <i class="fas fa-globe absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="block text-sm font-medium text-gray-700 mb-3">Số năm kinh nghiệm</label>
+                                    <div class="relative">
+                                        <input name="experienceYears" type="number" min="0"
+                                               class="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                                               placeholder="0"/>
+                                        <i class="fas fa-calendar-alt absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Information Section -->
+                    <div class="mb-10">
+                        <div class="flex items-center mb-6">
+                            <div class="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-file-alt text-white text-sm"></i>
+                            </div>
+                            <h2 class="text-2xl font-bold text-gray-900">Thông tin bổ sung</h2>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Ghi chú</label>
+                            <div class="relative">
+                                <textarea name="note" rows="5"
+                                          class="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none"
+                                          placeholder="Mô tả kinh nghiệm, chuyên môn, hoặc thông tin khác mà bạn muốn chia sẻ..."></textarea>
+                                <i class="fas fa-align-left absolute right-4 top-4 text-gray-500"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-4 pt-6">
+                        <button type="submit"
+                                class="flex-1 px-8 py-4 rounded-xl font-semibold shadow-md flex items-center justify-center text-white"
+                                style="background: linear-gradient(to right, #facc15, #f97316);">
+                            <i class="fas fa-paper-plane mr-3"></i>
+                            Gửi đơn đăng ký
+                        </button>
+                        <a href="/"
+                           class="flex-1 sm:flex-none text-gray-900 border border-gray-200 px-8 py-4 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
+                            <i class="fas fa-times mr-3"></i>
+                            Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    // Chỉ giữ hiệu ứng focus và trạng thái submit. Bỏ reveal-on-scroll.
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const inputs = form.querySelectorAll('input, textarea');
+
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.parentElement.style.transform = 'translateY(-4px)';
+            });
+            input.addEventListener('blur', function() {
+                this.parentElement.parentElement.style.transform = 'translateY(-2px)';
+            });
+        });
+
+        form.addEventListener('submit', function() {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            // Không đổi nền, chỉ hiển thị spinner và khóa nút
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i>Đang gửi...';
+            submitBtn.disabled = true;
+        });
+    });
+</script>
+</body>
+</html>

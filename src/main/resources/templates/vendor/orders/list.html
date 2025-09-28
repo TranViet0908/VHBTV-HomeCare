@@ -1,0 +1,106 @@
+<!-- templates/vendor/orders/list.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Đơn hàng</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+<th:block th:replace="vendor/layouts/header :: vendorHeader"></th:block>
+<div class="flex">
+    <th:block th:replace="vendor/layouts/sidebar :: vendorSidebar"></th:block>
+
+    <main class="flex-1 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h1 class="text-2xl font-bold">Quản lý đơn hàng</h1>
+            <a class="text-sm text-blue-600" th:href="@{/vendor/orders}">Làm mới</a>
+        </div>
+
+        <form class="bg-white p-4 rounded-xl shadow flex flex-wrap gap-3 mb-4">
+            <input type="hidden" name="size" value="50"/>
+            <select class="border rounded px-3 py-2" name="status">
+                <option value="">Tất cả trạng thái</option>
+                <option th:selected="${status=='PENDING'}" value="PENDING">Chờ xác nhận</option>
+                <option th:selected="${status=='CONFIRMED'}" value="CONFIRMED">Đã xác nhận</option>
+                <option th:selected="${status=='IN_PROGRESS'}" value="IN_PROGRESS">Đang thực hiện</option>
+                <option th:selected="${status=='COMPLETED'}" value="COMPLETED">Hoàn thành</option>
+                <option th:selected="${status=='CANCELLED'}" value="CANCELLED">Đã hủy</option>
+            </select>
+            <input class="border rounded px-3 py-2" name="from" th:value="${from}" type="date">
+            <input class="border rounded px-3 py-2" name="to" th:value="${to}" type="date">
+            <input class="border rounded px-3 py-2 flex-1" name="q" placeholder="Mã đơn/ tên/ SĐT" th:value="${q}"
+                   type="text">
+            <button class="bg-blue-600 text-white px-4 py-2 rounded">Lọc</button>
+        </form>
+
+        <div class="bg-white rounded-xl shadow overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs text-gray-500 uppercase">Mã đơn</th>
+                    <th class="px-4 py-3 text-left text-xs text-gray-500 uppercase">Khách</th>
+                    <th class="px-4 py-3 text-left text-xs text-gray-500 uppercase">Liên hệ</th>
+                    <th class="px-4 py-3 text-left text-xs text-gray-500 uppercase">Tổng</th>
+                    <th class="px-4 py-3 text-left text-xs text-gray-500 uppercase">Trạng thái</th>
+                    <th class="px-4 py-3"></th>
+                </tr>
+                </thead>
+                <tbody th:if="${page.totalElements>0}">
+                <tr class="border-t hover:bg-gray-50" th:each="o : ${page.content}">
+                    <td class="px-4 py-3">
+                        <div class="font-semibold" th:text="${o.orderCode}">SO-XXXX</div>
+                        <div class="text-xs text-gray-500"
+                             th:text="${#temporals.format(o.createdAt,'dd/MM/yyyy HH:mm')}">...
+                        </div>
+                    </td>
+                    <td class="px-4 py-3" th:text="${o.contactName}">Tên KH</td>
+                    <td class="px-4 py-3" th:text="${o.contactPhone}">SĐT</td>
+                    <td class="px-4 py-3 font-semibold text-green-600"
+                        th:text="${#numbers.formatDecimal(o.total,0,'DEFAULT',0,'DEFAULT')}">0
+                    </td>
+                    <td class="px-4 py-3">
+                          <span class="badge"
+                                th:with="st=${#strings.toUpperCase(#strings.trim(o.status))}"
+                                th:classappend="${(st=='PENDING')      ? ' badge-pending'   :
+                                                 (st=='CONFIRMED')    ? ' badge-confirmed' :
+                                                 (st=='IN_PROGRESS')  ? ' badge-inprogress':
+                                                 (st=='COMPLETED')    ? ' badge-completed' :
+                                                                        ' badge-cancelled'}"
+                                th:text="${st}">STATUS</span>
+                    </td>
+
+                    <td class="px-4 py-3 text-right">
+                        <a class="text-blue-600 hover:underline" th:href="@{|/vendor/orders/${o.id}|}">Chi tiết</a>
+                    </td>
+                </tr>
+                </tbody>
+                <tbody th:if="${page.totalElements==0}">
+                <tr>
+                    <td class="px-4 py-6 text-center text-gray-500" colspan="6">Không có dữ liệu</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-4 flex items-center justify-between">
+            <div class="text-sm text-gray-600">
+                Hiển thị
+                <span th:text="${page.number*page.size + (page.numberOfElements==0?0:1)}">1</span>–
+                <span th:text="${page.number*page.size + page.numberOfElements}">10</span>
+                trên <span th:text="${page.totalElements}">0</span> kết quả
+            </div>
+            <div class="space-x-2">
+                <a class="px-3 py-1 border rounded"
+                   th:href="@{/vendor/orders(page=${page.number-1},size=${page.size},status=${status},q=${q},from=${from},to=${to})}"
+                   th:if="${!page.first}">Trước</a>
+                <a class="px-3 py-1 border rounded"
+                   th:href="@{/vendor/orders(page=${page.number+1},size=${page.size},status=${status},q=${q},from=${from},to=${to})}"
+                   th:if="${!page.last}">Sau</a>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

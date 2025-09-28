@@ -1,0 +1,56 @@
+<!-- templates/admin/coupons/detail.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết mã giảm giá</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+    <div th:replace="/admin/fragments/sidebar :: sidebar"></div>
+    <div class="flex-1 min-h-screen ml-64">
+        <div th:replace="/admin/fragments/header :: header"></div>
+
+        <main class="p-6">
+            <div class="mb-6 flex items-center justify-between">
+                <h1 class="text-3xl font-bold text-gray-800">Chi tiết mã <span th:text="${coupon.code}">CODE</span></h1>
+                <a th:href="@{'/admin/coupons/' + ${coupon.id} + '/edit'}" class="text-blue-700 hover:underline">Sửa</a>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6 grid md:grid-cols-2 gap-6">
+                <div>
+                    <div class="text-sm text-gray-600">Loại</div>
+                    <div class="font-semibold" th:text="${coupon.type}">PERCENT</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-600">Giá trị</div>
+                    <div class="font-semibold"
+                         th:text="${coupon.type.name()=='PERCENT' ? (coupon.value + ' %') : #numbers.formatDecimal(coupon.value,1,2)}">..</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-600">Giảm tối đa</div>
+                    <div class="font-semibold" th:text="${coupon.maxDiscountAmount!=null? #numbers.formatDecimal(coupon.maxDiscountAmount,1,2) : '—'}">..</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-600">Giới hạn</div>
+                    <div class="font-semibold" th:text="'Hệ thống: ' + (${coupon.usageLimitGlobal}!=null?${coupon.usageLimitGlobal}:'∞')
+                                               + ' | Mỗi user: ' + (${coupon.usageLimitPerUser}!=null?${coupon.usageLimitPerUser}:'∞')">..</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-600">Thời gian</div>
+                    <div class="font-semibold" th:text="${#temporals.format(coupon.startAt,'dd/MM/yyyy HH:mm')} + ' - ' + ${#temporals.format(coupon.endAt,'dd/MM/yyyy HH:mm')}">..</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-600">Trạng thái</div>
+                    <div class="font-semibold" th:text="${coupon.active? 'Đang hoạt động':'Tắt'}">..</div>
+                </div>
+            </div>
+        </main>
+
+        <div th:replace="/admin/fragments/footer :: footer"></div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title> VHBTV HomeCare</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+          rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        .hero-pattern {
+            background-image: radial-gradient(circle at 25% 25%, #667eea 0%, transparent 50%),
+            radial-gradient(circle at 75% 75%, #764ba2 0%, transparent 50%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .service-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .service-card:hover {
+            background: linear-gradient(145deg, #f8fafc 0%, #ffffff 100%);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+        .achievement-counter {
+            animation: countUp 2s ease-out;
+        }
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-50">
+<th:block th:replace="layouts/header :: siteHeader"></th:block>
+<!-- Hero Section -->
+<section class="hero-pattern min-h-screen flex items-center pt-20" id="home">
+    <div class="container mx-auto px-4 lg:px-8 text-center">
+        <div class="max-w-5xl mx-auto">
+            <div class="animate-float mb-8">
+                <i class="fas fa-rocket text-6xl text-white mb-4"></i>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+                Kết nối ngôi nhà với
+                <span class="block text-yellow-300">dịch vụ uy tín</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-200 mb-8 leading-relaxed max-w-4xl mx-auto">
+                VHBTV HomeCare — Sàn TMĐT cho dịch vụ chăm sóc nhà cửa kết hợp bán đồ gia dụng.
+                Đặt lịch vệ sinh, giặt sofa–nệm, sửa điện nước, bảo trì điều hòa, diệt côn trùng…
+                Giá minh bạch, thanh toán an toàn, có bảo hành và theo dõi đơn tập trung.
+            </p>
+
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <button class="bg-white text-blue-600 px-8 py-4 rounded-full font-semibold hover:bg-gray-100 transition duration-300 shadow-lg transform hover:scale-105">
+                    <i class="fas fa-play mr-2"></i>
+                    Khám phá dịch vụ
+                </button>
+                <button class="border-2 border-white text-white px-8 py-4 rounded-full font-semibold hover:bg-white hover:text-blue-600 transition duration-300 transform hover:scale-105">
+                    <i class="fas fa-phone mr-2"></i>
+                    Liên hệ tư vấn
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="py-20 bg-white" id="about">
+    <div class="container mx-auto px-4 lg:px-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                    Về <span class="gradient-text">VHBTV HomeCare</span>
+                </h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-6"></div>
+                <p class="text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
+                    <span class="block text-2xl md:text-3xl font-extrabold text-gray-900 leading-snug">
+                        “VHBTV HomeCare.
+                    </span>
+                    <span class="block text-2xl md:text-3xl font-extrabold text-gray-900 leading-snug">
+                        Tận tâm cho ngôi nhà của bạn.”
+                    </span>
+
+                    <span class="block mt-4">
+                        <strong>VHBTV</strong> = <span class="whitespace-nowrap">Vệ sinh</span> – <span
+                            class="whitespace-nowrap">Hoàn thiện</span> –
+                        <span class="whitespace-nowrap">Bán đồ gia dụng</span> – <span class="whitespace-nowrap">Tiện ích</span> – <span
+                            class="whitespace-nowrap">Vui sống</span>.
+                    </span>
+
+                    <span class="block mt-4">
+                        Nền tảng kết hợp dịch vụ chăm sóc nhà cửa và bán hàng gia dụng, kết nối khách hàng với kỹ thuật viên,
+                        đội vệ sinh và nhà bán đã xác minh; đặt lịch nhanh, giá minh bạch, thanh toán an toàn, bảo hành rõ ràng.
+                    </span>
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div class="space-y-8">
+                    <div class="bg-gradient-to-br from-blue-50 to-purple-50 p-8 rounded-2xl card-hover">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-eye text-white text-lg"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900">Tầm nhìn</h3>
+                        </div>
+                        <p class="text-gray-700 leading-relaxed">
+                            Trở thành nền tảng HomeCare hàng đầu tại Việt Nam, chuẩn hóa theo 5 giá trị VHBTV:
+                            <span class="whitespace-nowrap">Vệ sinh</span>, <span
+                                class="whitespace-nowrap">Hoàn thiện</span>,
+                            <span class="whitespace-nowrap">Bán đồ gia dụng</span>, <span class="whitespace-nowrap">Tiện ích</span>,
+                            <span class="whitespace-nowrap">Vui sống</span>;
+                            mang lại trải nghiệm đồng nhất từ đặt lịch, thi công đến bảo hành.
+                        </p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-2xl card-hover">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-heart text-white text-lg"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900">Sứ mệnh</h3>
+                        </div>
+                        <p class="text-gray-700 leading-relaxed">
+                            Một nền tảng cho mọi nhu cầu trong nhà: đặt dịch vụ vệ sinh, sửa chữa, hoàn thiện;
+                            mua sắm đồ gia dụng chính hãng; tiện ích đặt lịch, theo dõi đơn và thanh toán an toàn
+                            để gia đình sống tiện nghi và vui hơn mỗi ngày.
+                        </p>
+                    </div>
+
+                    <div class="bg-blue-50 p-8 rounded-2xl card-hover border border-blue-100 shadow-lg">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mr-4 shadow-md">
+                                <i class="fas fa-star text-white text-lg"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900">Giá trị cốt lõi</h3>
+                        </div>
+                        <p class="text-gray-700 leading-relaxed">
+                            <strong class="text-blue-700">Uy tín – Minh bạch – Chuẩn hóa – Tốc độ – Hậu mãi.</strong>
+                            Vận hành theo SLA rõ ràng, kiểm duyệt đối tác, báo giá minh bạch và bảo hành tiêu chuẩn
+                            VHBTV;
+                            cải tiến liên tục dựa trên phản hồi khách hàng.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 rounded-2xl transform rotate-3 opacity-20"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-500 rounded-2xl transform -rotate-3 opacity-20"></div>
+                    <img alt="VHBTV HomeCare"
+                         class="relative rounded-2xl shadow-2xl w-full h-96 object-cover transform hover:scale-110 transition duration-500"
+                         src="https://images.pexels.com/photos/3183197/pexels-photo-3183197.jpeg?auto=compress&cs=tinysrgb&w=800&h=600">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent rounded-2xl"></div>
+                    <div class="absolute bottom-6 left-6 text-white">
+                        <h4 class="text-xl font-bold mb-2">Đối tác đạt chuẩn VHBTV</h4>
+                        <p class="text-sm opacity-90">Kỹ thuật viên chứng nhận • Nhà bán kiểm duyệt</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Achievements Section -->
+<section class="py-20 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+    <div class="container mx-auto px-4 lg:px-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">
+                    Thành tích nổi bật
+                </h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 mx-auto mb-6"></div>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    Những con số ấn tượng khẳng định vị thế và uy tín của chúng tôi trong ngành truyền thông
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                <div class="achievement-counter group">
+                    <div class="bg-white/10 glass-effect p-8 rounded-2xl card-hover">
+                        <div class="text-5xl font-bold text-yellow-400 mb-3">500+</div>
+                        <div class="text-xl text-white font-semibold mb-2">Dự án hoàn thành</div>
+                        <p class="text-gray-300 text-sm">Từ startup đến tập đoàn lớn</p>
+                    </div>
+                </div>
+                <div class="achievement-counter group">
+                    <div class="bg-white/10 glass-effect p-8 rounded-2xl card-hover">
+                        <div class="text-5xl font-bold text-yellow-400 mb-3">200+</div>
+                        <div class="text-xl text-white font-semibold mb-2">Độ tin tưởng</div>
+                        <p class="text-gray-300 text-sm">Trong nhiều lĩnh vực</p>
+                    </div>
+                </div>
+                <div class="achievement-counter group">
+                    <div class="bg-white/10 glass-effect p-8 rounded-2xl card-hover">
+                        <div class="text-5xl font-bold text-yellow-400 mb-3">50+</div>
+                        <div class="text-xl text-white font-semibold mb-2">Giải thưởng</div>
+                        <p class="text-gray-300 text-sm">Trong nước và quốc tế</p>
+                    </div>
+                </div>
+                <div class="achievement-counter group">
+                    <div class="bg-white/10 glass-effect p-8 rounded-2xl card-hover">
+                        <div class="text-5xl font-bold text-yellow-400 mb-3">99%</div>
+                        <div class="text-xl text-white font-semibold mb-2">Độ hài lòng</div>
+                        <p class="text-gray-300 text-sm">Từ phản hồi khách hàng</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section class="py-20 bg-gray-50" id="services">
+    <div class="container mx-auto px-4 lg:px-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                    <span class="gradient-text">Dịch vụ</span>
+                </h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-6"></div>
+                <p class="text-xl text-gray-600 max-w-4xl mx-auto">
+                    VHBTV HomeCare cung cấp dịch vụ chăm sóc nhà cửa và đồ gia dụng: đặt lịch nhanh, giá minh bạch
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Dịch vụ: Vệ sinh nhà -->
+                <div class="service-card p-8 rounded-2xl shadow-lg">
+                    <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 transform rotate-3">
+                        <i class="fas fa-broom text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Vệ sinh nhà</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        Dọn tổng vệ sinh căn hộ, chuẩn sạch theo quy trình.
+                    </p>
+                    <ul class="space-y-3 text-sm text-gray-600">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Gói 60m² — từ
+                            600.000đ
+                        </li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Thời lượng ~120
+                            phút
+                        </li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Báo trước tối
+                            thiểu 24h
+                        </li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Tối đa 5 lịch/ngày
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Dịch vụ: Vệ sinh điều hòa -->
+                <div class="service-card p-8 rounded-2xl shadow-lg">
+                    <div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6 transform -rotate-3">
+                        <i class="fas fa-fan text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Vệ sinh điều hòa</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        Tháo vệ sinh lắp lại cho máy treo tường.
+                    </p>
+                    <ul class="space-y-3 text-sm text-gray-600">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Từ 350.000đ/máy
+                        </li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Thời lượng ~60
+                            phút
+                        </li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Báo trước 24h</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Tối đa 8 lịch/ngày
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Dịch vụ: Sửa ống nước -->
+                <div class="service-card p-8 rounded-2xl shadow-lg">
+                    <div class="w-20 h-20 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mb-6 transform rotate-6">
+                        <i class="fas fa-wrench text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Sửa ống nước</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        Xử lý rò rỉ, tắc nghẽn đường ống dân dụng.
+                    </p>
+                    <ul class="space-y-3 text-sm text-gray-600">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Từ 400.000đ/ca
+                        </li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Thời lượng ~90
+                            phút
+                        </li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Báo trước 24h</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Vật tư thay thế
+                            chuẩn
+                        </li>
+                    </ul>
+                </div>
+
+            <div class="text-center mt-16">
+                <a class="inline-block bg-gradient-to-r from-blue-500 to-purple-600 text-white px-10 py-4 rounded-full font-semibold hover:shadow-xl transition duration-300 transform hover:scale-105"
+                   th:href="@{/services}">
+                    Xem tất cả dịch vụ
+                    <i class="fas fa-arrow-right ml-3"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    </div>
+</section>
+
+<!-- Portfolio Section -->
+<section class="py-20 bg-white" id="portfolio">
+    <div class="container mx-auto px-4 lg:px-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                    Vendor tiêu biểu
+                </h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-6"></div>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Khám phá những dự án đã tạo nên thành công cho khách hàng và góp phần
+                    khẳng định vị thế của chúng tôi trong ngành
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="group cursor-pointer">
+                    <div class="relative overflow-hidden rounded-2xl card-hover shadow-lg">
+                        <div class="w-full h-64 overflow-hidden">
+                            <img alt="VinGroup Campaign"
+                                 class="w-full h-full object-cover group-hover:scale-110 transition duration-700"
+                                 src="https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=600&h=400">
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-500">
+                            <div class="absolute bottom-6 left-6 text-white transform translate-y-4 group-hover:translate-y-0 transition duration-500">
+                                <h4 class="text-xl font-bold mb-2">Chiến dịch Tết VinGroup</h4>
+                                <p class="text-sm opacity-90 mb-1">Integrated Marketing Campaign</p>
+                                <p class="text-yellow-400 font-semibold">200M+ lượt tiếp cận</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group cursor-pointer">
+                    <div class="relative overflow-hidden rounded-2xl card-hover shadow-lg">
+                        <div class="w-full h-64 overflow-hidden">
+                            <img alt="Shopee Campaign"
+                                 class="w-full h-full object-cover group-hover:scale-110 transition duration-700"
+                                 src="https://images.pexels.com/photos/3183165/pexels-photo-3183165.jpeg?auto=compress&cs=tinysrgb&w=600&h=400">
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-500">
+                            <div class="absolute bottom-6 left-6 text-white transform translate-y-4 group-hover:translate-y-0 transition duration-500">
+                                <h4 class="text-xl font-bold mb-2">Shopee Brand Launch</h4>
+                                <p class="text-sm opacity-90 mb-1">Digital Marketing & Branding</p>
+                                <p class="text-yellow-400 font-semibold">500K+ downloads ngày đầu</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group cursor-pointer">
+                    <div class="relative overflow-hidden rounded-2xl card-hover shadow-lg">
+                        <div class="w-full h-64 overflow-hidden">
+                            <img alt="Techcombank Rebranding"
+                                 class="w-full h-full object-cover group-hover:scale-110 transition duration-700"
+                                 src="https://dongphucvina.vn/wp-content/uploads/2023/05/logo-techcombank-dongphucvina.vn_.png">
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-500">
+                            <div class="absolute bottom-6 left-6 text-white transform translate-y-4 group-hover:translate-y-0 transition duration-500">
+                                <h4 class="text-xl font-bold mb-2">Techcombank Rebranding</h4>
+                                <p class="text-sm opacity-90 mb-1">Brand Identity & Strategy</p>
+                                <p class="text-yellow-400 font-semibold">+40% Brand awareness</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-16">
+                <a class="inline-block bg-gradient-to-r from-blue-500 to-purple-600 text-white px-10 py-4 rounded-full font-semibold hover:shadow-xl transition duration-300 transform hover:scale-105"
+                   th:href="@{/project}">
+                    Xem tất cả Vendor
+                    <i class="fas fa-arrow-right ml-3"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<th:block th:replace="layouts/footer :: siteFooter"></th:block>
+
+<!-- JavaScript -->
+<script th:src="@{/js/script.js}"></script>
+<script>
+    // Mobile menu toggle
+    document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+                // Close mobile menu after clicking
+                document.getElementById('mobile-menu').classList.add('hidden');
+            }
+        });
+    });
+
+    // Animation on scroll
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    // Observe elements for animation
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.card-hover, .achievement-counter, .service-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'all 0.8s ease-out';
+            observer.observe(el);
+        });
+    });
+
+    // Navbar background on scroll
+    window.addEventListener('scroll', function() {
+        const navbar = document.getElementById('navbar');
+        if (window.scrollY > 100) {
+            navbar.classList.add('bg-white/95', 'backdrop-blur-md');
+        } else {
+            navbar.classList.remove('bg-white/95', 'backdrop-blur-md');
+        }
+    });
+
+    // Counter animation
+    function animateCounters() {
+        const counters = document.querySelectorAll('.achievement-counter');
+        counters.forEach(counter => {
+            const target = counter.querySelector('.text-5xl');
+            const finalNumber = target.textContent;
+            let currentNumber = 0;
+            const increment = parseInt(finalNumber) / 100;
+
+            const updateCounter = () => {
+                if (currentNumber < parseInt(finalNumber)) {
+                    currentNumber += increment;
+                    target.textContent = Math.floor(currentNumber) + (finalNumber.includes('+') ? '+' : finalNumber.includes('%') ? '%' : '');
+                    setTimeout(updateCounter, 20);
+                } else {
+                    target.textContent = finalNumber;
+                }
+            };
+
+            // Start animation when element is in view
+            const counterObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        updateCounter();
+                        counterObserver.unobserve(entry.target);
+                    }
+                });
+            });
+
+            counterObserver.observe(counter);
+        });
+    }
+
+    // Initialize counter animation
+    document.addEventListener('DOMContentLoaded', animateCounters);
+
+    // dropdown hồ sơ
+    document.addEventListener("DOMContentLoaded", () => {
+        const btn = document.getElementById("userMenuBtn");
+        const dropdown = document.getElementById("userDropdown");
+
+        if (btn) {
+            btn.addEventListener("click", () => {
+                dropdown.classList.toggle("hidden");
+            });
+        }
+
+        // Ấn ra ngoài thì tự ẩn dropdown
+        window.addEventListener("click", (e) => {
+            if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add("hidden");
+            }
+        });
+    });
+</script>
+</body>
+</html>

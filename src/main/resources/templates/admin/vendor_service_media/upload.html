@@ -1,0 +1,146 @@
+<!-- templates/admin/vendor_service_media/upload.html -->
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>Vendor Service Media - Upload</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+  <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
+  <div class="flex-1 min-h-screen ml-64">
+    <div th:replace="~{admin/fragments/header :: header}"></div>
+
+    <main class="p-6">
+      <div class="max-w-4xl mx-auto">
+        <h1 class="text-xl font-semibold mb-4">Tải ảnh / Thêm video</h1>
+
+        <div th:if="${success}" class="mb-3 p-3 bg-green-100 text-green-800 rounded" th:text="${success}"></div>
+        <div th:if="${error}" class="mb-3 p-3 bg-red-100 text-red-800 rounded" th:text="${error}"></div>
+
+        <!-- Upload ảnh từ máy -->
+        <form th:action="@{/admin/vendor-service-media/upload}" method="post" enctype="multipart/form-data"
+              class="bg-white p-4 rounded border mb-6" id="imgForm">
+          <h2 class="font-medium mb-3">Upload ảnh</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm text-gray-600">Vendor</label>
+              <select id="vendor1" class="w-full border rounded p-2">
+                <option value="">-- Chọn vendor --</option>
+                <option th:each="vp : ${vendorProfiles}"
+                        th:value="${vp.user.id}"
+                        th:text="${vp.displayName != null ? vp.displayName : (vp.legalName != null ? vp.legalName : 'User #' + vp.user.id)}">
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm text-gray-600">Vendor Service</label>
+              <select name="vsId" id="vs1" class="w-full border rounded p-2" required>
+                <option value="">-- Chọn dịch vụ --</option>
+                <option th:each="vs : ${vendorServices}"
+                        th:value="${vs.id}"
+                        th:data-vendor-id="${vs.vendorId}"
+                        th:text="|#${vs.id} - ${vs.title}|">
+                </option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="text-sm text-gray-600">Chọn ảnh</label>
+              <input type="file" id="filesInput1" name="files" accept="image/*" multiple class="w-full border rounded p-2">
+              <p class="text-xs text-gray-500 mt-1">JPG, PNG, WEBP. Có thể chọn nhiều.</p>
+            </div>
+          </div>
+          <div class="mt-4">
+            <button class="px-4 py-2 bg-gray-900 text-white rounded">Tải lên</button>
+            <a th:href="@{/admin/vendor-service-media}" class="ml-2 px-4 py-2 border rounded">Về danh sách</a>
+          </div>
+        </form>
+
+        <!-- Thêm video bằng URL -->
+        <form th:action="@{/admin/vendor-service-media/add-video}" method="post"
+              class="bg-white p-4 rounded border" id="vidForm">
+          <h2 class="font-medium mb-3">Thêm video bằng URL</h2>
+          <input type="hidden" name="back" th:value="@{/admin/vendor-service-media}">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm text-gray-600">Vendor</label>
+              <select id="vendor2" class="w-full border rounded p-2">
+                <option value="">-- Chọn vendor --</option>
+                <option th:each="vp : ${vendorProfiles}"
+                        th:value="${vp.user.id}"
+                        th:text="${vp.displayName != null ? vp.displayName : (vp.legalName != null ? vp.legalName : 'User #' + vp.user.id)}">
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm text-gray-600">Vendor Service</label>
+              <select name="vsId" id="vs2" class="w-full border rounded p-2" required>
+                <option value="">-- Chọn dịch vụ --</option>
+                <option th:each="vs : ${vendorServices}"
+                        th:value="${vs.id}"
+                        th:data-vendor-id="${vs.vendorId}"
+                        th:text="|#${vs.id} - ${vs.title}|">
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm text-gray-600">URL video</label>
+              <input type="url" id="urlInput" name="url" class="w-full border rounded p-2" placeholder="https://... .mp4/.webm" required>
+            </div>
+            <div>
+              <label class="text-sm text-gray-600">Mô tả (alt text)</label>
+              <input type="text" id="altInput" name="altText" class="w-full border rounded p-2" placeholder="Mô tả ngắn">
+            </div>
+            <div>
+              <label class="text-sm text-gray-600">Thứ tự (tùy chọn)</label>
+              <input type="number" id="orderInput" name="sortOrder" class="w-full border rounded p-2" placeholder="Tự tăng nếu bỏ trống">
+            </div>
+          </div>
+          <div class="mt-4">
+            <button class="px-4 py-2 bg-gray-900 text-white rounded">Thêm video</button>
+            <a th:href="@{/admin/vendor-service-media}" class="ml-2 px-4 py-2 border rounded">Về danh sách</a>
+          </div>
+          <p class="text-xs text-gray-500 mt-3">Chấp nhận http(s) hợp lệ hoặc đuôi .mp4 / .webm.</p>
+        </form>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div th:replace="~{admin/fragments/footer :: footer}"></div>
+
+<script>
+  function bindCascading(vendorSelId, vsSelId, extraToDisable=[]) {
+    const v = document.getElementById(vendorSelId);
+    const s = document.getElementById(vsSelId);
+    const extras = extraToDisable.map(id => document.getElementById(id));
+
+    function filter() {
+      const vid = v.value;
+      // khóa service + inputs nếu chưa chọn vendor
+      const enable = !!vid;
+      s.disabled = !enable;
+      extras.forEach(el => { if (el) el.disabled = !enable; });
+
+      // lọc danh sách dịch vụ theo vendor
+      [...s.options].forEach(opt => {
+        if (opt.value === '') { opt.hidden = false; return; }
+        opt.hidden = !(enable && opt.getAttribute('data-vendor-id') === vid);
+      });
+      if (s.selectedOptions[0] && s.selectedOptions[0].hidden) s.value = '';
+    }
+
+    v.addEventListener('change', filter);
+    filter();
+  }
+
+  // Upload ảnh: khóa file input cho tới khi chọn vendor
+  bindCascading('vendor1','vs1',['filesInput1']);
+  // Thêm video: khóa URL/alt/sort cho tới khi chọn vendor
+  bindCascading('vendor2','vs2',['urlInput','altInput','orderInput']);
+</script>
+
+</body>
+</html>

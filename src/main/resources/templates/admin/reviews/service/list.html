@@ -1,0 +1,170 @@
+<!-- templates/admin/reviews/service/list.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Đánh giá Dịch vụ của Vendor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+    <div th:replace="/admin/fragments/sidebar :: sidebar"></div>
+
+    <div class="flex-1 min-h-screen ml-64">
+        <div th:replace="/admin/fragments/header :: header"></div>
+
+        <main class="p-6">
+            <div class="mb-6 flex items-center justify-between">
+                <h1 class="text-2xl font-semibold">Đánh giá Dịch vụ</h1>
+                <a href="#" class="text-sm text-gray-500 hover:text-gray-700">Quản trị / Đánh giá / Dịch vụ</a>
+            </div>
+
+            <div th:if="${success}" class="mb-4 p-3 rounded bg-green-50 text-green-700 border border-green-200" th:text="${success}"></div>
+            <div th:if="${error}" class="mb-4 p-3 rounded bg-red-50 text-red-700 border border-red-200" th:text="${error}"></div>
+
+            <!-- Bộ lọc -->
+            <form method="get" th:action="@{/admin/reviews/service}" class="bg-white border rounded-lg p-4 mb-6 grid md:grid-cols-6 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm text-gray-600 mb-1">Từ khóa</label>
+                    <input name="kw" th:value="${kw}" class="w-full border rounded px-3 py-2" placeholder="Nội dung bình luận">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Vendor ID (profile)</label>
+                    <input name="vendorId" th:value="${vendorId}" type="number" class="w-full border rounded px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Vendor Service ID</label>
+                    <input name="vendorServiceId" th:value="${vendorServiceId}" type="number" class="w-full border rounded px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Trạng thái</label>
+                    <select name="hidden" class="w-full border rounded px-3 py-2">
+                        <option value="" th:selected="${hidden}==null">Tất cả</option>
+                        <option th:value="false" th:selected="${hidden}==false">Hiển thị</option>
+                        <option th:value="true" th:selected="${hidden}==true">Đang ẩn</option>
+                    </select>
+                </div>
+                <div class="flex items-end gap-3">
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"><i class="fa fa-filter mr-2"></i>Lọc</button>
+                    <a th:href="@{/admin/reviews/service}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">Xóa lọc</a>
+                </div>
+            </form>
+
+            <!-- Danh sách -->
+            <div class="bg-white border rounded-lg overflow-hidden">
+                <table class="min-w-full">
+                    <thead class="bg-gray-50 text-gray-600 text-sm">
+                    <tr>
+                        <th class="p-3 text-left w-20">ID</th>
+                        <th class="p-3 text-left">Dịch vụ</th>
+                        <th class="p-3 text-left">Vendor</th>
+                        <th class="p-3 text-left">Customer</th>
+                        <th class="p-3 text-left">Rating</th>
+                        <th class="p-3 text-left">Nội dung</th>
+                        <th class="p-3 text-left">Ngày</th>
+                        <th class="p-3 text-right w-56">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                    <tr th:each="r : ${page.content}">
+                        <td class="p-3" th:text="${r.id}">1</td>
+                        <td class="p-3" th:text="${@utils.vendorServiceName(r.vendorServiceId)}">Service name</td>
+                        <td class="p-3">
+                            <div class="flex items-center gap-2">
+                                <span class="font-medium" th:text="${@utils.vendorNameByService(r.vendorServiceId)}">Vendor</span>
+                                <span th:if="${r.hidden}" class="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-700">Đang ẩn</span>
+                            </div>
+                        </td>
+                        <td class="p-3" th:text="${@utils.userName(r.customerId)}">Customer</td>
+                        <td class="p-3">
+                            <span th:each="i : ${#numbers.sequence(1, r.rating)}" class="text-amber-400"><i class="fa-solid fa-star"></i></span>
+                        </td>
+                        <td class="p-3 text-gray-700">
+                            <span th:text="${#strings.length(r.content) > 80 ? #strings.substring(r.content,0,80) + '…' : r.content}"></span>
+                        </td>
+                        <td class="p-3" th:text="${#temporals.format(r.createdAt,'dd/MM/yyyy HH:mm')}">01/09/2025</td>
+                        <td class="p-3">
+                            <div class="flex items-center justify-end gap-2">
+                                <a th:href="@{|/admin/reviews/service/${r.id}|}" class="px-3 py-1.5 rounded border text-gray-700 hover:bg-gray-50">
+                                    <i class="fa fa-eye mr-1"></i>Chi tiết
+                                </a>
+                                <button th:if="${!r.hidden}" type="button"
+                                        class="px-3 py-1.5 rounded bg-amber-500 text-white hover:bg-amber-600"
+                                        th:attr="data-id=${r.id}"
+                                        onclick="openHideModal('service', this.getAttribute('data-id'))">
+                                    <i class="fa fa-eye-slash mr-1"></i>Ẩn
+                                </button>
+                                <form th:if="${r.hidden}" th:action="@{|/admin/reviews/service/${r.id}/unhide|}" method="post" class="inline">
+                                    <button class="px-3 py-1.5 rounded bg-green-600 text-white hover:bg-green-700">
+                                        <i class="fa fa-eye mr-1"></i>Hiện
+                                    </button>
+                                </form>
+                                <form th:action="@{|/admin/reviews/service/${r.id}/delete|}" method="post" class="inline"
+                                      onsubmit="return confirm('Xóa bình luận này?');">
+                                    <button class="px-3 py-1.5 rounded bg-red-600 text-white hover:bg-red-700">
+                                        <i class="fa fa-trash mr-1"></i>Xóa
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(page.content)}">
+                        <td colspan="8" class="p-6 text-center text-gray-500">Không có dữ liệu</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <!-- Phân trang -->
+                <div class="flex items-center justify-between p-4 border-t text-sm">
+                    <div>
+                        <span th:text="'Trang ' + (${page.number}+1) + '/' + ${page.totalPages==0?1:page.totalPages}"></span>
+                        <span class="ml-2" th:text="'Tổng: ' + ${page.totalElements}"></span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a th:classappend="${page.first}?' pointer-events-none opacity-40':''"
+                           th:href="@{/admin/reviews/service(page=${page.number-1},size=${page.size},kw=${kw},vendorId=${vendorId},vendorServiceId=${vendorServiceId},hidden=${hidden})}"
+                           class="px-3 py-1.5 border rounded">Trước</a>
+                        <a th:classappend="${page.last}?' pointer-events-none opacity-40':''"
+                           th:href="@{/admin/reviews/service(page=${page.number+1},size=${page.size},kw=${kw},vendorId=${vendorId},vendorServiceId=${vendorServiceId},hidden=${hidden})}"
+                           class="px-3 py-1.5 border rounded">Sau</a>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div th:replace="/admin/fragments/footer :: footer"></div>
+    </div>
+</div>
+
+<!-- Modal Ẩn -->
+<div id="hideModal" class="fixed inset-0 hidden items-center justify-center bg-black/40 z-50">
+    <div class="bg-white w-full max-w-md rounded-lg shadow-lg p-5">
+        <h3 class="text-lg font-semibold mb-3">Ẩn bình luận</h3>
+        <form id="hideForm" method="post" th:action="@{'/admin/reviews/service/__ID__/hide'}">
+            <input type="hidden" name="id" id="hideId">
+            <label class="block text-sm text-gray-600 mb-1">Lý do (tuỳ chọn)</label>
+            <input name="reason" class="w-full border rounded px-3 py-2 mb-4" placeholder="Vi phạm nội dung, spam...">
+            <div class="flex justify-end gap-2">
+                <button type="button" class="px-4 py-2 border rounded" onclick="closeHideModal()">Hủy</button>
+                <button class="px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700">Xác nhận</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openHideModal(type, id) {
+      const form = document.getElementById('hideForm');
+      form.action = `/admin/reviews/${type}/${id}/hide`;
+      document.getElementById('hideId').value = id;
+      document.getElementById('hideModal').classList.remove('hidden');
+      document.getElementById('hideModal').classList.add('flex');
+    }
+    function closeHideModal() {
+      document.getElementById('hideModal').classList.add('hidden');
+      document.getElementById('hideModal').classList.remove('flex');
+    }
+</script>
+</body>
+</html>

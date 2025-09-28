@@ -1,0 +1,289 @@
+<!-- templates/layouts/header.html -->
+<th:block th:fragment="siteHeader"
+          xmlns:th="http://www.thymeleaf.org"
+          xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full top-0 z-50 transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-4 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <div class="text-2xl font-bold gradient-text">
+                        <i class="fas fa-home mr-2"></i>
+                        <a href="/">VHBTV HomeCare</a>
+                    </div>
+                </div>
+
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium" href="#home">
+                        <i class="fas fa-house mr-1"></i>Trang chủ
+                    </a>
+                    <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium" href="#about">
+                        <i class="fas fa-info-circle mr-1"></i>Giới thiệu
+                    </a>
+                    <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium" href="#services">
+                        <i class="fas fa-tools mr-1"></i>Dịch vụ
+                    </a>
+
+                    <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium" href="/user/chat">
+                        <i class="fas fa-robot mr-1"></i>Chatbot CSKH
+                    </a>
+
+                    <!-- CHƯA là vendor: hiện 'Đăng ký làm nhà cung cấp' -->
+                    <a class="text-green-600 hover:text-green-700 transition duration-300 font-medium"
+                       th:href="@{/customer/vendor/apply}"
+                       sec:authorize="isAuthenticated() and !hasRole('VENDOR')">
+                        <i class="fas fa-user-plus mr-1"></i>Trở thành đối tác
+                    </a>
+
+                    <!-- ĐÃ là vendor: hiện 'Trang chủ Vendor' -->
+                    <a class="text-purple-600 hover:text-purple-700 transition duration-300 font-medium"
+                       th:href="@{/vendor}"
+                       sec:authorize="hasRole('VENDOR')">
+                        <i class="fas fa-tachometer-alt mr-1"></i>Dashboard Vendor
+                    </a>
+
+                    <!-- Nếu chưa đăng nhập -->
+                    <div sec:authorize="isAnonymous()" class="flex space-x-2">
+                        <a class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-full hover:shadow-lg transition duration-300 font-medium"
+                           th:href="@{/login}">
+                            <i class="fas fa-sign-in-alt mr-1"></i>Đăng nhập
+                        </a>
+                        <a class="border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white px-4 py-2 rounded-full transition duration-300 font-medium"
+                           th:href="@{/register}">
+                            <i class="fas fa-user-plus mr-1"></i>Đăng ký
+                        </a>
+                    </div>
+
+                    <!-- Nếu đã đăng nhập -->
+                    <div class="relative" sec:authorize="isAuthenticated()">
+                        <button class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-full hover:shadow-lg transition duration-300 font-medium flex items-center"
+                                id="userMenuBtn">
+                            <i class="fas fa-user-circle mr-2"></i>
+                            <span th:text="${#authentication?.name}">User</span>
+                            <i class="fas fa-chevron-down ml-2 text-sm"></i>
+                        </button>
+                        <!-- Dropdown menu -->
+                        <div class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 hidden border" id="userDropdown">
+                            <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center" href="/user/profile">
+                                <i class="fas fa-user mr-2 w-4"></i>Hồ sơ người dùng
+                            </a>
+                            <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center" href="/user/orders">
+                                <i class="fas fa-shopping-cart mr-2 w-4"></i>Đơn hàng của tôi
+                            </a>
+                            <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center" href="/user/notifications">
+                                <i class="fas fa-bell mr-2 w-4"></i>Thông báo
+                            </a>
+
+                            <div class="border-t border-gray-100 my-1"></div>
+
+                            <!-- CHƯA là vendor -->
+                            <a class="block px-4 py-2 text-green-600 hover:bg-green-50 flex items-center font-medium"
+                               th:href="@{/customer/vendor/apply}"
+                               sec:authorize="isAuthenticated() and !hasRole('VENDOR')">
+                                <i class="fas fa-handshake mr-2 w-4"></i>Trở thành đối tác
+                            </a>
+
+                            <!-- ĐÃ là vendor -->
+                            <a class="block px-4 py-2 text-purple-600 hover:bg-purple-50 flex items-center font-medium"
+                               th:href="@{/vendor}"
+                               sec:authorize="hasRole('VENDOR')">
+                                <i class="fas fa-tachometer-alt mr-2 w-4"></i>Dashboard Vendor
+                            </a>
+
+                            <div class="border-t border-gray-100 my-1"></div>
+
+                            <form method="post" th:action="@{/logout}">
+                                <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+                                <button class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center" type="submit">
+                                    <i class="fas fa-sign-out-alt mr-2 w-4"></i>Đăng xuất
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:hidden">
+                    <button class="text-gray-700 hover:text-blue-600 transition duration-300" id="mobile-menu-btn">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div class="hidden md:hidden pb-4" id="mobile-menu">
+                <a class="block py-2 text-gray-700 hover:text-blue-600 font-medium flex items-center" href="#home">
+                    <i class="fas fa-house mr-2 w-4"></i>Trang chủ
+                </a>
+                <a class="block py-2 text-gray-700 hover:text-blue-600 font-medium flex items-center" href="#about">
+                    <i class="fas fa-info-circle mr-2 w-4"></i>Giới thiệu
+                </a>
+                <a class="block py-2 text-gray-700 hover:text-blue-600 font-medium flex items-center" href="#services">
+                    <i class="fas fa-tools mr-2 w-4"></i>Dịch vụ
+                </a>
+                <a class="block py-2 text-gray-700 hover:text-blue-600 font-medium flex items-center" href="#portfolio">
+                    <i class="fas fa-users mr-2 w-4"></i>Đối tác
+                </a>
+                <a class="block py-2 text-gray-700 hover:text-blue-600 font-medium flex items-center" href="/user/chat">
+                    <i class="fas fa-robot mr-2 w-4"></i>Chatbot CSKH
+                </a>
+
+                <div class="border-t border-gray-200 my-2"></div>
+
+                <!-- Mobile: chưa là vendor -->
+                <a class="block py-2 text-green-600 hover:text-green-700 font-semibold flex items-center"
+                   th:href="@{/customer/vendor/apply}"
+                   sec:authorize="isAuthenticated() and !hasRole('VENDOR')">
+                    <i class="fas fa-handshake mr-2 w-4"></i>Trở thành đối tác
+                </a>
+
+                <!-- Mobile: đã là vendor -->
+                <a class="block py-2 text-purple-600 hover:text-purple-700 font-medium flex items-center"
+                   th:href="@{/vendor}"
+                   sec:authorize="hasRole('VENDOR')">
+                    <i class="fas fa-tachometer-alt mr-2 w-4"></i>Dashboard Vendor
+                </a>
+
+                <!-- Mobile: Authentication buttons -->
+                <div sec:authorize="isAnonymous()" class="mt-4 space-y-2">
+                    <a class="block w-full text-center bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 rounded-full font-medium"
+                       th:href="@{/login}">
+                        <i class="fas fa-sign-in-alt mr-1"></i>Đăng nhập
+                    </a>
+                    <a class="block w-full text-center border-2 border-blue-500 text-blue-500 py-2 rounded-full font-medium"
+                       th:href="@{/register}">
+                        <i class="fas fa-user-plus mr-1"></i>Đăng ký
+                    </a>
+                </div>
+
+                <!-- Mobile: User menu when authenticated -->
+                <div sec:authorize="isAuthenticated()" class="mt-4 space-y-1">
+                    <div class="text-sm text-gray-500 px-2 mb-2">
+                        Xin chào, <span th:text="${#authentication?.name}">User</span>
+                    </div>
+                    <a class="block py-2 text-gray-700 hover:text-blue-600 flex items-center" href="/user/profile">
+                        <i class="fas fa-user mr-2 w-4"></i>Hồ sơ người dùng
+                    </a>
+                    <a class="block py-2 text-gray-700 hover:text-blue-600 flex items-center" href="/user/orders">
+                        <i class="fas fa-shopping-cart mr-2 w-4"></i>Đơn hàng
+                    </a>
+                    <form method="post" th:action="@{/logout}" class="mt-2">
+                        <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+                        <button class="block w-full text-left py-2 text-red-600 hover:text-red-700 flex items-center" type="submit">
+                            <i class="fas fa-sign-out-alt mr-2 w-4"></i>Đăng xuất
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- JS dành riêng cho header -->
+    <script>
+        // Mobile menu toggle
+        (function () {
+            const btn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (btn && mobileMenu) {
+                btn.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                });
+            }
+        })();
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    const mobileMenu = document.getElementById('mobile-menu');
+                    if (mobileMenu) mobileMenu.classList.add('hidden');
+                }
+            });
+        });
+
+        // Animation on scroll
+        const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.card-hover, .achievement-counter, .service-card').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'all 0.8s ease-out';
+                observer.observe(el);
+            });
+        });
+
+        // Navbar background on scroll
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (navbar) {
+                if (window.scrollY > 100) {
+                    navbar.classList.add('bg-white/95', 'backdrop-blur-md');
+                } else {
+                    navbar.classList.remove('bg-white/95', 'backdrop-blur-md');
+                }
+            }
+        });
+
+        // Counter animation
+        function animateCounters() {
+            const counters = document.querySelectorAll('.achievement-counter');
+            counters.forEach(counter => {
+                const target = counter.querySelector('.text-5xl');
+                if (!target) return;
+                const finalNumber = target.textContent;
+                let currentNumber = 0;
+                const increment = parseInt(finalNumber) / 100;
+
+                const updateCounter = () => {
+                    if (currentNumber < parseInt(finalNumber)) {
+                        currentNumber += increment;
+                        target.textContent = Math.floor(currentNumber) + (finalNumber.includes('+') ? '+' : finalNumber.includes('%') ? '%' : '');
+                        setTimeout(updateCounter, 20);
+                    } else {
+                        target.textContent = finalNumber;
+                    }
+                };
+
+                const counterObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            updateCounter();
+                            counterObserver.unobserve(entry.target);
+                        }
+                    });
+                });
+                counterObserver.observe(counter);
+            });
+        }
+        document.addEventListener('DOMContentLoaded', animateCounters);
+
+        // dropdown hồ sơ
+        document.addEventListener("DOMContentLoaded", () => {
+            const btn = document.getElementById("userMenuBtn");
+            const dropdown = document.getElementById("userDropdown");
+            if (btn && dropdown) {
+                btn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    dropdown.classList.toggle("hidden");
+                });
+                window.addEventListener("click", (e) => {
+                    if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                        dropdown.classList.add("hidden");
+                    }
+                });
+            }
+        });
+    </script>
+</th:block>

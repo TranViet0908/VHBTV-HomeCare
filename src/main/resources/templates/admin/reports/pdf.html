@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="vi" xml:lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Báo cáo đơn dịch vụ</title>
+  <style type="text/css">
+    body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; color: #111; }
+    h1 { font-size: 18px; margin: 0 0 12px 0; }
+    .filters, .totals, .site-income { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+    .card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px; }
+    .grid { display: table; width: 100%; table-layout: fixed; }
+    .col-3 { display: table-cell; width: 33.333%; vertical-align: top; padding: 6px; }
+    .col-5 { display: table-cell; width: 20%; vertical-align: top; padding: 6px; }
+    table.list { width: 100%; border-collapse: collapse; }
+    table.list th, table.list td { border: 1px solid #e5e7eb; padding: 6px 8px; }
+    table.list thead { background: #f8fafc; }
+    .muted { color: #6b7280; font-size: 11px; }
+    .right { text-align: right; }
+  </style>
+</head>
+<body>
+<h1>Báo cáo đơn dịch vụ</h1>
+
+<!-- Tóm tắt -->
+<div class="grid">
+  <div class="col-3">
+    <div class="card">
+      <div class="muted">Tổng đơn</div>
+      <div style="font-size:16px;font-weight:bold;"
+           th:text="${#numbers.formatInteger(sumOrders, 1, 'POINT')}">0</div>
+    </div>
+  </div>
+  <div class="col-3">
+    <div class="card">
+      <div class="muted">Tổng tiền đơn</div>
+      <div style="font-size:16px;font-weight:bold;"
+           th:text="${#numbers.formatDecimal(sumTotal, 0, 'POINT', 2, 'COMMA')}">0</div>
+    </div>
+  </div>
+  <div class="col-3">
+    <div class="card">
+      <div class="muted">Tổng đã thanh toán</div>
+      <div style="font-size:16px;font-weight:bold;"
+           th:text="${#numbers.formatDecimal(sumPaid, 0, 'POINT', 2, 'COMMA')}">0</div>
+    </div>
+  </div>
+</div>
+
+<!-- Thu nhập website 15% -->
+<div class="grid">
+  <div class="col-5">
+    <div class="card">
+      <div class="muted">Thu nhập website (15%) — theo tổng đơn</div>
+      <div style="font-size:16px;font-weight:bold;"
+           th:text="${#numbers.formatDecimal(siteIncomeOrders, 0, 'POINT', 2, 'COMMA')}">0</div>
+    </div>
+  </div>
+  <div class="col-5">
+    <div class="card">
+      <div class="muted">Thu nhập website (15%) — theo đã thanh toán</div>
+      <div style="font-size:16px;font-weight:bold;"
+           th:text="${#numbers.formatDecimal(siteIncomePaid, 0, 'POINT', 2, 'COMMA')}">0</div>
+    </div>
+  </div>
+</div>
+
+<!-- Bảng chi tiết -->
+<table class="list">
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>Ngày tạo</th>
+    <th>Vendor</th>
+    <th>Trạng thái</th>
+    <th class="right">Tổng đơn</th>
+    <th class="right">Đã thanh toán</th>
+    <th>Cổng</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="r: ${rows}">
+    <td th:text="${r[0]}">1</td>
+    <td th:text="${#dates.format(r[1],'dd/MM/yyyy HH:mm')}">01/01/2025</td>
+    <td th:text="${r[5]}">Vendor</td>
+    <td th:text="${r[2]}">COMPLETED</td>
+    <td class="right" th:text="${#numbers.formatDecimal(r[3], 0, 'POINT', 2, 'COMMA')}">0</td>
+    <td class="right" th:text="${#numbers.formatDecimal(r[6], 0, 'POINT', 2, 'COMMA')}">0</td>
+    <td th:text="${r[7]}">MOMO</td>
+  </tr>
+  <tr th:if="${#lists.isEmpty(rows)}">
+    <td colspan="7" class="muted" style="text-align:center;">Không có dữ liệu</td>
+  </tr>
+  </tbody>
+</table>
+
+<div class="muted" th:text="|Tổng: ${total} bản ghi|">Tổng: 0 bản ghi</div>
+</body>
+</html>

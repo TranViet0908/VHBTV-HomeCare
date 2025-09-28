@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Báo cáo đơn dịch vụ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+    <div th:replace="/admin/fragments/sidebar :: sidebar"></div>
+
+    <div class="flex-1 min-h-screen ml-64">
+        <div th:replace="/admin/fragments/header :: header"></div>
+
+        <main class="p-6 space-y-6">
+            <h1 class="text-2xl font-bold mb-0">Báo cáo đơn dịch vụ</h1>
+
+            <!-- Bộ lọc: sticky + chip hiển thị điều kiện -->
+            <section class="sticky top-0 z-10 bg-white/90 backdrop-blur rounded-xl border p-4 shadow-sm">
+                <form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                    <div>
+                        <label class="text-sm text-gray-600">Từ ngày</label>
+                        <div class="relative">
+                            <i class="fa-regular fa-calendar-days absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="date" name="from" th:value="${from}" class="w-full border rounded-lg pl-10 pr-3 py-2">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-sm text-gray-600">Đến ngày</label>
+                        <div class="relative">
+                            <i class="fa-regular fa-calendar-days absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="date" name="to" th:value="${to}" class="w-full border rounded-lg pl-10 pr-3 py-2">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-sm text-gray-600">Vendor</label>
+                        <select name="vendorId" class="w-full border rounded-lg px-3 py-2">
+                            <option value="" th:selected="${vendorId == null}">Tất cả</option>
+                            <option th:each="v: ${vendors}"
+                                    th:value="${v.user != null ? v.user.id : v.id}"
+                                    th:text="${v.displayName}"
+                                    th:selected="${vendorId != null and vendorId == (v.user != null ? v.user.id : v.id)}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-sm text-gray-600">Trạng thái</label>
+                        <select name="status" class="w-full border rounded-lg px-3 py-2">
+                            <option value="" th:selected="${status == null}">Tất cả</option>
+                            <option>CREATED</option><option>CONFIRMED</option><option>IN_PROGRESS</option>
+                            <option>COMPLETED</option><option>CANCELLED</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-sm text-gray-600">Cổng thanh toán</label>
+                        <select name="provider" class="w-full border rounded-lg px-3 py-2">
+                            <option value="" th:selected="${provider == null}">Tất cả</option>
+                            <option>STRIPE</option><option>MOMO</option><option>VNPAY</option><option>COD</option>
+                        </select>
+                    </div>
+
+                    <div class="md:col-span-5 flex flex-wrap gap-2 pt-1">
+                        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="fa-solid fa-filter mr-2"></i>Lọc
+                        </button>
+                        <a th:href="@{'/admin/reports'}"
+                           class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+                            <i class="fa-solid fa-rotate-left mr-2"></i>Đặt lại
+                        </a>
+                        <a class="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                           th:href="@{/admin/reports/export.pdf(from=${#temporals.format(from,'yyyy-MM-dd')},
+                                       to=${#temporals.format(to,'yyyy-MM-dd')},
+                                       vendorId=${vendorId}, status=${status}, provider=${provider})}">
+                            Xuất PDF
+                        </a>
+                    </div>
+                </form>
+
+                <!-- Chips điều kiện đang áp dụng -->
+                <div class="mt-3 flex flex-wrap gap-2 text-sm"
+                     th:if="${from != null or to != null or vendorId != null or status != null or provider != null}">
+      <span class="px-2 py-1 rounded-full bg-blue-50 text-blue-700"
+            th:if="${from}">Từ [[${from}]]</span>
+                    <span class="px-2 py-1 rounded-full bg-blue-50 text-blue-700"
+                          th:if="${to}">Đến [[${to}]]</span>
+                    <span class="px-2 py-1 rounded-full bg-violet-50 text-violet-700"
+                          th:if="${vendorId}">Vendor #[[${vendorId}]]</span>
+                    <span class="px-2 py-1 rounded-full bg-amber-50 text-amber-700"
+                          th:if="${status}">Trạng thái: [[${status}]]</span>
+                    <span class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700"
+                          th:if="${provider}">Cổng: [[${provider}]]</span>
+                </div>
+            </section>
+
+            <!-- KPI -->
+            <section class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white border rounded-xl p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-gray-500 text-sm">Tổng đơn</div>
+                                <div class="text-2xl font-bold" th:text="${#numbers.formatInteger(sumOrders, 1, 'POINT')}">0</div>
+                            </div>
+                            <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                                <i class="fa-solid fa-receipt"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border rounded-xl p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-gray-500 text-sm">Tổng tiền đơn</div>
+                                <div class="text-2xl font-bold"
+                                     th:text="${#numbers.formatDecimal(sumTotal, 0, 'POINT', 2, 'COMMA')}">0</div>
+                            </div>
+                            <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                                <i class="fa-solid fa-sack-dollar"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border rounded-xl p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-gray-500 text-sm">Đã thanh toán</div>
+                                <div class="text-2xl font-bold"
+                                     th:text="${#numbers.formatDecimal(sumPaid, 0, 'POINT', 2, 'COMMA')}">0</div>
+                            </div>
+                            <div class="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                                <i class="fa-solid fa-check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white border rounded-xl p-4">
+                        <div class="text-gray-500 text-sm">Thu nhập website (15%) — theo tổng đơn</div>
+                        <div class="text-2xl font-bold"
+                             th:text="${#numbers.formatDecimal(siteIncomeOrders, 0, 'POINT', 2, 'COMMA')}">0</div>
+                    </div>
+                    <div class="bg-white border rounded-xl p-4">
+                        <div class="text-gray-500 text-sm">Thu nhập website (15%) — theo đã thanh toán</div>
+                        <div class="text-2xl font-bold"
+                             th:text="${#numbers.formatDecimal(siteIncomePaid, 0, 'POINT', 2, 'COMMA')}">0</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bảng dữ liệu -->
+            <section class="bg-white border rounded-xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead class="bg-gray-50 text-gray-600 sticky top-0 z-0">
+                        <tr>
+                            <th class="p-3 text-left">ID</th>
+                            <th class="p-3 text-left">Ngày tạo</th>
+                            <th class="p-3 text-left">Vendor</th>
+                            <th class="p-3 text-left">Trạng thái</th>
+                            <th class="p-3 text-left">Tổng đơn</th>
+                            <th class="p-3 text-left">Đã thanh toán</th>
+                            <th class="p-3 text-left">Cổng</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                        <tr th:each="r: ${rows}" class="hover:bg-gray-50">
+                            <td class="p-3" th:text="${r[0]}">1</td>
+                            <td class="p-3" th:text="${#dates.format(r[1],'dd/MM/yyyy HH:mm')}">01/01/2025</td>
+                            <td class="p-3" th:text="${r[5]}">Vendor</td>
+                            <td class="p-3">
+              <span class="px-2 py-1 rounded-full text-xs"
+                    th:text="${r[2]}"
+                    th:classappend="${r[2] == 'COMPLETED'   ? ' bg-emerald-50 text-emerald-700' :
+                       (r[2] == 'CONFIRMED'   ? ' bg-blue-50 text-blue-700'     :
+                       (r[2] == 'IN_PROGRESS' ? ' bg-amber-50 text-amber-700'   :
+                       (r[2] == 'CANCELLED'   ? ' bg-rose-50 text-rose-700'     :
+                                                ' bg-gray-100 text-gray-700')))}">
+              COMPLETED
+            </span>
+                            </td>
+                            <td class="p-3" th:text="${#numbers.formatDecimal(r[3], 0, 'POINT', 2, 'COMMA')}">0</td>
+                            <td class="p-3" th:text="${#numbers.formatDecimal(r[6], 0, 'POINT', 2, 'COMMA')}">0</td>
+                            <td class="p-3" th:text="${r[7]}">MOMO</td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(rows)}">
+                            <td class="p-6 text-center text-gray-500" colspan="7">Không có dữ liệu</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Phân trang -->
+                <div class="flex items-center justify-between p-3 border-t bg-gray-50">
+                    <div class="text-sm text-gray-600" th:text="|Tổng: ${total} bản ghi|">Tổng: 0 bản ghi</div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm text-gray-500">Trang <span th:text="${page+1}">1</span></span>
+                        <a th:href="@{'/admin/reports'(from=${from}, to=${to}, vendorId=${vendorId}, status=${status}, provider=${provider}, page=${page-1}, size=${size})}"
+                           th:classappend="${page<=0}? 'pointer-events-none opacity-40' : ''"
+                           class="px-3 py-1 border rounded-lg bg-white hover:bg-gray-100">Trước</a>
+                        <a th:href="@{'/admin/reports'(from=${from}, to=${to}, vendorId=${vendorId}, status=${status}, provider=${provider}, page=${page+1}, size=${size})}"
+                           th:classappend="${(page+1)*size>=total}? 'pointer-events-none opacity-40' : ''"
+                           class="px-3 py-1 border rounded-lg bg-white hover:bg-gray-100">Sau</a>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <div th:replace="/admin/fragments/footer :: footer"></div>
+    </div>
+</div>
+</body>
+</html>

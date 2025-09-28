@@ -1,0 +1,90 @@
+<!-- templates/admin/coupons/edit.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Sửa mã giảm giá</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+  <div th:replace="/admin/fragments/sidebar :: sidebar"></div>
+  <div class="flex-1 min-h-screen ml-64">
+    <div th:replace="/admin/fragments/header :: header"></div>
+
+    <main class="p-6">
+      <div class="mb-6 flex items-center justify-between">
+        <h1 class="text-3xl font-bold text-gray-800">Sửa mã: <span th:text="${coupon.code}">CODE</span></h1>
+        <div class="flex gap-3">
+          <a th:href="@{'/admin/coupons/' + ${coupon.id} + '/users'}" class="text-blue-700 hover:underline">Gán người dùng</a>
+          <a th:href="@{'/admin/coupons/' + ${coupon.id} + '/services'}" class="text-blue-700 hover:underline">Gán dịch vụ</a>
+        </div>
+      </div>
+
+      <form class="bg-white rounded-lg shadow p-6 space-y-4" method="post"
+            th:action="@{'/admin/coupons/' + ${coupon.id} + '/edit'}" th:object="${coupon}">
+        <input type="hidden" name="scope" value="SERVICE"/>
+
+        <div class="grid md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Code</label>
+            <input class="w-full border rounded px-3 py-2" th:field="*{code}">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Tên hiển thị</label>
+            <input class="w-full border rounded px-3 py-2" th:field="*{name}">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Loại</label>
+            <select class="w-full border rounded px-3 py-2" th:field="*{type}">
+              <option value="PERCENT">Phần trăm</option>
+              <option value="FIXED">Cố định</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Giá trị</label>
+            <input class="w-full border rounded px-3 py-2" th:field="*{value}">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Giảm tối đa</label>
+            <input class="w-full border rounded px-3 py-2" th:field="*{maxDiscountAmount}">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Giới hạn hệ thống</label>
+            <input class="w-full border rounded px-3 py-2" th:field="*{usageLimitGlobal}">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Giới hạn mỗi user</label>
+            <input class="w-full border rounded px-3 py-2" th:field="*{usageLimitPerUser}">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Bắt đầu</label>
+            <input class="w-full border rounded px-3 py-2" type="datetime-local"
+                   th:value="${coupon.startAt!=null? #temporals.format(coupon.startAt,'yyyy-MM-dd''T''HH:mm'): null}"
+                   name="startAt">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Kết thúc</label>
+            <input class="w-full border rounded px-3 py-2" type="datetime-local"
+                   th:value="${coupon.endAt!=null? #temporals.format(coupon.endAt,'yyyy-MM-dd''T''HH:mm'): null}"
+                   name="endAt">
+          </div>
+          <div class="flex items-center gap-2">
+            <input id="active" type="checkbox" th:checked="${coupon.active}" name="active" class="w-4 h-4">
+            <label for="active" class="text-sm font-medium">Đang hoạt động</label>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" type="submit">Lưu</button>
+          <a href="/admin/coupons" class="px-4 py-2 border rounded hover:bg-gray-50">Hủy</a>
+        </div>
+      </form>
+    </main>
+
+    <div th:replace="/admin/fragments/footer :: footer"></div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!-- /templates/vendor/layouts/header.html -->
+<header class="bg-white shadow-sm border-b sticky top-0 z-50"
+        th:fragment="vendorHeader"
+        xmlns:th="http://www.thymeleaf.org">
+    <!-- Font + CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{font-family:'Inter',sans-serif}
+        .gradient-bg{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)}
+        .gradient-text{background:linear-gradient(135deg,#667eea 0%,#f093fb 100%);
+          -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .sidebar-active{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff}
+        .badge{font-size:12px;line-height:1;padding:6px 10px;border-radius:9999px;display:inline-block}
+        .badge-pending{background:#FEF3C7;color:#92400E}
+        .badge-confirmed{background:#D1FAE5;color:#065F46}
+        .badge-inprogress{background:#DBEAFE;color:#1E40AF}
+        .badge-completed{background:#E5E7EB;color:#374151}
+        .badge-cancelled{background:#FEE2E2;color:#991B1B}
+    </style>
+
+    <div class="px-6 py-4">
+        <div class="flex items-center justify-between">
+            <!-- Brand: về /vendor -->
+            <a th:href="@{/vendor}" class="flex items-center space-x-3 hover:opacity-90">
+                <div class="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center">
+                    <i class="fas fa-home text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold gradient-text">VHBTV HomeCare</h1>
+                    <p class="text-sm text-gray-600">Vendor Dashboard</p>
+                </div>
+            </a>
+
+            <div class="flex items-center space-x-6">
+                <!-- Search -->
+                <div class="hidden md:flex relative">
+                    <input type="text" placeholder="Tìm kiếm đơn hàng..."
+                           class="w-64 pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
+
+                <!-- Notifications -->
+                <button class="relative p-2 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-bell text-gray-600 text-lg"></i>
+                    <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
+                </button>
+
+                <!-- Messages -->
+                <button class="relative p-2 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-envelope text-gray-600 text-lg"></i>
+                    <span class="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center">2</span>
+                </button>
+
+                <!-- User -->
+                <div class="relative flex items-center space-x-3">
+                    <div class="text-right">
+                        <p class="text-sm font-semibold text-gray-900"
+                           th:text="${vendorProfile != null and vendorProfile.displayName != null and !#strings.isEmpty(vendorProfile.displayName)
+                         ? vendorProfile.displayName
+                         : (vendorProfile != null and vendorProfile.legalName != null and !#strings.isEmpty(vendorProfile.legalName)
+                             ? vendorProfile.legalName
+                             : (user != null and user.username != null ? user.username : #authentication?.name))}">Vendor Name</p>
+                        <div class="flex items-center">
+              <span class="text-xs text-gray-600"
+                    th:text="${vendorProfile != null and vendorProfile.legalName != null and !#strings.isEmpty(vendorProfile.legalName)
+                              ? vendorProfile.legalName : 'Vendor'}">Vendor</span>
+                            <i class="fas fa-check-circle text-green-500 ml-1"
+                               th:if="${vendorProfile != null and vendorProfile.verified != null and vendorProfile.verified}"
+                               title="Đã xác minh"></i>
+                        </div>
+                    </div>
+
+                    <!-- Avatar + Toggle -->
+                    <button id="userMenuBtn" type="button"
+                            class="relative rounded-full focus:outline-none"
+                            onclick="toggleUserMenu(event)" aria-haspopup="true" aria-expanded="false">
+                        <!-- Ưu tiên avatar từ user.avatarUrl đã bơm thành biến avatarUrl -->
+                        <img th:if="${avatarUrl != null and !#strings.isEmpty(avatarUrl)}"
+                             th:src="${avatarUrl}" alt="avatar"
+                             class="w-10 h-10 rounded-full object-cover border"/>
+                        <!-- Fallback: ký tự đầu -->
+                        <div th:unless="${avatarUrl != null and !#strings.isEmpty(avatarUrl)}"
+                             class="w-10 h-10 gradient-bg rounded-full flex items-center justify-center text-white font-bold"
+                             th:text="${vendorProfile != null and vendorProfile.displayName != null and !#strings.isEmpty(vendorProfile.displayName)
+                           ? #strings.toUpperCase(#strings.substring(vendorProfile.displayName,0,1))
+                           : (#authentication?.name != null
+                                ? #strings.toUpperCase(#strings.substring(#authentication.name,0,1))
+                                : 'V')}">V</div>
+                        <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                    </button>
+
+                    <!-- Dropdown -->
+                    <div id="userMenu"
+                         class="hidden absolute right-0 top-12 w-80 bg-white shadow-xl rounded-xl border z-50">
+                        <div class="p-4 border-b">
+                            <div class="flex items-center space-x-3">
+                                <img th:if="${avatarUrl != null and !#strings.isEmpty(avatarUrl)}"
+                                     th:src="${avatarUrl}" alt="avatar"
+                                     class="w-10 h-10 rounded-full object-cover border"/>
+                                <div th:unless="${avatarUrl != null and !#strings.isEmpty(avatarUrl)}"
+                                     class="w-10 h-10 gradient-bg rounded-full flex items-center justify-center text-white font-bold"
+                                     th:text="${#authentication?.name != null ? #strings.toUpperCase(#strings.substring(#authentication.name,0,1)) : 'V'}">V</div>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-900"
+                                       th:text="${vendorProfile != null and vendorProfile.displayName != null and !#strings.isEmpty(vendorProfile.displayName)
+                               ? vendorProfile.displayName
+                               : (vendorProfile != null and vendorProfile.legalName != null and !#strings.isEmpty(vendorProfile.legalName)
+                                   ? vendorProfile.legalName
+                                   : (user != null and user.username != null ? user.username : #authentication?.name))}">Vendor Name</p>
+                                    <p class="text-xs text-gray-600"
+                                       th:text="${user != null and user.email != null ? user.email : 'Chưa cập nhật'}">email@example.com</p>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <a th:href="@{/vendor/profile}"
+                                   class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg bg-gray-100 hover:bg-gray-200">
+                                    <i class="fas fa-id-badge mr-2"></i>Xem hồ sơ
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="p-2">
+                            <a th:href="@{/}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-100">
+                                <i class="fas fa-home mr-3 text-gray-600"></i><span>Trở về trang chủ</span>
+                            </a>
+                            <button type="button" onclick="submitLogout()"
+                                    class="w-full text-left flex items-center px-3 py-2 rounded-lg hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-3 text-gray-600"></i><span>Đăng xuất</span>
+                            </button>
+                            <form id="logoutForm" th:action="@{/logout}" method="post" class="hidden">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script nằm TRONG fragment để luôn hoạt động -->
+    <script th:inline="javascript">
+        function toggleUserMenu(e){
+          if(e){ e.stopPropagation(); }
+          var m=document.getElementById('userMenu');
+          if(m){ m.classList.toggle('hidden'); }
+        }
+        document.addEventListener('click', function(ev){
+          var m=document.getElementById('userMenu'), b=document.getElementById('userMenuBtn');
+          if(!m||!b) return;
+          if(!b.contains(ev.target) && !m.contains(ev.target)) m.classList.add('hidden');
+        });
+        function submitLogout(){ var f=document.getElementById('logoutForm'); if(f) f.submit(); }
+    </script>
+</header>

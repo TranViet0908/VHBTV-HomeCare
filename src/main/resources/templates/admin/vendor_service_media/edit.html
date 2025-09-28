@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>Sửa media</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+  <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
+
+  <div class="flex-1 min-h-screen ml-64">
+    <div th:replace="~{admin/fragments/header :: header}"></div>
+
+    <main class="p-6">
+      <div class="max-w-3xl mx-auto bg-white p-6 rounded border">
+        <h1 class="text-xl font-semibold mb-4">Sửa media</h1>
+
+        <div class="mb-4">
+          <div class="w-full h-48 bg-black flex items-center justify-center rounded">
+            <img th:if="${m.mediaType.name() == 'IMAGE'}" th:src="${m.url}" class="w-full h-48 object-cover" alt="">
+            <video th:if="${m.mediaType.name() == 'VIDEO'}" th:src="${m.url}" controls preload="none" class="w-full h-48 object-cover"></video>
+          </div>
+        </div>
+
+        <form th:action="@{|/admin/vendor-service-media/${m.id}/update|}" method="post" class="grid grid-cols-1 gap-4">
+          <div>
+            <label class="block text-sm text-gray-600">Media ID</label>
+            <input class="w-full border rounded p-2 bg-gray-100" th:value="${m.id}" disabled>
+          </div>
+
+          <div>
+            <label class="block text-sm text-gray-600">Vendor Service ID</label>
+            <input class="w-full border rounded p-2 bg-gray-100" th:value="${m.vendorService.id}" disabled>
+          </div>
+
+          <div>
+            <label class="block text-sm text-gray-600">Loại</label>
+            <input class="w-full border rounded p-2 bg-gray-100" th:value="${m.mediaType}" disabled>
+          </div>
+
+          <div>
+            <label class="block text-sm text-gray-600">URL</label>
+            <input name="url" th:value="${m.url}"
+                   th:attr="disabled=${m.mediaType.name() == 'IMAGE'}"
+                   class="w-full border rounded p-2">
+            <p class="text-xs text-gray-500 mt-1" th:if="${m.mediaType.name() == 'IMAGE'}">Ảnh: URL không sửa tại đây.</p>
+          </div>
+
+          <div>
+            <label class="block text-sm text-gray-600">Mô tả (alt text)</label>
+            <input name="altText" th:value="${m.altText}" class="w-full border rounded p-2" maxlength="255">
+          </div>
+
+          <div>
+            <label class="block text-sm text-gray-600">Thứ tự</label>
+            <input type="number" name="sortOrder" th:value="${m.sortOrder}" class="w-full border rounded p-2">
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <button class="px-4 py-2 bg-gray-900 text-white rounded">Lưu thay đổi</button>
+            <a th:href="@{|/admin/vendor-service-media?serviceId=${m.vendorService.id}|}" class="px-4 py-2 border rounded">Về danh sách</a>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div th:replace="~{admin/fragments/footer :: footer}"></div>
+</body>
+</html>

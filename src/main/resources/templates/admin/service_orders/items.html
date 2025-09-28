@@ -1,0 +1,47 @@
+<!-- templates/admin/service_orders/items.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Items của đơn</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<th:block th:replace="admin/fragments/header :: header"></th:block>
+<div class="flex">
+  <th:block th:replace="admin/fragments/sidebar :: sidebar"></th:block>
+  <main class="flex-1 md:pl-64">
+    <div class="px-4 sm:px-6 lg:px-8 py-6">
+      <h1 class="text-2xl font-semibold text-gray-900 mb-4">Hạng mục dịch vụ</h1>
+      <div class="bg-white rounded-xl shadow overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dịch vụ</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lịch hẹn</th>
+            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">SL</th>
+            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Đơn giá</th>
+            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Thành tiền</th>
+          </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100" th:remove="all-but-first">
+          <tr th:each="it : ${items}">
+            <td class="px-4 py-3" th:text="${it.vendorService != null ? it.vendorService.name : '—'}">—</td>
+            <td class="px-4 py-3" th:text="${#temporals.format(it.scheduledAt,'dd/MM/yyyy HH:mm')}">—</td>
+            <td class="px-4 py-3 text-right" th:text="${it.quantity}">1</td>
+            <td class="px-4 py-3 text-right"
+                th:text="${it.unitPrice != null ? #numbers.formatDecimal(it.unitPrice,0,'POINT',0,'POINT') + ' ₫' : '0 ₫'}">0 ₫</td>
+            <td class="px-4 py-3 text-right font-semibold"
+                th:text="${it.subtotal != null ? #numbers.formatDecimal(it.subtotal,0,'POINT',0,'POINT') + ' ₫' : '0 ₫'}">0 ₫</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+<th:block th:replace="admin/fragments/footer :: footer"></th:block>
+</body>
+</html>

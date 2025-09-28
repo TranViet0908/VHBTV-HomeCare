@@ -1,0 +1,223 @@
+<!-- templates/admin/vendor_service_media/list.html -->
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Vendor Service Media - Danh sách</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+    <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
+    <div class="flex-1 min-h-screen ml-64">
+        <div th:replace="~{admin/fragments/header :: header}"></div>
+
+        <main class="p-6">
+            <div class="max-w-7xl mx-auto">
+                <h1 class="text-xl font-semibold mb-4">Phương tiện dịch vụ vendor</h1>
+
+                <div class="mb-3 p-3 bg-green-100 text-green-800 rounded" th:if="${success}" th:text="${success}"></div>
+                <div class="mb-3 p-3 bg-red-100 text-red-800 rounded" th:if="${error}" th:text="${error}"></div>
+
+                <!-- Bộ lọc: KHÔNG khóa chọn service -->
+                <form class="bg-white p-4 rounded border mb-4 grid grid-cols-1 md:grid-cols-6 gap-3" id="filterForm"
+                      method="get">
+                    <input name="page" type="hidden" value="0">
+
+                    <!-- Chọn theo TÊN vendor -->
+                    <div>
+                        <label class="text-sm text-gray-600">Vendor</label>
+                        <select class="w-full border rounded p-2" id="vendorSelect" name="vendorId">
+                            <option th:selected="${vendorId == null}" value="">Tất cả vendor</option>
+                            <option th:each="vp : ${vendorProfiles}"
+                                    th:selected="${vendorId != null and vendorId == vp.user.id}"
+                                    th:text="${vp.displayName != null ? vp.displayName : (vp.legalName != null ? vp.legalName : 'User #' + vp.user.id)}"
+                                    th:value="${vp.user.id}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Chọn dịch vụ: luôn cho phép bấm. Chỉ ẩn bớt option khi đã chọn vendor -->
+                    <div>
+                        <label class="text-sm text-gray-600">Dịch vụ của vendor</label>
+                        <select class="w-full border rounded p-2" id="vsSelect" name="serviceId">
+                            <option th:selected="${serviceId == null}" value="">Tất cả dịch vụ</option>
+                            <option th:data-vendor-id="${vs.vendorId}"
+                                    th:each="vs : ${vendorServices}"
+                                    th:selected="${serviceId != null and serviceId == vs.id}"
+                                    th:text="|#${vs.id} - ${vs.title}|"
+                                    th:value="${vs.id}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-sm text-gray-600">Loại</label>
+                        <select class="w-full border rounded p-2" name="mediaType">
+                            <option th:selected="${mediaType == null}" value="">Tất cả</option>
+                            <option th:selected="${mediaType?.name() == 'IMAGE'}" value="IMAGE">IMAGE</option>
+                            <option th:selected="${mediaType?.name() == 'VIDEO'}" value="VIDEO">VIDEO</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-sm text-gray-600">Cover?</label>
+                        <select class="w-full border rounded p-2" name="isCover">
+                            <option th:selected="${isCover == null}" value="">Tất cả</option>
+                            <option th:selected="${isCover == true}" value="true">Có</option>
+                            <option th:selected="${isCover == false}" value="false">Không</option>
+                        </select>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="text-sm text-gray-600">Từ khóa</label>
+                        <input class="w-full border rounded p-2" name="kw" placeholder="URL hoặc mô tả" th:value="${kw}"
+                               type="text">
+                    </div>
+
+                    <div class="md:col-span-6">
+                        <button class="px-4 py-2 bg-gray-900 text-white rounded">Lọc</button>
+                        <a class="ml-2 px-4 py-2 border rounded" th:href="@{/admin/vendor-service-media/upload}">Tải ảnh
+                            / Thêm video</a>
+                    </div>
+                </form>
+
+                <!-- Grid -->
+                <div class="bg-white p-4 rounded border">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="border rounded overflow-hidden bg-gray-50" th:each="m : ${page.content}">
+                            <div class="w-full h-40 bg-black flex items-center justify-center">
+                                <img alt="" class="w-full h-40 object-cover"
+                                     th:if="${m.mediaType.name() == 'IMAGE'}" th:src="${m.url}">
+                                <video class="w-full h-40 object-cover" controls preload="none"
+                                       th:if="${m.mediaType.name() == 'VIDEO'}" th:src="${m.url}"></video>
+                            </div>
+
+                            <div class="p-2 text-sm">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <span class="px-2 py-0.5 text-xs rounded border"
+                                              th:text="${m.mediaType}"></span>
+                                        <span class="ml-2 px-2 py-0.5 text-xs rounded bg-indigo-600 text-white"
+                                              th:if="${m.cover}">COVER</span>
+                                    </div>
+                                    <div class="space-x-2">
+                                        <form class="inline" method="post"
+                                              th:action="@{|/admin/vendor-service-media/${m.id}/cover|}">
+                                            <input name="back" th:value="@{/admin/vendor-service-media(
+             page=${page.number},
+             vendorId=${vendorId},
+             serviceId=${serviceId},
+             mediaType=${mediaType},
+             isCover=${isCover},
+             kw=${kw}
+         )}"
+                                                   type="hidden">
+                                            <button class="px-2 py-1 border rounded">Đặt cover</button>
+                                        </form>
+                                        <a class="px-2 py-1 border rounded"
+                                           th:href="@{|/admin/vendor-service-media/${m.id}/edit|}">Sửa</a>
+                                        <form class="inline" method="post"
+                                              onsubmit="return confirm('Xóa media này?')"
+                                              th:action="@{|/admin/vendor-service-media/${m.id}/delete|}">
+                                            <input name="back" th:value="@{/admin/vendor-service-media(
+             page=${page.number},
+             vendorId=${vendorId},
+             serviceId=${serviceId},
+             mediaType=${mediaType},
+             isCover=${isCover},
+             kw=${kw}
+         )}"
+                                                   type="hidden">
+                                            <button class="px-2 py-1 border rounded text-red-600">Xóa</button>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2 text-xs break-words" th:text="${m.url}"></div>
+
+                                <form class="mt-2 flex items-center space-x-2" method="post"
+                                      th:action="@{/admin/vendor-service-media/reorder}">
+                                    <input name="vsId" th:value="${m.vendorService.id}" type="hidden">
+                                    <input name="id" th:value="${m.id}" type="hidden">
+                                    <label class="text-xs text-gray-600">Thứ tự</label>
+                                    <input class="w-20 border rounded p-1 text-sm" name="order" th:value="${m.sortOrder}"
+                                           type="number">
+                                    <button class="px-2 py-1 border rounded">Lưu</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="flex items-center justify-between mt-4">
+                        <div></div>
+                        <div class="space-x-2">
+                            <a class="px-3 py-1 border rounded"
+                               th:href="@{/admin/vendor-service-media(
+       page=${page.number-1},
+       vendorId=${vendorId},
+       serviceId=${serviceId},
+       mediaType=${mediaType},
+       isCover=${isCover},
+       kw=${kw}
+   )}" th:if="${!page.first}">Trước</a>
+                            <span class="text-sm" th:text="|Trang ${page.number+1} / ${page.totalPages}|"></span>
+                            <a class="px-3 py-1 border rounded"
+                               th:href="@{/admin/vendor-service-media(
+       page=${page.number+1},
+       vendorId=${vendorId},
+       serviceId=${serviceId},
+       mediaType=${mediaType},
+       isCover=${isCover},
+       kw=${kw}
+   )}" th:if="${!page.last}">Sau</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{admin/fragments/footer :: footer}"></div>
+
+<!-- JS: chỉ ẨN option service theo vendor, KHÔNG disable; chọn service có thể tự set vendor nếu vendor đang trống -->
+<script>
+    const vendorSelect = document.getElementById('vendorSelect');
+    const vsSelect = document.getElementById('vsSelect');
+
+    function applyServiceOptionFilter() {
+      const vid = vendorSelect.value; // có thể rỗng
+      [...vsSelect.options].forEach(opt => {
+        if (opt.value === '') { opt.hidden = false; return; }
+        const belongs = opt.getAttribute('data-vendor-id') === vid;
+        // nếu chưa chọn vendor thì hiện tất cả
+        opt.hidden = (vid !== '' && !belongs);
+      });
+      // nếu đã chọn vendor và service hiện không thuộc vendor đó thì reset service
+      if (vid !== '') {
+        const sel = vsSelect.selectedOptions[0];
+        if (sel && sel.value !== '' && sel.getAttribute('data-vendor-id') !== vid) {
+          vsSelect.value = '';
+        }
+      }
+    }
+
+    vendorSelect?.addEventListener('change', applyServiceOptionFilter);
+
+    // Nếu chọn service trước và vendor đang trống, tự set vendor để tiện lọc
+    vsSelect?.addEventListener('change', () => {
+      const sel = vsSelect.selectedOptions[0];
+      if (!sel || sel.value === '') return;
+      if (vendorSelect.value === '') {
+        vendorSelect.value = sel.getAttribute('data-vendor-id');
+        applyServiceOptionFilter();
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', applyServiceOptionFilter);
+</script>
+</body>
+</html>

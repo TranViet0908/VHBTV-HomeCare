@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Danh sách Người dùng - VHBTV Homecare</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+  <div th:replace="/admin/fragments/sidebar :: sidebar"></div>
+
+  <div class="flex-1 min-h-screen ml-64">
+    <div th:replace="/admin/fragments/header :: header"></div>
+
+    <main class="p-6">
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Danh sách Người dùng</h1>
+          <p class="text-gray-600">Quản lý tài khoản và vai trò</p>
+        </div>
+        <div class="flex items-center space-x-3">
+          <a th:href="@{/admin/dashboard}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg">Về trang chủ</a>
+          <a th:href="@{/admin/users/create}" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+            <i class="fas fa-plus mr-2"></i>Tạo người dùng mới
+          </a>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border p-4 mb-4">
+        <form method="get" th:action="@{/admin/users}" class="flex items-center space-x-3">
+          <input type="text" name="search" th:value="${search}" placeholder="Tìm theo ID, username, email, vai trò"
+                 class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+          <input type="hidden" name="size" th:value="${size}">
+          <button class="px-4 py-2 bg-blue-600 text-white rounded-lg">Tìm kiếm</button>
+        </form>
+      </div>
+
+      <div class="bg-white rounded-xl border overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">ID</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Username</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Email</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Phone</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Trạng thái</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Avatar</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Vai trò</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Tạo</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Sửa</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Thao tác</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y">
+            <tr th:each="u : ${users}" class="hover:bg-gray-50">
+              <td class="px-6 py-3 text-sm" th:text="${u.id}">1</td>
+              <td class="px-6 py-3 text-sm" th:text="${u.username}">admin</td>
+              <td class="px-6 py-3 text-sm" th:text="${u.email}">admin@example.com</td>
+              <td class="px-6 py-3 text-sm" th:text="${u.phone}">0123456789</td>
+
+              <td class="px-6 py-3">
+                <span th:if="${u.active}" class="inline-block px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">Hoạt động</span>
+                <span th:if="${!u.active}" class="inline-block px-2 py-0.5 rounded-full text-xs bg-gray-200 text-gray-700">Vô hiệu</span>
+              </td>
+
+              <td class="px-6 py-3">
+                <img th:if="${u.avatarUrl}" th:src="${u.avatarUrl}" class="w-10 h-10 rounded-full object-cover border" alt="avatar">
+                <span th:if="${u.avatarUrl == null}" class="text-xs text-gray-400">N/A</span>
+              </td>
+
+              <td class="px-6 py-3">
+                  <span th:switch="${u.role?.name()}">
+                    <span th:case="'ROLE_ADMIN'" class="text-red-700 text-xs bg-red-100 px-2 py-0.5 rounded">Admin</span>
+                    <span th:case="'ROLE_VENDOR'" class="text-blue-700 text-xs bg-blue-100 px-2 py-0.5 rounded">Vendor</span>
+                    <span th:case="'ROLE_CUSTOMER'" class="text-green-700 text-xs bg-green-100 px-2 py-0.5 rounded">Khách hàng</span>
+                  </span>
+              </td>
+
+              <td class="px-6 py-3 text-sm" th:text="${u.createdAt != null ? #temporals.format(u.createdAt, 'dd/MM/yyyy') : 'N/A'}">01/01/2025</td>
+              <td class="px-6 py-3 text-sm" th:text="${u.updatedAt != null ? #temporals.format(u.updatedAt, 'dd/MM/yyyy') : 'N/A'}">01/01/2025</td>
+
+              <td class="px-6 py-3 text-sm">
+                <div class="flex items-center space-x-2">
+                  <a th:href="@{/admin/users/edit/{id}(id=${u.id})}" class="px-3 py-1 bg-blue-100 text-blue-700 rounded">Sửa</a>
+                  <a th:href="@{/admin/users/delete/{id}(id=${u.id})}"
+                     onclick="return confirm('Xóa người dùng này?')" class="px-3 py-1 bg-red-100 text-red-700 rounded">Xóa</a>
+                  <form th:action="@{|/admin/users/${u.id}/toggle-active|}" method="post" class="inline">
+                    <button class="px-3 py-1 bg-gray-100 text-gray-700 rounded" type="submit"
+                            th:text="${u.active} ? 'Vô hiệu' : 'Kích hoạt'">Vô hiệu</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Phân trang đơn giản -->
+        <div class="p-4 border-t flex items-center justify-between">
+          <div class="text-sm text-gray-600">
+            Trang <span th:text="${page + 1}">1</span>/<span th:text="${totalPages}">1</span>
+          </div>
+          <div class="space-x-2">
+            <a th:if="${page > 0}"
+               th:href="@{|/admin/users?page=${page - 1}&size=${size}&search=${search}|}"
+               class="px-3 py-1 border rounded">Trước</a>
+            <a th:if="${page + 1 < totalPages}"
+               th:href="@{|/admin/users?page=${page + 1}&size=${size}&search=${search}|}"
+               class="px-3 py-1 border rounded">Sau</a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div th:replace="/admin/fragments/footer :: footer"></div>
+  </div>
+</div>
+</body>
+</html>

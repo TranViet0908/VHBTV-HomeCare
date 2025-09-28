@@ -1,0 +1,90 @@
+<!-- templates/admin/payments/detail.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết thanh toán</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+    <div th:replace="/admin/fragments/sidebar :: sidebar"></div>
+
+    <div class="flex-1 min-h-screen ml-64">
+        <div th:replace="/admin/fragments/header :: header"></div>
+
+        <main class="p-6"
+              th:with="paidAtTxt=${payment != null && payment.paidAt != null ? #temporals.format(payment.paidAt,'dd/MM/yyyy HH:mm') : '—'},
+                   createdAtTxt=${payment != null && payment.createdAt != null ? #temporals.format(payment.createdAt,'dd/MM/yyyy HH:mm') : '—'}">
+
+            <div class="mb-6 flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Thanh toán #<span th:text="${payment.id}">0</span></h1>
+                    <p class="text-sm text-gray-500">
+                        Đơn:
+                        <a th:if="${payment.payTargetType != null and payment.payTargetType.name() == 'SERVICE_ORDER'}"
+                           th:href="@{|/admin/service-orders/${payment.payTargetId}|}"
+                           class="text-indigo-600 hover:underline"
+                           th:text="${payment.payTargetId}">—</a>
+                        <span th:if="${payment.payTargetType == null or payment.payTargetType.name() != 'SERVICE_ORDER'}">—</span>
+                    </p>
+                </div>
+                <div class="flex gap-2">
+                    <form th:action="@{|/admin/payments/${payment.id}/mark-paid|}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Mark Paid</button>
+                    </form>
+                    <form th:action="@{|/admin/payments/${payment.id}/mark-refunded|}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">Mark Refunded</button>
+                    </form>
+                </div>
+            </div>
+
+            <section class="grid gap-4 md:grid-cols-3">
+                <div class="bg-white rounded-xl border p-4">
+                    <div class="text-sm text-gray-500">Trạng thái</div>
+                    <div class="mt-1">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                  th:classappend="${
+                    payment.status}=='PAID' ? ' bg-green-100 text-green-800' :
+                    (${payment.status}=='PENDING' ? ' bg-yellow-100 text-yellow-800' :
+                    (${payment.status}=='FAILED' ? ' bg-red-100 text-red-800' : ' bg-blue-100 text-blue-800'))"
+                  th:text="${payment.status}">PENDING</span>
+                    </div>
+                    <div class="mt-3 grid grid-cols-2 gap-2 text-sm">
+                        <div class="text-gray-500">Paid at</div><div class="text-gray-900" th:text="${paidAtTxt}">—</div>
+                        <div class="text-gray-500">Tạo lúc</div><div class="text-gray-900" th:text="${createdAtTxt}">—</div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl border p-4">
+                    <div class="text-sm text-gray-500">Số tiền</div>
+                    <div class="mt-2 text-2xl font-bold text-gray-900"
+                         th:text="${payment.amount != null ? #numbers.formatDecimal(payment.amount,0,'POINT',0,'POINT') + ' ₫' : '0 ₫'}">0 ₫</div>
+                    <div class="mt-2 text-sm text-gray-600">Currency: <span th:text="${payment.currency}">VND</span></div>
+                    <div class="mt-2 text-sm text-gray-600">Provider: <span th:text="${payment.provider}">VNPAY</span></div>
+                </div>
+
+                <div class="bg-white rounded-xl border p-4">
+                    <div class="text-sm text-gray-500">Thông tin khác</div>
+                    <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
+                        <div class="text-gray-500">Transaction</div><div class="text-gray-900" th:text="${payment.transactionRef}">—</div>
+                        <div class="text-gray-500">Pay target</div><div class="text-gray-900" th:text="${payment.payTargetType}">—</div>
+                        <div class="text-gray-500">Target ID</div><div class="text-gray-900" th:text="${payment.payTargetId}">—</div>
+                        <div class="text-gray-500">Ghi chú</div><div class="text-gray-900" th:text="${payment.note}">—</div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="mt-6">
+                <a th:href="@{/admin/payments}" class="text-indigo-600 hover:underline">&larr; Quay lại danh sách</a>
+            </div>
+        </main>
+
+        <div th:replace="/admin/fragments/footer :: footer"></div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!-- templates/admin/coupons/create.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Tạo mã giảm giá</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+  <div th:replace="/admin/fragments/sidebar :: sidebar"></div>
+  <div class="flex-1 min-h-screen ml-64">
+    <div th:replace="/admin/fragments/header :: header"></div>
+
+    <main class="p-6">
+      <div class="mb-6 flex items-center justify-between">
+        <h1 class="text-3xl font-bold text-gray-800">Tạo mã giảm giá</h1>
+        <a href="/admin/coupons" class="text-blue-700 hover:underline">Về danh sách</a>
+      </div>
+
+      <form class="bg-white rounded-lg shadow p-6 space-y-4" method="post"
+            th:action="@{/admin/coupons/create}" th:object="${coupon}">
+        <input type="hidden" name="scope" value="SERVICE"/>
+
+        <div class="grid md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Code<span class="text-red-500">*</span></label>
+            <input class="w-full border rounded px-3 py-2" th:field="*{code}" placeholder="VHBTV10">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Tên hiển thị<span class="text-red-500">*</span></label>
+            <input class="w-full border rounded px-3 py-2" th:field="*{name}" placeholder="Giảm 50k đơn dịch vụ">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Loại</label>
+            <select class="w-full border rounded px-3 py-2" th:field="*{type}">
+              <option value="PERCENT">Phần trăm</option>
+              <option value="FIXED">Cố định</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Giá trị</label>
+            <input class="w-full border rounded px-3 py-2" th:field="*{value}" placeholder="10 hoặc 50000">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">Giới hạn giảm tối đa</label>
+            <input class="w-full border rounded px-3 py-2" th:field="*{maxDiscountAmount}" placeholder="0 hoặc để trống">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Giới hạn toàn hệ thống</label>
+            <input class="w-full border rounded px-3 py-2" th:field="*{usageLimitGlobal}" placeholder="0 = không giới hạn">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Giới hạn mỗi người dùng</label>
+            <input class="w-full border rounded px-3 py-2" th:field="*{usageLimitPerUser}" placeholder="0 = không giới hạn">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">Bắt đầu</label>
+            <input class="w-full border rounded px-3 py-2" type="datetime-local"
+                   th:value="${coupon.startAt!=null? #temporals.format(coupon.startAt,'yyyy-MM-dd''T''HH:mm'): null}"
+                   name="startAt">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Kết thúc</label>
+            <input class="w-full border rounded px-3 py-2" type="datetime-local"
+                   th:value="${coupon.endAt!=null? #temporals.format(coupon.endAt,'yyyy-MM-dd''T''HH:mm'): null}"
+                   name="endAt">
+          </div>
+          <div class="flex items-center gap-2">
+            <input id="active" type="checkbox" th:checked="${coupon.active}" name="active" class="w-4 h-4">
+            <label for="active" class="text-sm font-medium">Đang hoạt động</label>
+          </div>
+        </div>
+
+        <!-- Preview client-side nhanh -->
+        <div class="border-t pt-4 grid md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Nhập Subtotal để ước tính</label>
+            <input id="subtotal" class="w-full border rounded px-3 py-2" placeholder="200000">
+          </div>
+          <div class="flex items-end">
+            <button type="button" onclick="calcPreview()"
+                    class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-black">Tính thử</button>
+          </div>
+          <div class="flex items-end">
+            <div id="previewBox" class="text-sm text-gray-700"></div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" type="submit">
+            Lưu
+          </button>
+          <a href="/admin/coupons" class="px-4 py-2 border rounded hover:bg-gray-50">Hủy</a>
+        </div>
+      </form>
+    </main>
+
+    <div th:replace="/admin/fragments/footer :: footer"></div>
+  </div>
+</div>
+
+<script>
+  function val(n){return parseFloat(n||'0')||0;}
+  function calcPreview(){
+    const type = document.querySelector('[name="type"]').value;
+    const value = val(document.querySelector('[name="value"]').value);
+    const cap = val(document.querySelector('[name="maxDiscountAmount"]').value);
+    const sub = val(document.getElementById('subtotal').value);
+    let d = 0;
+    if(sub<=0){ document.getElementById('previewBox').innerText='Subtotal không hợp lệ'; return; }
+    if(type==='FIXED'){ d = Math.min(value, sub); }
+    else { d = sub * (value/100); if(cap>0) d = Math.min(d, cap); }
+    document.getElementById('previewBox').innerText = 'Giảm ~ ' + Math.floor(d);
+  }
+</script>
+</body>
+</html>

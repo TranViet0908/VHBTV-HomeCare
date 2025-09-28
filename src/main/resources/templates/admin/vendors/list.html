@@ -1,0 +1,132 @@
+<!-- src/main/resources/templates/admin/vendors/list.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Hồ sơ Vendor - VHBTV Homecare</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+  <div th:replace="/admin/fragments/sidebar :: sidebar"></div>
+
+  <div class="flex-1 min-h-screen ml-64">
+    <div th:replace="/admin/fragments/header :: header"></div>
+
+    <main class="p-6">
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Hồ sơ Vendor</h1>
+          <p class="text-gray-600">Quản lý thông tin hồ sơ và trạng thái xác minh</p>
+        </div>
+        <a th:href="@{/admin/dashboard}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg">Về trang chủ</a>
+      </div>
+
+      <!-- Bộ lọc -->
+      <div class="bg-white rounded-xl border p-4 mb-4">
+        <form method="get" th:action="@{/admin/vendors}" class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <input type="text" name="q" th:value="${q}" placeholder="Tìm theo username, tên hiển thị, tên pháp lý"
+                 class="md:col-span-2 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+          <select name="verified" class="px-4 py-2 border rounded-lg">
+            <!-- KHÔNG dùng th:value="" vì là biểu thức rỗng -->
+            <option value="" th:selected="${verified == null}">Tất cả</option>
+            <option value="true"  th:selected="${verified == true}">Đã xác minh</option>
+            <option value="false" th:selected="${verified == false}">Chưa xác minh</option>
+          </select>
+          <div class="flex items-center gap-2">
+            <input type="hidden" name="size" th:value="${page != null ? page.size : 12}">
+            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg">Lọc</button>
+            <a th:href="@{/admin/vendors}" class="px-4 py-2 border rounded-lg">Xóa lọc</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Bảng -->
+      <div class="bg-white rounded-xl border overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">ID</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Username</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Tên hiển thị</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Tên pháp lý</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Kinh nghiệm</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Đánh giá</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Địa chỉ</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Xác minh</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Tạo</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Sửa</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600">Thao tác</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y" th:if="${page != null}">
+            <tr th:each="vp : ${page.content}" class="hover:bg-gray-50">
+              <td class="px-6 py-3 text-sm" th:text="${vp.id}">1</td>
+              <td class="px-6 py-3 text-sm" th:text="${vp.user != null ? vp.user.username : 'N/A'}">vendor01</td>
+              <td class="px-6 py-3 text-sm" th:text="${vp.displayName}">Vệ Sinh A</td>
+              <td class="px-6 py-3 text-sm" th:text="${vp.legalName}">CTY A</td>
+              <td class="px-6 py-3 text-sm" th:text="${vp.yearsExperience}">5</td>
+              <td class="px-6 py-3 text-sm">
+                <span class="inline-flex items-center gap-1">
+                  <i class="fas fa-star text-amber-400"></i>
+                  <span th:text="${vp.ratingAvg}">4.80</span>
+                  <span class="text-xs text-gray-500" th:text="'(' + ${vp.ratingCount} + ')'">(120)</span>
+                </span>
+              </td>
+              <td class="px-6 py-3 text-sm" th:text="${vp.addressLine}">Hà Nội</td>
+              <td class="px-6 py-3">
+                <span th:if="${vp.verified}" class="inline-block px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">Đã xác minh</span>
+                <span th:if="${!vp.verified}" class="inline-block px-2 py-0.5 rounded-full text-xs bg-gray-200 text-gray-700">Chưa</span>
+              </td>
+              <td class="px-6 py-3 text-sm" th:text="${vp.createdAt != null ? #temporals.format(vp.createdAt, 'dd/MM/yyyy') : 'N/A'}">01/01/2025</td>
+              <td class="px-6 py-3 text-sm" th:text="${vp.updatedAt != null ? #temporals.format(vp.updatedAt, 'dd/MM/yyyy') : 'N/A'}">01/01/2025</td>
+              <td class="px-6 py-3 text-sm">
+                <div class="flex items-center space-x-2">
+                  <a th:href="@{|/admin/vendors/${vp.id}|}" class="px-3 py-1 bg-blue-100 text-blue-700 rounded">Xem</a>
+                  <a th:href="@{|/admin/vendors/${vp.id}/edit|}" class="px-3 py-1 bg-amber-100 text-amber-700 rounded">Sửa</a>
+                  <form th:action="@{|/admin/vendors/${vp.id}/verify|}" method="post" class="inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <input type="hidden" name="page" th:value="${page != null ? page.number : 0}">
+                    <input type="hidden" name="size" th:value="${page != null ? page.size : 12}">
+                    <input type="hidden" name="value" th:value="${!vp.verified}">
+                    <button class="px-3 py-1 rounded"
+                            th:classappend="${vp.verified} ? 'bg-gray-100 text-gray-700' : 'bg-green-100 text-green-700'"
+                            th:text="${vp.verified} ? 'Bỏ xác minh' : 'Xác minh'">Xác minh</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+
+            <tbody th:if="${page == null or #lists.isEmpty(page.content)}">
+            <tr>
+              <td colspan="11" class="px-6 py-10 text-center text-gray-500">Chưa có hồ sơ vendor.</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="p-4 border-t flex items-center justify-between" th:if="${page != null}">
+          <div class="text-sm text-gray-600">
+            Trang <span th:text="${page.number + 1}">1</span>/<span th:text="${page.totalPages}">1</span>
+            · Tổng <span th:text="${page.totalElements}">0</span> vendor
+          </div>
+          <div class="space-x-2">
+            <a th:if="${page.hasPrevious()}"
+               th:href="@{|/admin/vendors?page=${page.number - 1}&size=${page.size}&q=${q}&verified=${verified}|}"
+               class="px-3 py-1 border rounded">Trước</a>
+            <a th:if="${page.hasNext()}"
+               th:href="@{|/admin/vendors?page=${page.number + 1}&size=${page.size}&q=${q}&verified=${verified}|}"
+               class="px-3 py-1 border rounded">Sau</a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div th:replace="/admin/fragments/footer :: footer"></div>
+  </div>
+</div>
+</body>
+</html>

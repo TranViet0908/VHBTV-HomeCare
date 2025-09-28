@@ -1,0 +1,79 @@
+<!-- src/main/resources/templates/admin/coupons/assign_users.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Gán người dùng cho mã</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+  <div th:replace="/admin/fragments/sidebar :: sidebar"></div>
+  <div class="flex-1 min-h-screen ml-64">
+    <div th:replace="/admin/fragments/header :: header"></div>
+
+    <main class="p-6" th:object="${coupon}">
+      <div class="mb-6 flex items-center justify-between">
+        <h1 class="text-3xl font-bold text-gray-800">
+          Gán người dùng — <span class="text-blue-700" th:text="*{code}">CODE</span>
+        </h1>
+        <a th:href="@{'/admin/coupons/' + *{id} + '/edit'}" class="text-blue-700 hover:underline">Quay lại sửa mã</a>
+      </div>
+
+      <!-- Chọn theo TÊN (select), không nhập tay -->
+      <div class="bg-white rounded-lg shadow p-4 mb-4">
+        <form class="grid grid-cols-1 md:grid-cols-3 gap-3"
+              th:action="@{'/admin/coupons/' + *{id} + '/users'}" method="post">
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium mb-1">Chọn người dùng</label>
+            <select name="userId" class="w-full border rounded px-3 py-2" required>
+              <option value="">-- Chọn người dùng --</option>
+              <option th:each="u : ${customers}"
+                      th:value="${u.id}"
+                      th:text="${'#' + u.id + ' • ' + (u.username!=null?u.username:'user') + ' • ' + u.email}">
+              </option>
+            </select>
+          </div>
+          <div class="flex items-end">
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+              Thêm vào whitelist
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Bảng đã gán -->
+      <div class="bg-white rounded-lg shadow overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-100 text-gray-700">
+          <tr>
+            <th class="text-left px-4 py-2">User</th>
+            <th class="text-left px-4 py-2">Email</th>
+            <th class="text-right px-4 py-2">Thao tác</th>
+          </tr>
+          </thead>
+          <tbody class="divide-y" th:if="${items!=null}">
+          <tr th:each="cu : ${items}">
+            <td class="px-4 py-2" th:text="${cu.user.username}">username</td>
+            <td class="px-4 py-2" th:text="${cu.user.email}">email@example.com</td>
+            <td class="px-4 py-2 text-right">
+              <form method="post" th:action="@{'/admin/coupons/' + *{id} + '/users/remove'}">
+                <input type="hidden" name="userId" th:value="${cu.user.id}">
+                <button class="px-2 py-1 text-red-600 hover:underline" type="submit">Gỡ</button>
+              </form>
+            </td>
+          </tr>
+          </tbody>
+          <tbody th:if="${items==null or #lists.isEmpty(items)}">
+          <tr><td class="px-4 py-6 text-center text-gray-500" colspan="3">Chưa gán người dùng nào</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <div th:replace="/admin/fragments/footer :: footer"></div>
+  </div>
+</div>
+</body>
+</html>

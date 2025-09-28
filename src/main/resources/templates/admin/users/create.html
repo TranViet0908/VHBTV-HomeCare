@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Tạo Người dùng Mới - VHBTV Homecare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+    <div th:replace="/admin/fragments/sidebar :: sidebar"></div>
+
+    <div class="flex-1 min-h-screen ml-64">
+        <div th:replace="/admin/fragments/header :: header"></div>
+
+        <main class="p-6">
+            <div class="mb-6 flex items-center justify-between">
+                <h1 class="text-3xl font-bold text-gray-900">Tạo Người dùng Mới</h1>
+                <a class="px-4 py-2 bg-gray-100 rounded-lg" th:href="@{/admin/users}">Quay lại</a>
+            </div>
+
+            <div class="bg-white rounded-xl border overflow-hidden">
+                <div class="px-6 py-4 border-b bg-gray-50">
+                    <h3 class="font-semibold">Thông tin người dùng</h3>
+                </div>
+
+                <form class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6" enctype="multipart/form-data" method="post"
+                      th:action="@{/admin/users}"
+                      th:object="${user}">
+
+                    <!-- Username -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium mb-1">Username *</label>
+                        <input class="w-full px-4 py-2 border rounded-lg" required th:field="*{username}">
+                    </div>
+
+                    <!-- Password -->
+                    <div class="md:col-span-1">
+                        <label class="block text-sm font-medium mb-1">Mật khẩu *</label>
+                        <input class="w-full px-4 py-2 border rounded-lg" required th:field="*{password}"
+                               type="password">
+                    </div>
+
+                    <!-- Confirm -->
+                    <div class="md:col-span-1">
+                        <label class="block text-sm font-medium mb-1">Xác nhận mật khẩu *</label>
+                        <input class="w-full px-4 py-2 border rounded-lg" name="passwordConfirm" required
+                               type="password">
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Email *</label>
+                        <input class="w-full px-4 py-2 border rounded-lg" required th:field="*{email}" type="email">
+                    </div>
+
+                    <!-- Phone -->
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Số điện thoại</label>
+                        <input class="w-full px-4 py-2 border rounded-lg" th:field="*{phone}">
+                    </div>
+
+                    <!-- Avatar file -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium mb-1">Ảnh đại diện (tải từ máy)</label>
+                        <input accept="image/*" class="w-full px-4 py-2 border rounded-lg bg-white" name="avatar"
+                               type="file">
+                        <!-- bỏ input URL cũ -->
+                    </div>
+
+                    <!-- Role -->
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Vai trò *</label>
+                        <select class="w-full px-4 py-2 border rounded-lg" required th:field="*{role}">
+                            <option value="">-- Chọn --</option>
+                            <option value="ROLE_ADMIN">Admin</option>
+                            <option value="ROLE_VENDOR">Vendor</option>
+                            <option value="ROLE_CUSTOMER">Khách hàng</option>
+                        </select>
+                    </div>
+
+                    <div class="md:col-span-2 flex items-center justify-end space-x-3 pt-4 border-t">
+                        <a class="px-4 py-2 border rounded-lg" th:href="@{/admin/users}">Hủy</a>
+                        <button class="px-5 py-2 bg-blue-600 text-white rounded-lg" type="submit">Tạo người dùng
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </main>
+
+        <div th:replace="/admin/fragments/footer :: footer"></div>
+    </div>
+</div>
+</body>
+</html>

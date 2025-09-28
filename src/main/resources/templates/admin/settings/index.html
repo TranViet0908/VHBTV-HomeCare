@@ -1,0 +1,135 @@
+<!-- src/main/resources/templates/admin/settings/index.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Cấu hình hệ thống</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+  <div th:replace="/admin/fragments/sidebar :: sidebar"></div>
+
+  <div class="flex-1 min-h-screen ml-64">
+    <div th:replace="/admin/fragments/header :: header"></div>
+
+    <main class="p-6">
+      <div class="mb-6 flex items-center justify-between">
+        <h1 class="text-2xl font-semibold">Cấu hình hệ thống</h1>
+        <form th:action="@{/admin/settings/cache/evict}" method="post">
+          <button class="px-3 py-2 text-sm bg-slate-800 text-white rounded hover:bg-slate-700">Làm mới cache</button>
+        </form>
+      </div>
+
+      <div class="grid grid-cols-12 gap-6">
+        <aside class="col-span-12 md:col-span-3">
+          <nav class="bg-white rounded-lg border">
+            <a th:href="@{'/admin/settings'(tab='core')}" th:classappend="${tab}=='core' ? 'bg-blue-50 text-blue-700' : ''" class="block px-4 py-3 border-b hover:bg-blue-50">Tổng quan</a>
+            <a th:href="@{'/admin/settings'(tab='orders')}" th:classappend="${tab}=='orders' ? 'bg-blue-50 text-blue-700' : ''" class="block px-4 py-3 border-b hover:bg-blue-50">Đơn dịch vụ</a>
+            <a th:href="@{'/admin/settings'(tab='payments')}" th:classappend="${tab}=='payments' ? 'bg-blue-50 text-blue-700' : ''" class="block px-4 py-3 border-b hover:bg-blue-50">Thanh toán</a>
+            <a th:href="@{'/admin/settings'(tab='upload')}" th:classappend="${tab}=='upload' ? 'bg-blue-50 text-blue-700' : ''" class="block px-4 py-3 border-b hover:bg-blue-50">Upload & Media</a>
+            <a th:href="@{'/admin/settings'(tab='review')}" th:classappend="${tab}=='review' ? 'bg-blue-50 text-blue-700' : ''" class="block px-4 py-3 border-b hover:bg-blue-50">Đánh giá</a>
+            <a th:href="@{'/admin/settings'(tab='security')}" th:classappend="${tab}=='security' ? 'bg-blue-50 text-blue-700' : ''" class="block px-4 py-3 hover:bg-blue-50">Bảo mật</a>
+          </nav>
+        </aside>
+
+        <section class="col-span-12 md:col-span-9">
+          <!-- Core -->
+          <form th:if="${tab}=='core'" th:action="@{'/admin/settings/save/' + 'core'}" method="post" class="bg-white rounded-lg border p-6 space-y-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Tên hệ thống</label>
+              <input name="siteName" th:value="${get.get('core.siteName','')}" class="w-full border rounded px-3 py-2">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-1">Timezone</label>
+                <input name="timezone" th:value="${get.get('core.timezone','Asia/Ho_Chi_Minh')}" class="w-full border rounded px-3 py-2">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Tiền tệ</label>
+                <input name="currency" th:value="${get.get('core.currency','VND')}" class="w-full border rounded px-3 py-2">
+              </div>
+            </div>
+            <button class="px-4 py-2 bg-blue-600 text-white rounded">Lưu</button>
+          </form>
+
+          <!-- Orders -->
+          <form th:if="${tab}=='orders'" th:action="@{'/admin/settings/save/' + 'orders'}" method="post" class="bg-white rounded-lg border p-6 space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-1">Báo trước tối thiểu (giờ)</label>
+                <input name="minNoticeHours" type="number" min="0" th:value="${get.get('orders.minNoticeHours','2')}" class="w-full border rounded px-3 py-2">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Số job tối đa/ngày</label>
+                <input name="maxJobsPerDay" type="number" min="1" th:value="${get.get('orders.maxJobsPerDay','8')}" class="w-full border rounded px-3 py-2">
+              </div>
+            </div>
+            <button class="px-4 py-2 bg-blue-600 text-white rounded">Lưu</button>
+          </form>
+
+          <!-- Payments -->
+          <form th:if="${tab}=='payments'" th:action="@{'/admin/settings/save/' + 'payments'}" method="post" class="bg-white rounded-lg border p-6 space-y-4">
+            <input type="hidden" name="_boolKeys" value="cod.enabled,vnpay.enabled,momo.enabled">
+            <div class="grid grid-cols-2 gap-4">
+              <label class="inline-flex items-center gap-2">
+                <input type="hidden" name="cod.enabled" value="false">
+                <input type="checkbox" name="cod.enabled" th:checked="${get.getBool('payments.cod.enabled',true)}" value="true">
+                <span>COD</span>
+              </label>
+              <label class="inline-flex items-center gap-2">
+                <input type="hidden" name="vnpay.enabled" value="false">
+                <input type="checkbox" name="vnpay.enabled" th:checked="${get.getBool('payments.vnpay.enabled',false)}" value="true">
+                <span>VNPay</span>
+              </label>
+              <label class="inline-flex items-center gap-2">
+                <input type="hidden" name="momo.enabled" value="false">
+                <input type="checkbox" name="momo.enabled" th:checked="${get.getBool('payments.momo.enabled',false)}" value="true">
+                <span>MoMo</span>
+              </label>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Khóa bí mật VNPay</label>
+              <input name="vnpay.secret" type="password" class="w-full border rounded px-3 py-2">
+            </div>
+            <button class="px-4 py-2 bg-blue-600 text-white rounded">Lưu</button>
+          </form>
+
+          <!-- Upload -->
+          <form th:if="${tab}=='upload'" th:action="@{'/admin/settings/save/' + 'upload'}" method="post" class="bg-white rounded-lg border p-6 space-y-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Kích thước tối đa (MB)</label>
+              <input name="maxSizeMb" type="number" min="1" th:value="${get.get('upload.maxSizeMb','10')}" class="w-full border rounded px-3 py-2">
+            </div>
+            <button class="px-4 py-2 bg-blue-600 text-white rounded">Lưu</button>
+          </form>
+
+          <!-- Review -->
+          <form th:if="${tab}=='review'" th:action="@{'/admin/settings/save/' + 'review'}" method="post" class="bg-white rounded-lg border p-6 space-y-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Ngưỡng sao tối thiểu hiển thị</label>
+              <input name="minStarsVisible" type="number" min="1" max="5" th:value="${get.get('review.minStarsVisible','3')}" class="w-full border rounded px-3 py-2">
+            </div>
+            <button class="px-4 py-2 bg-blue-600 text-white rounded">Lưu</button>
+          </form>
+
+          <!-- Security -->
+          <form th:if="${tab}=='security'" th:action="@{'/admin/settings/save/' + 'security'}" method="post" class="bg-white rounded-lg border p-6 space-y-4">
+            <input type="hidden" name="_boolKeys" value="maintenance">
+            <label class="inline-flex items-center gap-2">
+              <input type="hidden" name="maintenance" value="false">
+              <input type="checkbox" name="maintenance" th:checked="${get.getBool('security.maintenance',false)}" value="true">
+              <span>Bật chế độ bảo trì</span>
+            </label>
+            <button class="px-4 py-2 bg-blue-600 text-white rounded">Lưu</button>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <div th:replace="/admin/fragments/footer :: footer"></div>
+  </div>
+</div>
+</body>
+</html>

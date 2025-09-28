@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Chỉnh sửa Người dùng - VHBTV Homecare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+    <div th:replace="/admin/fragments/sidebar :: sidebar"></div>
+
+    <div class="flex-1 min-h-screen ml-64">
+        <div th:replace="/admin/fragments/header :: header"></div>
+
+        <main class="p-6">
+            <div class="mb-6 flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Chỉnh sửa Người dùng</h1>
+                    <p class="text-gray-600">ID: <span th:text="${user.id}">1</span></p>
+                </div>
+                <a class="px-4 py-2 bg-gray-100 rounded-lg" th:href="@{/admin/users}">Quay lại</a>
+            </div>
+
+            <div class="bg-white rounded-xl border overflow-hidden">
+                <div class="px-6 py-4 border-b bg-gray-50">
+                    <h3 class="font-semibold">Thông tin</h3>
+                </div>
+
+                <form class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6" enctype="multipart/form-data" method="post"
+                      th:action="@{|/admin/users/${user.id}|}"
+                      th:object="${user}">
+
+                    <!-- Username -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium mb-1">Username *</label>
+                        <input class="w-full px-4 py-2 border rounded-lg" required th:field="*{username}">
+                    </div>
+
+                    <!-- New password -->
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Mật khẩu mới</label>
+                        <input class="w-full px-4 py-2 border rounded-lg" placeholder="Để trống nếu không đổi" th:field="*{password}"
+                               type="password">
+                    </div>
+
+                    <!-- Confirm -->
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Xác nhận mật khẩu</label>
+                        <input class="w-full px-4 py-2 border rounded-lg" name="passwordConfirm" placeholder="Nhập lại mật khẩu"
+                               type="password">
+                    </div>
+
+                    <!-- Role -->
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Vai trò *</label>
+                        <select class="w-full px-4 py-2 border rounded-lg" required th:field="*{role}">
+                            <option value="">-- Chọn --</option>
+                            <option value="ROLE_ADMIN">Admin</option>
+                            <option value="ROLE_VENDOR">Vendor</option>
+                            <option value="ROLE_CUSTOMER">Khách hàng</option>
+                        </select>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Email *</label>
+                        <input class="w-full px-4 py-2 border rounded-lg" required th:field="*{email}" type="email">
+                    </div>
+
+                    <!-- Phone -->
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Số điện thoại</label>
+                        <input class="w-full px-4 py-2 border rounded-lg" th:field="*{phone}">
+                    </div>
+
+                    <!-- Avatar upload + preview -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium mb-1">Ảnh đại diện</label>
+                        <div class="flex items-center space-x-4">
+                            <img alt="avatar" class="w-14 h-14 rounded-full object-cover border"
+                                 th:if="${user.avatarUrl}" th:src="${user.avatarUrl}">
+                            <input accept="image/*" class="flex-1 px-4 py-2 border rounded-lg bg-white" name="avatar"
+                                   type="file">
+                        </div>
+                    </div>
+
+                    <!-- Active -->
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Trạng thái</label>
+                        <select class="w-full px-4 py-2 border rounded-lg" th:field="*{active}">
+                            <option th:value="true">Hoạt động</option>
+                            <option th:value="false">Vô hiệu</option>
+                        </select>
+                    </div>
+
+                    <div class="md:col-span-2 flex items-center justify-end space-x-3 pt-4 border-t">
+                        <a class="px-4 py-2 border rounded-lg" th:href="@{/admin/users}">Hủy</a>
+                        <button class="px-5 py-2 bg-blue-600 text-white rounded-lg" type="submit">Cập nhật</button>
+                    </div>
+                </form>
+
+            </div>
+        </main>
+
+        <div th:replace="/admin/fragments/footer :: footer"></div>
+    </div>
+</div>
+</body>
+</html>

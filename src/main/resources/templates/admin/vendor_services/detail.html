@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết gói dịch vụ - VHBTV Homecare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+    <div th:replace="/admin/fragments/sidebar :: sidebar"></div>
+
+    <div class="flex-1 min-h-screen ml-64">
+        <div th:replace="/admin/fragments/header :: header"></div>
+
+        <main class="p-6" th:object="${item}">
+            <div class="mb-6 flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Chi tiết gói dịch vụ</h1>
+                    <p class="text-gray-600">ID: <span th:text="*{id}">1</span></p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a class="px-4 py-2 border rounded-lg" th:href="@{/admin/vendor-services}">Quay lại</a>
+                    <a class="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                       th:href="@{'/admin/vendor-services/' + *{id} + '/edit'}">Sửa</a>
+                    <form class="inline-flex gap-2" method="post"
+                          th:action="@{'/admin/vendor-services/' + *{id} + '/status'}">
+                        <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+                        <select class="px-3 py-2 border rounded-lg" name="status">
+                            <option th:selected="${item.status=='ACTIVE'}" value="ACTIVE">ACTIVE</option>
+                            <option th:selected="${item.status=='HIDDEN'}" value="HIDDEN">HIDDEN</option>
+                            <option th:selected="${item.status=='PAUSED'}" value="PAUSED">PAUSED</option>
+                        </select>
+                        <button class="px-4 py-2 border rounded-lg">Đổi trạng thái</button>
+                    </form>
+                    <form method="post" onsubmit="return confirm('Xóa gói này?');"
+                          th:action="@{'/admin/vendor-services/' + *{id} + '/delete'}">
+                        <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+                        <button class="px-4 py-2 bg-red-100 text-red-700 rounded-lg">Xóa</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="mb-4 p-3 rounded bg-green-50 text-green-800" th:if="${success}" th:text="${success}"></div>
+            <div class="mb-4 p-3 rounded bg-red-50 text-red-800" th:if="${error}" th:text="${error}"></div>
+
+            <div class="bg-white rounded-xl border overflow-hidden"
+                 th:with="st=${item.status},vid=*{vendorId},sid=*{serviceId}">
+                <div class="grid md:grid-cols-3 gap-0">
+                    <!-- Hiển thị ảnh, không phải input -->
+                    <div class="md:col-span-1 bg-gray-50 p-6 flex items-start justify-center">
+                        <img th:if="${item.coverUrl != null and !#strings.isEmpty(item.coverUrl)}"
+                             th:src="${item.coverUrl}"
+                             alt="cover"
+                             class="w-full h-auto max-h-80 object-contain border rounded-lg">
+                        <div th:if="${item.coverUrl == null or #strings.isEmpty(item.coverUrl)}"
+                             class="w-full h-52 border rounded-lg flex items-center justify-center text-gray-400">
+                            Không có ảnh bìa
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-2 p-6">
+                        <h2 class="text-2xl font-semibold text-gray-900" th:text="*{title}">Tiêu đề gói</h2>
+                        <div class="mt-2">
+              <span class="text-xs px-2 py-0.5 rounded-full"
+                    th:classappend="${st == 'ACTIVE'} ? 'bg-green-100 text-green-700' : (${st == 'PAUSED'} ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-700')"
+                    th:text="${st}">ACTIVE</span>
+                        </div>
+
+                        <div class="mt-6 grid md:grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <div class="text-sm text-gray-500">Vendor</div>
+                                <div class="text-gray-900"
+                                     th:text="${vendorNames[vid] != null ? vendorNames[vid] : 'User #' + vid}">Vendor
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <div class="text-sm text-gray-500">Dịch vụ</div>
+                                <div class="text-gray-900"
+                                     th:text="${serviceNames[sid] != null ? serviceNames[sid] : 'Service #' + sid}">
+                                    Service
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <div class="text-sm text-gray-500">Giá cơ bản</div>
+                                <div class="text-gray-900"
+                                     th:text="${#numbers.formatDecimal(item.basePrice, 0, 'POINT', 2, 'COMMA')}">0,00
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <div class="text-sm text-gray-500">Đơn vị</div>
+                                <div class="text-gray-900" th:text="*{unit}">giờ</div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <div class="text-sm text-gray-500">Thời lượng</div>
+                                <div class="text-gray-900"
+                                     th:text="${item.durationMinutes == null ? '—' : item.durationMinutes + ' phút'}">—
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <div class="text-sm text-gray-500">Báo trước tối thiểu</div>
+                                <div class="text-gray-900"
+                                     th:text="${item.minNoticeHours == null ? '—' : item.minNoticeHours + ' giờ'}">—
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <div class="text-sm text-gray-500">Job tối đa/ngày</div>
+                                <div class="text-gray-900"
+                                     th:text="${item.maxDailyJobs == null ? '—' : item.maxDailyJobs}">—
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <div class="text-sm text-gray-500 mb-1">Mô tả</div>
+                            <div class="prose max-w-none text-gray-900 whitespace-pre-line" th:text="*{description}">—
+                            </div>
+                        </div>
+
+                        <div class="mt-6 grid md:grid-cols-2 gap-4 text-sm text-gray-600">
+                            <div>Ngày tạo: <span class="font-medium"
+                                                 th:text="${#temporals.format(item.createdAt, 'dd/MM/yyyy HH:mm')}">--</span>
+                            </div>
+                            <div>Cập nhật: <span class="font-medium"
+                                                 th:text="${#temporals.format(item.updatedAt, 'dd/MM/yyyy HH:mm')}">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div th:replace="/admin/fragments/footer :: footer"></div>
+    </div>
+</div>
+</body>
+</html>

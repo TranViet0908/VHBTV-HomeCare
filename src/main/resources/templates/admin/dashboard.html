@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - HouseService Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50">
+<div class="flex">
+    <!-- Sidebar -->
+    <div th:replace="/admin/fragments/sidebar :: sidebar"></div>
+
+    <!-- Nội dung -->
+    <div class="flex-1 min-h-screen ml-64">
+        <!-- Header -->
+        <div th:replace="/admin/fragments/header :: header"></div>
+
+        <!-- Updated main content to include all KPIs from DashboardAdminController -->
+        <main class="p-6"
+        >
+
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+                <p class="text-gray-600">Tổng quan vận hành sàn dịch vụ chăm sóc nhà cửa</p>
+            </div>
+
+            <!-- Reorganized stats cards to show all 6 KPIs: 3 all-time + 3 monthly -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <!-- All-time KPIs -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 mb-1">Tổng doanh thu</p>
+                            <p class="text-2xl font-bold text-gray-900"
+                               th:text="${#numbers.formatDecimal(totalRevenueAll ?: 0, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                0 VND</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-line text-white text-lg"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-sm">
+                        <span class="text-green-600 font-medium">Tất cả thời gian</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 mb-1">Tổng đơn hàng</p>
+                            <p class="text-2xl font-bold text-gray-900" th:text="${totalOrdersAll ?: 0}">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-shopping-cart text-white text-lg"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-sm">
+                        <span class="text-blue-600 font-medium">Tất cả thời gian</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 mb-1">Tổng thu nhập website</p>
+                            <p class="text-2xl font-bold text-gray-900"
+                               th:text="${#numbers.formatDecimal(websiteIncomeAll ?: 0, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                0 VND</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-wallet text-white text-lg"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-sm">
+                        <span class="text-purple-600 font-medium">15% tổng doanh thu</span>
+                    </div>
+                </div>
+
+                <!-- Monthly KPIs -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 mb-1">Doanh thu tháng này</p>
+                            <p class="text-2xl font-bold text-gray-900"
+                               th:text="${#numbers.formatDecimal(totalRevenueMonth ?: 0, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                0 VND</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-coins text-white text-lg"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-sm">
+                        <span class="text-emerald-600 font-medium">Tháng hiện tại</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 mb-1">Đơn hàng tháng này</p>
+                            <p class="text-2xl font-bold text-gray-900" th:text="${totalOrdersMonth ?: 0}">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-calendar-alt text-white text-lg"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-sm">
+                        <span class="text-orange-600 font-medium">Tháng hiện tại</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 mb-1">Thu nhập tháng này</p>
+                            <p class="text-2xl font-bold text-gray-900"
+                               th:text="${#numbers.formatDecimal(siteIncomeMonthOnPaid ?: 0, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                0 VND</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-piggy-bank text-white text-lg"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-sm">
+                        <span class="text-indigo-600 font-medium">15% doanh thu tháng</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Added top 5 services section and reorganized layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+                <!-- Revenue chart takes 2 columns -->
+                <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900">Doanh thu 7 ngày gần đây</h3>
+                        <div class="flex space-x-2">
+                            <span class="px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded-lg font-medium">7 ngày</span>
+                        </div>
+                    </div>
+                    <div class="h-80">
+                        <canvas class="w-full h-full" id="revenueChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Top 5 Services section -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900">Top 5 Dịch vụ</h3>
+                        <a class="text-blue-600 hover:text-blue-700 text-sm font-medium" href="/admin/reports">Xem chi
+                            tiết</a>
+                    </div>
+
+                    <div class="space-y-4" th:if="${topServices5 != null and not #lists.isEmpty(topServices5)}">
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100"
+                             th:each="service, iterStat : ${topServices5}">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
+                                    <span class="text-white text-xs font-bold" th:text="${iterStat.count}">1</span>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900"
+                                       th:text="${service[1] ?: 'Dịch vụ #' + service[0]}">Service Name</p>
+                                    <p class="text-sm text-gray-500" th:text="${service[2]} + ' lượt đặt'">Bookings</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center py-8"
+                         th:unless="${topServices5 != null and not #lists.isEmpty(topServices5)}">
+                        <i class="fas fa-concierge-bell text-gray-300 text-3xl mb-3"></i>
+                        <p class="text-gray-500">Chưa có dữ liệu dịch vụ</p>
+                    </div>
+                </div>
+
+                <!-- Top 5 Vendors section -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900">Top 5 Vendors</h3>
+                        <a class="text-blue-600 hover:text-blue-700 text-sm font-medium" href="/admin/reports">Xem báo
+                            cáo</a>
+                    </div>
+
+                    <div class="space-y-4" th:if="${topVendors5 != null and not #lists.isEmpty(topVendors5)}">
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100"
+                             th:each="vendor, iterStat : ${topVendors5}">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                                    <span class="text-white text-xs font-bold" th:text="${iterStat.count}">1</span>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900"
+                                       th:text="${vendor[1] ?: 'Vendor #' + vendor[0]}">Vendor Name</p>
+                                    <p class="text-sm text-gray-500"
+                                       th:text="${#numbers.formatDecimal(vendor[2], 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                        Revenue</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-medium text-gray-900" th:text="${vendor[3]} + ' đơn'">0 đơn</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center py-8"
+                         th:unless="${topVendors5 != null and not #lists.isEmpty(topVendors5)}">
+                        <i class="fas fa-store text-gray-300 text-3xl mb-3"></i>
+                        <p class="text-gray-500">Chưa có dữ liệu vendor</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Updated secondary charts section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Đơn hàng theo trạng thái (tháng hiện tại)</h3>
+                    <div class="h-64">
+                        <canvas class="w-full h-full" id="chartStatus"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Doanh thu theo cổng thanh toán</h3>
+                    <div class="h-64">
+                        <canvas class="w-full h-full" id="chartProvider"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <div th:replace="/admin/fragments/footer :: footer"></div>
+    </div>
+</div>
+
+<!-- Updated JavaScript to work with backend data structure -->
+<script th:inline="javascript"
+        th:with="
+          revLabels=${(revenue7d?: #lists.list()).![#temporals.format(#this[0],'dd/MM')]},
+          revValues=${(revenue7d?: #lists.list()).![#this[1]]},
+          stLabels=${(ordersByStatusMonth?: #lists.list()).![#this[0]]},
+          stValues=${(ordersByStatusMonth?: #lists.list()).![#this[1]]},
+          pvLabels=${(revenueByProviderMonth?: #lists.list()).![#this[0]]},
+          pvValues=${(revenueByProviderMonth?: #lists.list()).![#this[2]]},
+          tvNames=${(topVendors5?: #lists.list()).![#this[1]]},
+          tvRevenue=${(topVendors5?: #lists.list()).![#this[2]]}">
+    (function () {
+      function fmtVND(v){ return new Intl.NumberFormat('vi-VN').format(Number(v||0)) + ' VND'; }
+      const revLabels = /*[[${revLabels}]]*/ [];
+      const revValues = /*[[${revValues}]]*/ [];
+      const stLabels  = /*[[${stLabels}]]*/ [];
+      const stValues  = /*[[${stValues}]]*/ [];
+      const pvLabels  = /*[[${pvLabels}]]*/ [];
+      const pvValues  = /*[[${pvValues}]]*/ [];
+      const tvNames   = /*[[${tvNames}]]*/ [];
+      const tvRevenue = /*[[${tvRevenue}]]*/ [];
+      const revValuesNum = revValues.map(x => Number(x)||0);
+      const stValuesNum  = stValues.map(x => Number(x)||0);
+      const pvValuesNum  = pvValues.map(x => Number(x)||0);
+
+      // 1) Doanh thu 7 ngày
+      const rcEl = document.getElementById('revenueChart');
+      if (rcEl) {
+        new Chart(rcEl.getContext('2d'), {
+          type: 'line',
+          data: { labels: revLabels, datasets: [{ label: 'Doanh thu', data: revValuesNum, borderWidth: 2, pointRadius: 3, tension: 0.35, fill: false }] },
+          options: {
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => fmtVND(c.parsed.y ?? c.parsed) } } },
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+      }
+
+      // 2) Đơn theo trạng thái
+      const stEl = document.getElementById('chartStatus');
+      if (stEl) {
+        new Chart(stEl.getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: stLabels,
+            datasets: [{
+              label: 'Số đơn',
+              data: stValuesNum,
+              backgroundColor: [
+                'rgba(34,197,94,0.8)','rgba(59,130,246,0.8)',
+                'rgba(249,115,22,0.8)','rgba(239,68,68,0.8)','rgba(156,163,175,0.8)'
+              ],
+              borderWidth: 2, borderColor: '#fff'
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true } },
+                       tooltip: { callbacks: { label: c => `${c.label}: ${c.parsed}` } } }
+          }
+        });
+      }
+
+      // 3) Doanh thu theo cổng thanh toán
+      const pvEl = document.getElementById('chartProvider');
+      if (pvEl) {
+        new Chart(pvEl.getContext('2d'), {
+          type: 'pie',
+          data: {
+            labels: pvLabels,
+            datasets: [{
+              label: 'Doanh thu',
+              data: pvValuesNum,
+              backgroundColor: [
+                'rgba(147,51,234,0.8)','rgba(59,130,246,0.8)',
+                'rgba(16,185,129,0.8)','rgba(245,158,11,0.8)','rgba(239,68,68,0.8)'
+              ],
+              borderWidth: 2, borderColor: '#fff'
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true } },
+                       tooltip: { callbacks: { label: c => `${c.label}: ${fmtVND(c.parsed)}` } } }
+          }
+        });
+      }
+    })();
+</script>
+
+</body>
+</html>

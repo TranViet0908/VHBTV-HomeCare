@@ -1,0 +1,182 @@
+<!-- /templates/vendor/vendor_reviews/index.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Đánh giá nhà cung cấp</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .sidebar-active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+<!-- Header -->
+<div th:replace="vendor/layouts/header :: vendorHeader"></div>
+
+<div class="flex"><!-- giữ cấu trúc giống index -->
+    <!-- Sidebar -->
+    <div th:replace="vendor/layouts/sidebar :: vendorSidebar"></div>
+
+    <!-- Main -->
+    <main class="flex-1 p-6 space-y-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold">Đánh giá nhà cung cấp</h1>
+                <p class="text-gray-500 text-sm" th:text="'Vendor ID: ' + ${vendorId}"></p>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white rounded-xl shadow-sm border p-5">
+                <div class="text-sm text-gray-600">Điểm trung bình</div>
+                <div class="mt-2 text-3xl font-semibold">
+                    <span th:text="${#numbers.formatDecimal(summary.avg, 1, 2)}">0.00</span>
+                    <span class="text-yellow-500"><i class="fa fa-star"></i></span>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border p-5">
+                <div class="text-sm text-gray-600">Tổng lượt đánh giá</div>
+                <div class="mt-2 text-3xl font-semibold" th:text="${summary.count}">0</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border p-5">
+                <div class="text-sm text-gray-600">5 bình luận mới nhất</div>
+                <ul class="mt-2 space-y-2">
+                    <li class="text-sm text-gray-700" th:each="r : ${summary.last5}">
+            <span class="text-yellow-500">
+              <i class="fa fa-star" th:each="i: ${#numbers.sequence(1, r.rating)}"></i>
+            </span>
+                        <span class="text-gray-500" th:text="${#temporals.format(r.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                        <span class="block truncate" th:text="${r.content}">Nội dung...</span>
+                    </li>
+                    <li th:if="${#lists.isEmpty(summary.last5)}" class="text-sm text-gray-400">Chưa có bình luận.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Distribution -->
+        <section class="bg-white rounded-xl shadow-sm border p-5">
+            <h2 class="font-semibold mb-4">Phân bố số sao</h2>
+            <div class="space-y-2" th:with="total=${summary.count}">
+                <div th:each="star : ${#numbers.sequence(5,1)}"
+                     th:with="
+                     rawCnt=${distribution.get(star)},
+                     cnt=${rawCnt == null ? 0 : rawCnt},
+                     t=${total == null ? 0 : total},
+                     w=${t > 0 ? ((cnt + 0.0) * 100.0) / t : 0}
+                   "
+                     class="flex items-center space-x-3">
+                    <div class="w-12 text-right"><span th:text="${star}">5</span> <i class="fa fa-star text-yellow-500"></i></div>
+                    <div class="flex-1 bg-gray-100 rounded h-2">
+                        <div class="h-2 rounded bg-indigo-500" th:style="|width:${w}%|"></div>
+                    </div>
+                    <div class="w-24 text-sm text-gray-600" th:text="|${cnt} lượt|">0 lượt</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filters -->
+        <section class="bg-white rounded-xl shadow-sm border p-5">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+                <div>
+                    <label class="text-sm text-gray-600">Số sao</label>
+                    <select name="rating" class="w-full border rounded px-3 py-2">
+                        <option th:value="${null}" th:selected="${rating == null}">Tất cả</option>
+                        <option th:each="s : ${#numbers.sequence(5,1)}"
+                                th:value="${s}" th:selected="${rating==s}"
+                                th:text="${s} + ' sao'">5 sao</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600">Từ ngày</label>
+                    <input type="date" name="start" th:value="${start}" class="w-full border rounded px-3 py-2"/>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600">Đến ngày</label>
+                    <input type="date" name="end" th:value="${end}" class="w-full border rounded px-3 py-2"/>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600">Chỉ có nội dung</label>
+                    <select name="hasContent" class="w-full border rounded px-3 py-2">
+                        <option th:value="${null}" th:selected="${hasContent == null}">Không lọc</option>
+                        <option th:value="true" th:selected="${hasContent == true}">Có nội dung</option>
+                        <option th:value="false" th:selected="${hasContent == false}">Không có nội dung</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="text-sm text-gray-600">Từ khóa</label>
+                    <input type="text" name="q" th:value="${q}" placeholder="Tìm trong nội dung..."
+                           class="w-full border rounded px-3 py-2"/>
+                </div>
+                <div class="md:col-span-6 flex items-center justify-between">
+                    <div class="space-x-2">
+                        <label class="text-sm text-gray-600">Sắp xếp</label>
+                        <select name="sort" class="border rounded px-2 py-1">
+                            <option value="createdAt" th:selected="${sort == 'createdAt'}">Ngày tạo</option>
+                            <option value="rating" th:selected="${sort == 'rating'}">Số sao</option>
+                        </select>
+                        <select name="dir" class="border rounded px-2 py-1">
+                            <option value="DESC" th:selected="${dir == 'DESC'}">Giảm dần</option>
+                            <option value="ASC" th:selected="${dir == 'ASC'}">Tăng dần</option>
+                        </select>
+                    </div>
+                    <button class="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700">Áp dụng</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- List -->
+        <section class="bg-white rounded-xl shadow-sm border p-5">
+            <h2 class="font-semibold mb-4">Danh sách bình luận</h2>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead>
+                    <tr class="text-left text-gray-600">
+                        <th class="py-2">Ngày</th>
+                        <th class="py-2">Khách hàng</th>
+                        <th class="py-2">Số sao</th>
+                        <th class="py-2">Nội dung</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="r : ${page.content}" class="border-t">
+                        <td class="py-2" th:text="${#temporals.format(r.createdAt, 'dd/MM/yyyy HH:mm')}">01/10/2025</td>
+                        <td class="py-2" th:text="${customerNames[r.customerId]} ?: ('ID: ' + r.customerId)">Khách</td>
+                        <td class="py-2">
+                            <span class="text-yellow-500"><i class="fa fa-star" th:each="i: ${#numbers.sequence(1, r.rating)}"></i></span>
+                            <span class="text-gray-300"><i class="fa fa-star" th:each="i: ${#numbers.sequence(1, 5 - r.rating)}"></i></span>
+                        </td>
+                        <td class="py-2 max-w-xl">
+                            <div class="truncate" th:text="${r.content}">Nội dung...</div>
+                        </td>
+                    </tr>
+                    <tr th:if="${page.totalElements == 0}">
+                        <td colspan="4" class="text-center text-gray-400 py-6">Chưa có đánh giá.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="mt-4 flex items-center justify-between" th:with="p=${page}">
+                <div class="text-sm text-gray-600" th:text="'Tổng: ' + ${p.totalElements} + ' đánh giá'">Tổng: 0 đánh giá</div>
+                <div class="space-x-2">
+                    <a th:href="@{|?page=${p.number-1}&size=${p.size}&rating=${rating}&start=${start}&end=${end}&hasContent=${hasContent}&q=${q}&sort=${sort}&dir=${dir}|}"
+                       th:classappend="${p.first} ? 'pointer-events-none opacity-40' : ''"
+                       class="px-3 py-1 border rounded">Trước</a>
+                    <span class="px-3 py-1 border rounded bg-gray-100" th:text="${p.number + 1} + '/' + ${p.totalPages}">1/1</span>
+                    <a th:href="@{|?page=${p.number+1}&size=${p.size}&rating=${rating}&start=${start}&end=${end}&hasContent=${hasContent}&q=${q}&sort=${sort}&dir=${dir}|}"
+                       th:classappend="${p.last} ? 'pointer-events-none opacity-40' : ''"
+                       class="px-3 py-1 border rounded">Sau</a>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

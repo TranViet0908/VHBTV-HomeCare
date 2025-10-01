@@ -31,7 +31,7 @@ CREATE TABLE `coupon_user` (
   KEY `fk_cu_user` (`user_id`),
   CONSTRAINT `fk_cu_coupon` FOREIGN KEY (`coupon_id`) REFERENCES `coupon` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_cu_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -40,7 +40,7 @@ CREATE TABLE `coupon_user` (
 
 LOCK TABLES `coupon_user` WRITE;
 /*!40000 ALTER TABLE `coupon_user` DISABLE KEYS */;
-INSERT INTO `coupon_user` VALUES (1,6,6),(2,7,7),(3,8,8),(4,9,9),(5,10,10),(6,11,19),(7,11,20),(8,12,19),(9,13,18),(10,13,19);
+INSERT INTO `coupon_user` VALUES (1,6,6),(2,7,7),(3,8,8),(4,9,9),(5,10,10),(6,11,19),(7,11,20),(8,12,19),(9,13,18),(10,13,19),(15,25,9001),(14,25,9004),(13,25,9005),(12,25,9102);
 /*!40000 ALTER TABLE `coupon_user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -53,4 +53,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-28 11:53:51
+-- Dump completed on 2025-10-02  1:18:17

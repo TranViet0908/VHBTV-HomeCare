@@ -1,25 +1,18 @@
-//package Project.HouseService.Config;
-//
-//import Project.HouseService.Controller.ChatController;
-//import org.springframework.http.HttpStatus;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.*;
-//
-//import java.util.Map;
-//
-//@RestControllerAdvice(assignableTypes = {
-//        ChatController.class
-//})
-//public class ApiExceptionHandler {
-//
-//    @ExceptionHandler(IllegalArgumentException.class)
-//    public ResponseEntity<?> badReq(IllegalArgumentException e) {
-//        return ResponseEntity.badRequest().body(Map.of("error", "BAD_REQUEST", "message", e.getMessage()));
-//    }
-//
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<?> any(Exception e) {
-//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                .body(Map.of("error", "INTERNAL", "message", e.getMessage()));
-//    }
-//}
+package Project.HouseService.Config;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+@ControllerAdvice
+public class ApiExceptionHandler {
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> onError(Exception ex) {
+        String msg = "Đã có lỗi khi xử lý yêu cầu. Vui lòng thử lại.";
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                "<div class='p-3 text-red-700 bg-red-50 rounded'>" + msg + "</div>"
+        );
+    }
+}

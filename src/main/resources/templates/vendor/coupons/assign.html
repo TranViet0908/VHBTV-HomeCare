@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Gán mã cho khách | Vendor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>*{font-family:'Inter',sans-serif}.sidebar-active{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff}</style>
+</head>
+<body class="bg-gray-50">
+<div th:replace="vendor/layouts/header :: vendorHeader"></div>
+<div class="flex">
+    <div th:replace="vendor/layouts/sidebar :: vendorSidebar"></div>
+
+    <main class="flex-1 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h1 class="text-2xl font-bold">Gán mã cho khách</h1>
+            <a th:href="@{/vendor/coupons}" class="px-3 py-2 border rounded-lg text-gray-700">
+                <i class="fas fa-arrow-left mr-1"></i>Quay lại
+            </a>
+        </div>
+
+        <!-- Assigned list -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <section class="bg-white rounded-xl shadow-sm border">
+                <div class="px-4 py-3 border-b flex items-center justify-between">
+                    <h2 class="font-semibold">Khách đã được phát</h2>
+                    <span class="text-sm text-gray-500" th:text="|${assigned.size()} người|">0 người</span>
+                </div>
+                <ul class="divide-y divide-gray-100">
+                    <li th:each="cu : ${assigned}" class="flex items-center justify-between px-4 py-3">
+                        <div>
+                            <div class="font-semibold" th:text="${cu.user.username}">username</div>
+                            <div class="text-sm text-gray-500" th:text="${cu.user.email}">email</div>
+                        </div>
+                        <form th:action="@{|/vendor/coupons/${couponId}/users/${cu.user.id}/delete|}" method="post">
+                            <button class="px-3 py-1.5 border rounded-lg text-red-600 hover:bg-red-50">
+                                <i class="fas fa-user-minus mr-1"></i>Gỡ
+                            </button>
+                        </form>
+                    </li>
+                    <li th:if="${assigned.size()==0}" class="px-4 py-6 text-gray-500">Chưa phát cho khách nào.</li>
+                </ul>
+            </section>
+
+            <!-- Candidate search -->
+            <section class="bg-white rounded-xl shadow-sm border">
+                <div class="px-4 py-3 border-b">
+                    <form class="flex items-center space-x-2" th:action="@{|/vendor/coupons/${couponId}/assign|}" method="get">
+                        <input type="text" name="kw" th:value="${kw}" placeholder="Tìm khách theo username/email"
+                               class="border rounded-lg px-3 py-2 w-64">
+                        <button class="px-3 py-2 bg-indigo-600 text-white rounded-lg">Tìm</button>
+                    </form>
+                </div>
+
+                <form th:action="@{|/vendor/coupons/${couponId}/assign|}" method="post">
+                    <ul class="divide-y divide-gray-100">
+                        <li th:each="u : ${candidates}" class="flex items-center justify-between px-4 py-3">
+                            <div>
+                                <div class="font-semibold" th:text="${u.username}">username</div>
+                                <div class="text-sm text-gray-500" th:text="${u.email}">email</div>
+                            </div>
+                            <input type="checkbox" name="userIds" th:value="${u.id}" class="w-4 h-4">
+                        </li>
+                        <li th:if="${candidates.totalElements == 0}" class="px-4 py-6 text-gray-500">Không có kết quả.</li>
+                    </ul>
+                    <div class="px-4 py-3 border-t flex items-center justify-between">
+                        <div class="text-sm text-gray-600"
+                             th:text="|Trang ${candidates.number + 1} / ${candidates.totalPages}|">Trang 1/1</div>
+                        <div class="space-x-2">
+                            <a th:if="${candidates.hasPrevious()}"
+                               th:href="@{|/vendor/coupons/${couponId}/assign?page=${candidates.number - 1}&kw=${kw}|}"
+                               class="px-3 py-2 border rounded-lg text-gray-700">Trước</a>
+                            <a th:if="${candidates.hasNext()}"
+                               th:href="@{|/vendor/coupons/${couponId}/assign?page=${candidates.number + 1}&kw=${kw}|}"
+                               class="px-3 py-2 border rounded-lg text-gray-700">Sau</a>
+                            <button class="px-4 py-2 bg-green-600 text-white rounded-lg">
+                                <i class="fas fa-user-plus mr-1"></i>Gán cho khách đã chọn
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+</div>
+</body>
+</html>

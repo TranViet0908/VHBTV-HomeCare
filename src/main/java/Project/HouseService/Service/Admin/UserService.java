@@ -22,6 +22,25 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    public User findByUsername(String username) {
+        if (username == null || username.isBlank()) return null;
+        // ưu tiên chữ thường nếu repo có method ignore case, nếu không dùng findByUsername
+        try {
+            return repo.findByUsername(username).orElse(null);
+        } catch (NoSuchMethodError | RuntimeException e) {
+            // fallback nếu repo đặt tên khác (ví dụ: findFirstByUsername hoặc findByUsernameIgnoreCase)
+            try { return (User) UserRepository.class
+                    .getMethod("findFirstByUsername", String.class)
+                    .invoke(repo, username); }
+            catch (ReflectiveOperationException ex) { /* bỏ qua */ }
+            try { return (User) UserRepository.class
+                    .getMethod("findByUsernameIgnoreCase", String.class)
+                    .invoke(repo, username); }
+            catch (ReflectiveOperationException ex) { /* bỏ qua */ }
+            return null;
+        }
+    }
+
     // Giữ nguyên chữ ký cũ (nếu nơi khác đang dùng)
     public Page<User> list(int page, int size) {
         return repo.findAll(PageRequest.of(page, size));

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Hồ sơ Vendor</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+<th:block th:replace="vendor/layouts/header :: vendorHeader"></th:block>
+<div class="flex">
+  <th:block th:replace="vendor/layouts/sidebar :: vendorSidebar"></th:block>
+
+  <main class="flex-1 p-6">
+    <div class="max-w-5xl mx-auto">
+      <div th:if="${success}" class="mb-4 p-3 rounded bg-green-50 text-green-700" th:text="${success}"></div>
+      <div th:if="${error}" class="mb-4 p-3 rounded bg-red-50 text-red-700" th:text="${error}"></div>
+
+      <div class="bg-white shadow rounded-2xl p-6">
+        <div class="flex items-start space-x-6">
+          <img th:if="${avatarUrl}" th:src="${avatarUrl}" alt="avatar" class="w-24 h-24 rounded-xl object-cover border">
+          <div th:unless="${avatarUrl}" class="w-24 h-24 rounded-xl bg-gray-200 flex items-center justify-center text-3xl font-bold">V</div>
+
+          <div class="flex-1">
+            <h2 class="text-2xl font-bold text-gray-900"
+                th:text="${vendorProfile.displayName != null ? vendorProfile.displayName : (vendorProfile.legalName != null ? vendorProfile.legalName : user.username)}">Vendor Name</h2>
+
+            <p class="text-gray-600" th:text="${vendorProfile.bio != null ? vendorProfile.bio : 'Chưa có mô tả'}">Bio</p>
+
+            <div class="mt-2 text-sm text-gray-700 space-x-4">
+              <span><i class="fa fa-envelope mr-1"></i><span th:text="${user.email}">email@example.com</span></span>
+              <span th:if="${user.phone}">| <i class="fa fa-phone mr-1"></i><span th:text="${user.phone}">0123</span></span>
+              <span th:if="${vendorProfile.addressLine}">| <i class="fa fa-map-marker-alt mr-1"></i><span th:text="${vendorProfile.addressLine}">HN</span></span>
+            </div>
+
+            <div class="mt-2 text-sm text-gray-700">
+              <span>KN: <b th:text="${vendorProfile.yearsExperience} ?: 0">0</b> năm</span>
+
+              <span class="ml-4" th:if="${vendorProfile.verified}">
+                  <i class="fa fa-check-circle text-green-500 mr-1"></i>Đã xác minh
+                </span>
+            </div>
+          </div>
+
+          <div th:if="${editable}">
+            <a th:href="@{/vendor/profile/edit}" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
+              <i class="fa fa-pen mr-2"></i>Sửa hồ sơ
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

@@ -44,7 +44,7 @@ CREATE TABLE `vendor_review` (
   CONSTRAINT `fk_vr_vendor` FOREIGN KEY (`vendor_id`) REFERENCES `vendor_profile` (`user_id`) ON DELETE CASCADE,
   CONSTRAINT `vendor_review_chk_1` CHECK (((`rating` is null) or (`rating` between 1 and 5))),
   CONSTRAINT `vendor_review_chk_2` CHECK ((`rating` between 1 and 5))
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -53,7 +53,7 @@ CREATE TABLE `vendor_review` (
 
 LOCK TABLES `vendor_review` WRITE;
 /*!40000 ALTER TABLE `vendor_review` DISABLE KEYS */;
-INSERT INTO `vendor_review` VALUES (1,1,1,1,5,'Rất tốt','2025-09-20 05:24:29','2025-09-20 05:24:29',0,NULL,NULL,NULL),(2,2,2,2,4,'Ổn, đúng hẹn','2025-09-20 05:24:29','2025-09-20 05:24:29',0,NULL,NULL,NULL),(3,3,3,3,5,'Xử lý nhanh','2025-09-20 05:24:29','2025-09-20 05:24:29',0,NULL,NULL,NULL),(4,4,4,NULL,4,'Tư vấn kỹ','2025-09-20 05:24:29','2025-09-20 05:24:29',0,NULL,NULL,NULL),(5,5,5,5,5,'Hiệu quả','2025-09-20 05:24:29','2025-09-20 05:24:29',0,NULL,NULL,NULL),(6,6,6,NULL,5,'Chỉ comment không chấm điểm','2025-09-20 05:24:29','2025-09-26 08:30:14',0,NULL,NULL,NULL),(7,7,7,7,5,'Giá hợp lý','2025-09-20 05:24:29','2025-09-20 05:24:29',0,NULL,NULL,NULL),(8,8,8,8,4,'Sẽ ủng hộ tiếp','2025-09-20 05:24:29','2025-09-20 05:24:29',0,NULL,NULL,NULL),(9,9,9,9,5,'Rất chuyên nghiệp','2025-09-20 05:24:29','2025-09-20 05:24:29',0,NULL,NULL,NULL),(10,10,10,10,4,'Ổn định','2025-09-20 05:24:29','2025-09-20 05:24:29',0,NULL,NULL,NULL),(11,15,20,12,5,'Xử lý rò rỉ nhanh và gọn.','2025-09-20 12:00:00','2025-09-22 15:49:15',0,NULL,NULL,NULL);
+INSERT INTO `vendor_review` VALUES (1,1,1,1,5,'Rất tốt','2025-09-20 05:24:29','2025-09-20 05:24:29',0,NULL,NULL,NULL),(2,2,2,2,4,'Ổn, đúng hẹn','2025-09-20 05:24:29','2025-09-20 05:24:29',0,NULL,NULL,NULL),(3,3,3,3,5,'Xử lý nhanh','2025-09-20 05:24:29','2025-09-20 05:24:29',0,NULL,NULL,NULL),(4,4,4,NULL,4,'Tư vấn kỹ','2025-09-20 05:24:29','2025-09-20 05:24:29',0,NULL,NULL,NULL),(5,5,5,5,5,'Hiệu quả','2025-09-20 05:24:29','2025-09-20 05:24:29',0,NULL,NULL,NULL),(6,6,6,NULL,5,'Chỉ comment không chấm điểm','2025-09-20 05:24:29','2025-09-26 08:30:14',0,NULL,NULL,NULL),(7,7,7,7,5,'Giá hợp lý','2025-09-20 05:24:29','2025-09-20 05:24:29',0,NULL,NULL,NULL),(8,8,8,8,4,'Sẽ ủng hộ tiếp','2025-09-20 05:24:29','2025-09-20 05:24:29',0,NULL,NULL,NULL),(9,9,9,9,5,'Rất chuyên nghiệp','2025-09-20 05:24:29','2025-09-20 05:24:29',0,NULL,NULL,NULL),(10,10,10,10,4,'Ổn định','2025-09-20 05:24:29','2025-09-20 05:24:29',0,NULL,NULL,NULL),(11,15,20,12,5,'Xử lý rò rỉ nhanh và gọn.','2025-09-20 12:00:00','2025-09-22 15:49:15',0,NULL,NULL,NULL),(12,15,14,NULL,5,'Dịch vụ tốt, đúng giờ và lịch sự.','2025-09-26 16:45:14','2025-10-01 16:45:14',0,NULL,NULL,NULL),(13,15,17,NULL,4,'Làm việc ổn, có thể cải thiện tốc độ.','2025-09-27 16:45:14','2025-10-01 16:45:14',0,NULL,NULL,NULL),(14,15,18,NULL,5,'Rất hài lòng, sẽ đặt lại lần sau.','2025-09-28 16:45:14','2025-10-01 16:45:14',0,NULL,NULL,NULL),(15,15,19,NULL,3,'Ổn nhưng còn thiếu dụng cụ chuyên dụng.','2025-09-29 16:45:14','2025-10-01 16:45:14',0,NULL,NULL,NULL),(16,15,9101,NULL,4,'Thái độ tốt, kết quả sạch sẽ.','2025-09-30 16:45:14','2025-10-01 16:45:14',0,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `vendor_review` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -66,4 +66,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-28 11:53:50
+-- Dump completed on 2025-10-02  1:18:15

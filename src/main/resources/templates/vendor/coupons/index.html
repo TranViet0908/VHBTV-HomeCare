@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Mã giảm giá | Vendor</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>*{font-family:'Inter',sans-serif}.sidebar-active{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff}</style>
+</head>
+<body class="bg-gray-50">
+<!-- Header -->
+<div th:replace="vendor/layouts/header :: vendorHeader"></div>
+<div class="flex">
+  <div th:replace="vendor/layouts/sidebar :: vendorSidebar"></div>
+
+  <!-- Main -->
+  <main class="flex-1 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-2xl font-bold">Mã giảm giá</h1>
+      <form class="flex items-center space-x-2" th:action="@{/vendor/coupons}" method="get">
+        <input type="text" name="q" th:value="${q}" placeholder="Tìm theo mã/tên"
+               class="border rounded-lg px-3 py-2 w-64">
+        <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg">
+          <i class="fas fa-search mr-1"></i>Tìm
+        </button>
+      </form>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Mã</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Tên</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600">Loại</th>
+          <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600">Giá trị</th>
+          <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600">Đã phát</th>
+          <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600">Đã dùng</th>
+          <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600">Hành động</th>
+        </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100" th:with="ac=${assignedCounts}, rc=${redeemedCounts}">
+        <tr th:each="c : ${coupons}">
+          <td class="px-4 py-3 font-semibold text-gray-900" th:text="${c.code}">SRV10</td>
+          <td class="px-4 py-3 text-gray-700" th:text="${c.name}">Giảm 10%</td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-1 rounded-full text-xs"
+                  th:text="${c.type}"
+                  th:classappend="${c.type.name()=='PERCENT'} ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700'">PERCENT</span>
+          </td>
+          <td class="px-4 py-3 text-right">
+            <span th:text="${c.type.name()=='PERCENT' ? #numbers.formatDecimal(c.value,1,2)+' %' : #numbers.formatDecimal(c.value,1,0)+' ₫'}">10 %</span>
+          </td>
+          <td class="px-4 py-3 text-center">
+            <span class="text-gray-900 font-semibold" th:text="${ac[c.id] ?: 0}">0</span>
+          </td>
+          <td class="px-4 py-3 text-center">
+            <span class="text-gray-900 font-semibold" th:text="${rc[c.id] ?: 0}">0</span>
+          </td>
+          <td class="px-4 py-3 text-right">
+            <a th:href="@{|/vendor/coupons/${c.id}/assign|}"
+               class="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+              <i class="fas fa-user-plus mr-1"></i>Phát cho khách
+            </a>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="flex items-center justify-between px-4 py-3">
+        <div class="text-sm text-gray-600"
+             th:text="|Trang ${coupons.number + 1} / ${coupons.totalPages}|">Trang 1/1</div>
+        <div class="space-x-2">
+          <a th:if="${coupons.hasPrevious()}"
+             th:href="@{/vendor/coupons(page=${coupons.number - 1}, q=${q})}"
+             class="px-3 py-2 border rounded-lg text-gray-700">Trước</a>
+          <a th:if="${coupons.hasNext()}"
+             th:href="@{/vendor/coupons(page=${coupons.number + 1}, q=${q})}"
+             class="px-3 py-2 border rounded-lg text-gray-700">Sau</a>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

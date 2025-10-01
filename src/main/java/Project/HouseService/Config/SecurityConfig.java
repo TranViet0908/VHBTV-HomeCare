@@ -94,6 +94,13 @@ public class SecurityConfig {
         applyCsrf(http);
 
         http.authorizeHttpRequests(reg -> reg
+                // mở cả GET trang chat và POST gửi tin
+                .requestMatchers(
+                        "/customer/chat", "/customer/chat/**",
+                        "/customer/chatbot", "/customer/chatbot/**",
+                        "/api/chat/**"
+                ).permitAll()
+
                 .requestMatchers("/", "/login", "/register",
                         "/css/**", "/js/**", "/images/**", "/uploads/**", "/favicon.ico").permitAll()
                 .requestMatchers("/vendor/**").hasAnyRole("VENDOR","ADMIN")

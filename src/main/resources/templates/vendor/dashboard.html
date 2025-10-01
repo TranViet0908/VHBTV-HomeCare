@@ -7,15 +7,11 @@
     <title>VHBTV HomeCare - Vendor Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-          rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Inter', sans-serif; }
         .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-        }
+        .gradient-text { background: linear-gradient(135deg, #667eea 0%, #f093fb 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .card-hover { transition: all 0.3s ease; }
         .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
         .glass-effect { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
@@ -41,26 +37,36 @@
     <main class="flex-1 p-6">
         <!-- Dashboard Tab -->
         <div class="tab-content" id="dashboard-content">
-            <!-- Welcome Section -->
+
+            <!-- Welcome Section - DỮ LIỆU THẬT -->
             <div class="gradient-bg rounded-2xl p-8 text-white mb-8 card-hover">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-4xl font-bold mb-2">Chào mừng, Vệ Sinh A!</h2>
+                        <h2 class="text-4xl font-bold mb-2"
+                            th:text="'Chào mừng, ' + (greetingName != null ? greetingName : 'Vendor') + '!'">
+                            Chào mừng, Vendor!
+                        </h2>
+
                         <p class="text-blue-100 text-lg mb-4">
-                            Hôm nay bạn có <strong>3 đơn hàng</strong> cần xử lý và <strong>2 tin nhắn</strong> mới
+                            Hôm nay bạn có
+                            <strong th:text="${todayJobs} ?: 0">0</strong> đơn hàng cần xử lý
                         </p>
+
                         <div class="flex items-center space-x-6">
                             <div class="flex items-center">
                                 <i class="fas fa-star text-yellow-300 mr-2"></i>
-                                <span class="text-xl font-bold">4.8</span>
-                                <span class="text-blue-100 ml-1">(120 đánh giá)</span>
+                                <span class="text-xl font-bold"
+                                      th:text="${#numbers.formatDecimal((ratingAvg ?: 0), 1, 1)}">0.0</span>
+                                <span class="text-blue-100 ml-1"
+                                      th:text="'(' + ((ratingCount ?: 0)) + ' đánh giá)'">(0 đánh giá)</span>
                             </div>
-                            <div class="flex items-center">
+                            <div class="flex items-center" th:if="${vendorVerified}">
                                 <i class="fas fa-check-circle text-green-300 mr-2"></i>
                                 <span>Vendor đã xác minh</span>
                             </div>
                         </div>
                     </div>
+
                     <div class="hidden lg:block">
                         <div class="w-32 h-32 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center">
                             <i class="fas fa-broom text-6xl text-white opacity-80"></i>
@@ -69,51 +75,132 @@
                 </div>
             </div>
 
-            <!-- Stats Cards -->
+            <!-- Stats Cards - DỮ LIỆU THẬT -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <!-- ... giữ nguyên các stat-card như file gốc ... -->
+                <!-- Đơn cần xử lý -->
+                <div class="stat-card rounded-2xl p-6 shadow">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm text-gray-500">Đơn cần xử lý</p>
+                        <i class="fas fa-clipboard-list text-gray-400"></i>
+                    </div>
+                    <p class="text-3xl font-extrabold mt-2" th:text="${ordersOpen} ?: 0">0</p>
+                    <p class="text-xs text-gray-500 mt-1">
+                        P: <span th:text="${ordersPending} ?: 0">0</span>,
+                        CFM: <span th:text="${ordersConfirmed} ?: 0">0</span>,
+                        IP: <span th:text="${ordersInProgress} ?: 0">0</span>
+                    </p>
+                </div>
+
+                <!-- Lịch hôm nay -->
+                <div class="stat-card rounded-2xl p-6 shadow">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm text-gray-500">Lịch hôm nay</p>
+                        <i class="fas fa-calendar-check text-gray-400"></i>
+                    </div>
+                    <p class="text-3xl font-extrabold mt-2" th:text="${todayJobs} ?: 0">0</p>
+                    <p class="text-xs text-gray-500 mt-1">Hạng mục đã đặt lịch</p>
+                </div>
+
+                <!-- Doanh thu tháng -->
+                <div class="stat-card rounded-2xl p-6 shadow">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm text-gray-500">Doanh thu tháng này</p>
+                        <i class="fas fa-dong-sign text-gray-400"></i>
+                    </div>
+                    <p class="text-3xl font-extrabold mt-2" th:text="${revenueMonthText} ?: '0 ₫'">0 ₫</p>
+                    <p class="text-xs text-gray-500 mt-1">Đã thanh toán</p>
+                </div>
+
+                <!-- Dịch vụ hoạt động -->
+                <div class="stat-card rounded-2xl p-6 shadow">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm text-gray-500">Dịch vụ đang hoạt động</p>
+                        <i class="fas fa-tools text-gray-400"></i>
+                    </div>
+                    <p class="text-3xl font-extrabold mt-2" th:text="${servicesActive} ?: 0">0</p>
+                    <p class="text-xs text-gray-500 mt-1">Vendor Service trạng thái ACTIVE</p>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Recent Orders -->
+                <!-- Recent Orders - DỮ LIỆU THẬT -->
                 <div class="lg:col-span-2">
                     <div class="bg-white rounded-2xl shadow-lg p-6">
                         <div class="flex items-center justify-between mb-6">
                             <h3 class="text-xl font-bold text-gray-900">Đơn hàng gần đây</h3>
-                            <a class="text-blue-600 hover:text-blue-700 font-medium" th:href="@{/vendor/orders}">Xem tất
-                                cả</a>
+                            <a class="text-blue-600 hover:text-blue-700 font-medium" th:href="@{/vendor/orders}">Xem tất cả</a>
                         </div>
-                        <!-- ... giữ nguyên danh sách đơn như file gốc ... -->
+
+                        <div th:if="${#lists.isEmpty(recentOrders)}" class="text-gray-500 text-sm">Chưa có đơn gần đây.</div>
+
+                        <div th:unless="${#lists.isEmpty(recentOrders)}" class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead>
+                                <tr class="text-xs uppercase text-gray-500">
+                                    <th class="text-left py-2">Mã đơn</th>
+                                    <th class="text-left py-2">Thời gian</th>
+                                    <th class="text-left py-2">Trạng thái</th>
+                                    <th class="text-right py-2">Tổng tiền</th>
+                                </tr>
+                                </thead>
+                                <tbody class="text-sm text-gray-700">
+                                <tr th:each="o : ${recentOrders}" class="border-t">
+                                    <td class="py-3 font-medium" th:text="${o.order_code}">SOxxxx</td>
+                                    <td class="py-3" th:text="${#dates.format(o.created_at,'dd/MM HH:mm')}">01/10 09:00</td>
+                                    <td class="py-3">
+                                        <span class="px-2 py-1 rounded-full text-white text-xs"
+                                              th:text="${o.status}"
+                                              th:classappend="${o.status=='PENDING' ? ' status-badge-pending' :
+                                               (o.status=='CONFIRMED' ? ' status-badge-confirmed' :
+                                               (o.status=='IN_PROGRESS' ? ' status-badge-confirmed' :
+                                               (o.status=='COMPLETED' ? ' status-badge-completed' : ' status-badge-cancelled')))}">
+                                            PENDING
+                                        </span>
+                                    </td>
+                                    <td class="py-3 text-right font-semibold" th:text="${o.total_text}">0 ₫</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Quick Actions -->
+                <!-- Quick Actions: giữ bố cục -->
                 <div class="space-y-6">
                     <div class="bg-white rounded-2xl shadow-lg p-6">
                         <h3 class="text-lg font-bold text-gray-900 mb-4">Thao tác nhanh</h3>
-                        <!-- ... nút thao tác nhanh ... -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <a th:href="@{/vendor/services/create}" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm text-gray-700 text-center">
+                                <i class="fas fa-plus mr-1"></i> Tạo dịch vụ
+                            </a>
+                            <a th:href="@{/vendor/orders}" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm text-gray-700 text-center">
+                                <i class="fas fa-receipt mr-1"></i> Xem đơn
+                            </a>
+                        </div>
                     </div>
 
-                    <!-- Performance Stats -->
+                    <!-- Performance: có thể gắn sau -->
                     <div class="bg-white rounded-2xl shadow-lg p-6">
                         <h3 class="text-lg font-bold text-gray-900 mb-4">Hiệu suất</h3>
-                        <!-- ... thanh tiến độ ... -->
+                        <p class="text-sm text-gray-600">Đang cập nhật.</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Orders Tab -->
-        <div class="tab-content hidden" id="orders-content">
-            <!-- ... giữ nguyên phần bảng đơn hàng ... -->
-        </div>
+        <div class="tab-content hidden" id="orders-content"></div>
 
         <!-- Services Tab -->
-        <div class="tab-content hidden" id="services-content">
-            <!-- ... giữ nguyên phần dịch vụ ... -->
+        <div class="tab-content hidden" id="services-content"></div>
+
+        <!-- Schedule Tab -->
+        <div class="tab-content hidden" id="schedule-content"
+             th:replace="vendor/schedule/calendar :: content">
+            <div class="text-gray-600">Đang tải lịch làm việc...</div>
         </div>
 
-        <!-- Các tab khác -->
+        <!-- Khác -->
         <div class="tab-content hidden" id="earnings-content">
             <h2 class="text-2xl font-bold text-gray-900 mb-6">Doanh thu</h2>
             <p class="text-gray-600">Thông tin doanh thu sẽ được cập nhật...</p>
@@ -140,6 +227,7 @@
         </div>
     </main>
 </div>
+
 <script>
     function showTab(tabName) {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
@@ -176,7 +264,6 @@
         });
         showTab('dashboard');
 
-        // Chỉ chặn link dạng #tab, còn lại để điều hướng bình thường
         document.querySelectorAll('.sidebar-item').forEach(item => {
             item.addEventListener('click', function(e) {
                 const href = this.getAttribute('href') || '';

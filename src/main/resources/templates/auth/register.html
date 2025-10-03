@@ -8,6 +8,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
           rel="stylesheet">
+    <script th:src="@{/js/validate/core.js}"></script>
+    <script th:src="@{/js/validate/auth-register.js}"></script>
     <style>
         * {
             font-family: 'Inter', sans-serif;
@@ -114,7 +116,7 @@
                 </div>
             </div>
 
-            <form class="space-y-4" method="post" enctype="multipart/form-data" th:action="@{/register}">
+            <form class="space-y-4" method="post" enctype="multipart/form-data" th:action="@{/register}" id="registerForm">
                 <input type="hidden" name="_csrf" th:value="${_csrf.token}">
                 <!-- USER -->
                 <div>
@@ -184,6 +186,7 @@
                     <div>
                         <label class="block text-sm mb-1">Ngày sinh</label>
                         <input class="w-full border rounded-lg p-2.5"
+                               id="dob"
                                name="dob"
                                th:value="${dob}"
                                type="date"/>

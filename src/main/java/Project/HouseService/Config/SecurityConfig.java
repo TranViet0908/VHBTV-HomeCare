@@ -68,7 +68,14 @@ public class SecurityConfig {
         applyCsrf(http);
 
         http.authorizeHttpRequests(reg -> reg
-                .requestMatchers("/admin/login", "/css/**", "/js/**", "/images/**", "/uploads/**", "/favicon.ico").permitAll()
+                .requestMatchers("/admin/login",
+                        "/css/**",
+                        "/js/**",
+                        "/images/**",
+                        "/uploads/**",
+                        "/favicon.ico",
+                        "Share/**"
+                ).permitAll()
                 .anyRequest().hasRole("ADMIN")
         );
 

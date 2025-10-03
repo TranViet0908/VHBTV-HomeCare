@@ -1,0 +1,169 @@
+<!-- src/main/resources/templates/vendor/schedule/calendar.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>VHBTV HomeCare - Vendor Dashboard</title>
+    <!-- Dùng đúng assets như dashboard -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        .glass-effect { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
+        .sidebar-active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .stat-card { background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%); transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
+        .stat-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 25px 50px rgba(0,0,0,0.15); }
+        .status-badge-confirmed { background: linear-gradient(135deg, #10b981 0%, #34d399 100%); }
+        .status-badge-pending { background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); }
+        .status-badge-completed { background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%); }
+        .status-badge-cancelled { background: linear-gradient(135deg, #ef4444 0%, #f87171 100%); }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+
+<!-- Header -->
+<th:block th:replace="vendor/layouts/header :: vendorHeader"></th:block>
+
+<div class="flex">
+    <!-- Sidebar -->
+    <th:block th:replace="vendor/layouts/sidebar :: vendorSidebar"></th:block>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6">
+        <!-- Card bao lịch -->
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+            <!-- Fragment để dashboard.html nạp -->
+            <div th:fragment="content">
+
+                <!-- Tiêu đề + điều hướng tháng giống style dashboard -->
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Lịch làm việc</h2>
+                    <div th:with="_base=${@scheduleVendorService.resolveBaseMonth(param.m)}" class="flex items-center gap-2">
+                        <a class="px-3 py-2 rounded-lg border" th:href="@{|/vendor/schedule?m=${@scheduleVendorService.formatMonth(@scheduleVendorService.prevMonth(_base))}|}">
+                            Tháng trước
+                        </a>
+                        <a class="px-3 py-2 rounded-lg border" th:href="@{|/vendor/schedule?m=${@scheduleVendorService.formatMonth(@scheduleVendorService.nextMonth(_base))}|}">
+                            Tháng sau
+                        </a>
+                        <a class="px-3 py-2 rounded-lg border" th:href="@{/vendor/schedule}">
+                            Hôm nay
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Dữ liệu lịch -->
+                <div th:with="
+    _vendor=${@scheduleVendorService.currentVendorId()},
+    _base=${@scheduleVendorService.resolveBaseMonth(param.m)},
+    _grid=${@scheduleVendorService.monthGrid(_base)},
+    _start=${@scheduleVendorService.monthGridStart(_base)},
+    _end=${@scheduleVendorService.monthGridEnd(_base)},
+    _counts=${@scheduleVendorService.statusCountsByDay(_vendor, _start, _end)}
+">
+                    <!-- Khung lịch với hiệu ứng giấy -->
+                    <div class="max-w-7xl mx-auto bg-white rounded-lg shadow-2xl overflow-hidden border-8 border-slate-100" style="box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
+
+                        <!-- Phần đầu lịch - Header với vòng treo -->
+                        <div class="relative bg-gradient-to-b from-red-600 via-red-500 to-red-600 pt-8 pb-6 px-6">
+                            <!-- Vòng treo lịch -->
+                            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 flex gap-16">
+                                <div class="w-8 h-8 bg-slate-200 rounded-full shadow-lg border-4 border-slate-300"></div>
+                                <div class="w-8 h-8 bg-slate-200 rounded-full shadow-lg border-4 border-slate-300"></div>
+                            </div>
+
+                            <!-- Tên tháng năm -->
+                            <div class="text-center">
+                                <div class="text-4xl font-bold text-white mb-1 tracking-wide" th:text="${#temporals.format(_base, 'MMMM yyyy')}">January 2025</div>
+                                <div class="h-1 w-32 bg-white/50 mx-auto rounded-full"></div>
+                            </div>
+                        </div>
+
+                        <!-- Header các ngày trong tuần -->
+                        <div class="grid grid-cols-7 gap-0 bg-slate-50 border-b-4 border-slate-200">
+                            <div class="text-center py-4 font-bold text-slate-700 text-sm uppercase tracking-widest border-r border-slate-200 last:border-r-0">Mon</div>
+                            <div class="text-center py-4 font-bold text-slate-700 text-sm uppercase tracking-widest border-r border-slate-200 last:border-r-0">Tue</div>
+                            <div class="text-center py-4 font-bold text-slate-700 text-sm uppercase tracking-widest border-r border-slate-200 last:border-r-0">Wed</div>
+                            <div class="text-center py-4 font-bold text-slate-700 text-sm uppercase tracking-widest border-r border-slate-200 last:border-r-0">Thu</div>
+                            <div class="text-center py-4 font-bold text-slate-700 text-sm uppercase tracking-widest border-r border-slate-200 last:border-r-0">Fri</div>
+                            <div class="text-center py-4 font-bold text-slate-600 text-sm uppercase tracking-widest border-r border-slate-200 last:border-r-0 bg-slate-100">Sat</div>
+                            <div class="text-center py-4 font-bold text-red-600 text-sm uppercase tracking-widest bg-red-50">Sun</div>
+                        </div>
+
+                        <!-- Lưới các ngày -->
+                        <div class="grid grid-rows-6 gap-0 bg-white">
+                            <div class="grid grid-cols-7 gap-0 border-b border-slate-200 last:border-b-0" th:each="_week : ${_grid}">
+                                <div class="border-r border-slate-200 last:border-r-0 p-3 min-h-32 relative bg-white hover:bg-slate-50 transition-colors duration-150"
+                                     th:each="_d : ${_week}"
+                                     th:classappend="${@scheduleVendorService.sameMonth(_base,_d)} ? '' : 'bg-slate-50/50'">
+
+                                    <!-- Số ngày -->
+                                    <div class="flex items-start justify-between mb-2">
+                                        <div class="flex flex-col">
+                            <span class="text-2xl font-bold leading-none"
+                                  th:classappend="${@scheduleVendorService.sameMonth(_base,_d)} ? 'text-slate-800' : 'text-slate-300'"
+                                  th:text="${_d.dayOfMonth}">1</span>
+                                            <span class="text-[8px] text-slate-400 mt-0.5 font-medium uppercase tracking-wider"
+                                                  th:text="${#temporals.format(_d, 'EEE')}">Mon</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Thông tin đơn hàng -->
+                                    <div class="space-y-1 mt-2">
+                                        <div th:if="${_counts.containsKey(_d)}"
+                                             th:each="entry : ${_counts.get(_d)}"
+                                             class="text-[10px] px-2 py-1 rounded-md flex items-center justify-between gap-1 font-semibold"
+                                             th:classappend="${#strings.equalsIgnoreCase(entry.key,'COMPLETED')} ? 'bg-green-50 text-green-700 border-l-2 border-green-500'
+                           : (${#strings.equalsIgnoreCase(entry.key,'CANCELED') or #strings.equalsIgnoreCase(entry.key,'CANCELLED')} ? 'bg-red-50 text-red-700 border-l-2 border-red-500'
+                           : 'bg-yellow-50 text-yellow-700 border-l-2 border-yellow-500')">
+                                            <span class="truncate" th:text="${entry.key}">STATUS</span>
+                                            <span class="font-bold text-xs" th:text="${entry.value}">1</span>
+                                        </div>
+
+                                        <div th:if="${!_counts.containsKey(_d)}" class="text-[9px] text-slate-300 italic text-center mt-4">
+                                            —
+                                        </div>
+                                    </div>
+
+                                    <!-- Dấu chấm nhỏ cho ngày có đơn -->
+                                    <div th:if="${_counts.containsKey(_d)}" class="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer - Chú thích -->
+                        <div class="bg-slate-50 border-t-4 border-slate-200 px-6 py-4">
+                            <div class="flex items-center justify-center gap-6 text-xs">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-3 h-3 bg-green-500 rounded-sm shadow-sm"></span>
+                                    <span class="font-medium text-slate-700">Completed</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-3 h-3 bg-red-500 rounded-sm shadow-sm"></span>
+                                    <span class="font-medium text-slate-700">Canceled</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-3 h-3 bg-yellow-500 rounded-sm shadow-sm"></span>
+                                    <span class="font-medium text-slate-700">Trạng thái khác</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- /fragment -->
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

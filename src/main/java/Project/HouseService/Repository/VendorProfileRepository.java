@@ -16,6 +16,9 @@ public interface VendorProfileRepository extends JpaRepository<VendorProfile, Lo
     Optional<VendorProfile> findByUser_Username(String username);
     Optional<VendorProfile> findByUser_Id(Long userId);
 
+    @Query("select vp.id from VendorProfile vp where vp.user.id = :userId")
+    Optional<Long> findVendorIdByUserId(@Param("userId") Long userId);
+
     @Query("""
            select vp
            from VendorProfile vp
@@ -35,4 +38,14 @@ public interface VendorProfileRepository extends JpaRepository<VendorProfile, Lo
     // load kèm User để render tên vendor trong select
     @Query("select vp from VendorProfile vp join fetch vp.user u")
     List<VendorProfile> findAllWithUser();
+    @Query("SELECT v FROM VendorProfile v WHERE v.user.id = :userId")
+    VendorProfile findByUserId(@Param("userId") Long userId);
+
+    // Fallback theo username từ SecurityContext
+    @Query("SELECT v FROM VendorProfile v WHERE v.user.username = :username")
+    VendorProfile findByUserUsername(@Param("username") String username);
+
+    // Fallback theo email từ SecurityContext
+    @Query("SELECT v FROM VendorProfile v WHERE v.user.email = :email")
+    VendorProfile findByUserEmail(@Param("email") String email);
 }

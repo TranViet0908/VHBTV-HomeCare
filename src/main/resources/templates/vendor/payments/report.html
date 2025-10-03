@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Báo cáo Thanh toán &amp; Doanh thu</title>
+  <style>
+    body { font-family:'VHBTVPDF','Segoe UI','DejaVu Sans',Arial,sans-serif; font-size:12px; color:#111827; margin:10mm 9mm; line-height:1.35; }
+    h1 { font-size:18px; margin:0 0 6px; font-weight:700; }
+    h2 { font-size:13px; margin:8px 0 6px; font-weight:700; }
+    .muted { color:#6b7280; }
+    .card { border:1px solid #e5e7eb; border-radius:8px; padding:6px 8px; }
+    .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { border-top:1px solid #e5e7eb; padding:6px 4px; text-align:left; }
+    th { color:#6b7280; font-weight:600; }
+    .mt { margin-top:8px; }
+    svg { width:100%; height:auto; }
+  </style>
+</head>
+<body>
+<h1>Báo cáo Thanh toán &amp; Doanh thu</h1>
+<div class="muted" th:text="'Khoảng thời gian: ' + ${#temporals.format(from, 'dd/MM/yyyy')} + ' - ' + ${#temporals.format(to, 'dd/MM/yyyy')}">Từ - đến</div>
+
+<div class="grid mt">
+  <div class="card"><div class="muted">Doanh thu đã nhận</div><div th:text="${#numbers.formatDecimal(summary.totalPaid,0,'COMMA',0,'POINT')} + ' ₫'">0 ₫</div></div>
+  <div class="card"><div class="muted">Tổng đơn</div><div th:text="${#numbers.formatDecimal(summary.sumSubtotal,0,'COMMA',0,'POINT')} + ' ₫'">0 ₫</div></div>
+  <div class="card"><div class="muted">Giảm giá</div><div th:text="${#numbers.formatDecimal(summary.sumDiscount,0,'COMMA',0,'POINT')} + ' ₫'">0 ₫</div></div>
+  <div class="card"><div class="muted">Phải thu</div><div th:text="${#numbers.formatDecimal(summary.sumTotal,0,'COMMA',0,'POINT')} + ' ₫'">0 ₫</div></div>
+</div>
+
+<h2>Biểu đồ doanh thu theo ngày</h2>
+<div th:utext="${summary.svgLine}"></div>
+
+<h2>Doanh thu theo cổng thanh toán</h2>
+<div th:utext="${summary.svgBars}"></div>
+
+<h2>Top 10 dịch vụ theo doanh thu</h2>
+<table class="mt">
+  <thead><tr><th>Dịch vụ</th><th>Số lượng</th><th>Doanh thu</th></tr></thead>
+  <tbody>
+  <tr th:each="r : ${summary.topServices}">
+    <td th:text="${r[0]}">Tên</td>
+    <td th:text="${r[2]}">0</td>
+    <td th:text="${#numbers.formatDecimal(r[1],0,'COMMA',0,'POINT')} + ' ₫'">0 ₫</td>
+  </tr>
+  <tr th:if="${#lists.isEmpty(summary.topServices)}"><td colspan="3" class="muted">Không có dữ liệu</td></tr>
+  </tbody>
+</table>
+</body>
+</html>

@@ -33,4 +33,16 @@ public interface ServiceRepository extends JpaRepository<Service, Long> {
                          @Param("parentId") Long parentId,
                          @Param("unit") String unit,
                          Pageable pageable);
+    // Lấy các dịch vụ chuẩn mà vendor CHƯA có
+    @Query(
+            value = """
+              SELECT s.* FROM service s
+              WHERE s.id NOT IN (
+                 SELECT vs.service_id FROM vendor_service vs WHERE vs.vendor_id = :vendorId
+              )
+              ORDER BY s.name
+              """,
+            nativeQuery = true
+    )
+    List<Service> findAssignableForVendor(@Param("vendorId") Long vendorId);
 }

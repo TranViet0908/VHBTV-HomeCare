@@ -48,8 +48,8 @@
                         <select name="vendorId" class="w-full px-4 py-2 border rounded-lg" required>
                             <option th:each="v : ${vendors}"
                                     th:value="${v.user.id}"
-                                    th:selected="${*{vendorId} == v.user.id}"
-                                    th:text="${v.displayName != null ? v.displayName : (v.legalName != null ? v.legalName : 'User #' + v.user.id)}"></option>
+                                    th:text="${v.displayName != null ? v.displayName : (v.legalName != null ? v.legalName : 'User #' + v.user.id)}">
+                            </option>
                         </select>
                     </div>
 

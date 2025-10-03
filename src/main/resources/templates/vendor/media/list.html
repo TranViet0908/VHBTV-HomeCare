@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>Phương tiện dịch vụ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+<th:block th:replace="vendor/layouts/header :: vendorHeader"></th:block>
+<div class="flex">
+  <th:block th:replace="vendor/layouts/sidebar :: vendorSidebar"></th:block>
+
+  <main class="flex-1 p-6">
+    <div class="mb-4 flex items-center justify-between">
+      <h1 class="text-2xl font-semibold">Phương tiện dịch vụ</h1>
+
+      <div class="flex items-center gap-2">
+        <select class="border rounded-lg px-3 py-2"
+                onchange="location.href='/vendor/media?sid=' + this.value">
+          <option th:each="sid : ${serviceIds}"
+                  th:value="${sid}"
+                  th:selected="${sid} == ${serviceId}"
+                  th:text="${serviceLabels.get(sid)}"></option>
+        </select>
+        <a th:href="@{|/vendor/media/create?sid=${serviceId}|}"
+           class="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black">
+          <i class="fa fa-plus mr-2"></i> Tạo mới
+        </a>
+        <a th:href="@{|/vendor/media/upload?sid=${serviceId}|}"
+           class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+          <i class="fa fa-upload mr-2"></i> Tải lên
+        </a>
+      </div>
+    </div>
+
+    <div class="mb-3 p-3 bg-green-100 text-green-800 rounded" th:if="${success}" th:text="${success}"></div>
+    <div class="mb-3 p-3 bg-red-100 text-red-800 rounded" th:if="${error}" th:text="${error}"></div>
+
+    <form id="reorderForm" th:action="@{|/vendor/media/reorder?sid=${serviceId}|}" method="post" class="hidden">
+      <input type="hidden" name="orderedIds" id="orderedIds">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+    </form>
+
+    <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div th:each="m : ${items}" class="bg-white rounded-xl border overflow-hidden group">
+        <div class="aspect-video bg-black">
+          <img th:if="${m.mediaType.name() == 'IMAGE'}" th:src="${m.url}" class="w-full h-full object-cover" alt="">
+          <video th:if="${m.mediaType.name() == 'VIDEO'}" th:src="${m.url}" controls preload="none" class="w-full h-full object-cover"></video>
+        </div>
+        <div class="p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-500">ID: <span th:text="${m.id}"></span></span>
+            <span th:if="${m.cover}" class="px-2 py-0.5 text-xs bg-amber-100 text-amber-700 rounded">Cover</span>
+          </div>
+          <div class="text-sm text-gray-700" th:text="${m.altText}">—</div>
+          <div class="flex items-center gap-2">
+            <form th:action="@{|/vendor/media/${m.id}/cover?sid=${serviceId}|}" method="post">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <button class="px-3 py-1.5 text-sm rounded border hover:bg-gray-50" th:disabled="${m.cover}">Đặt cover</button>
+            </form>
+            <a th:href="@{|/vendor/media/${m.id}/edit?sid=${serviceId}|}"
+               class="px-3 py-1.5 text-sm rounded border hover:bg-gray-50">Sửa</a>
+            <form th:action="@{|/vendor/media/${m.id}/delete?sid=${serviceId}|}" method="post"
+                  onsubmit="return confirm('Xóa media này?')">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <button class="px-3 py-1.5 text-sm rounded border text-red-600 hover:bg-red-50">Xóa</button>
+            </form>
+            <button class="ml-auto handle px-2 py-1.5 text-sm rounded border hover:bg-gray-50" title="Kéo để sắp xếp">
+              <i class="fa fa-grip-vertical"></i>
+            </button>
+          </div>
+        </div>
+        <input type="hidden" class="media-id" th:value="${m.id}">
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <button id="saveOrder" class="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black">Lưu thứ tự</button>
+    </div>
+  </main>
+</div>
+
+<script>
+  document.getElementById('saveOrder').addEventListener('click', function () {
+    const ids = Array.from(document.querySelectorAll('#grid .media-id')).map(i => i.value);
+    const form = document.getElementById('reorderForm');
+    form.innerHTML = '<input type="hidden" name="' + /* csrf name */ '${_csrf.parameterName}' + '" value="' + '${_csrf.token}' + '">';
+    ids.forEach(v => {
+      const input = document.createElement('input');
+      input.type = 'hidden'; input.name = 'orderedIds'; input.value = v;
+      form.appendChild(input);
+    });
+    form.submit();
+  });
+
+  const grid = document.getElementById('grid');
+  let dragSrc;
+  grid.querySelectorAll('.group').forEach(card => {
+    card.draggable = true;
+    card.addEventListener('dragstart', e => { dragSrc = card; e.dataTransfer.effectAllowed = 'move'; });
+    card.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+    card.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dragSrc && dragSrc !== card) {
+        const all = Array.from(grid.children);
+        const srcIdx = all.indexOf(dragSrc);
+        const dstIdx = all.indexOf(card);
+        if (srcIdx < dstIdx) grid.insertBefore(dragSrc, card.nextSibling);
+        else grid.insertBefore(dragSrc, card);
+      }
+    });
+  });
+</script>
+</body>
+</html>

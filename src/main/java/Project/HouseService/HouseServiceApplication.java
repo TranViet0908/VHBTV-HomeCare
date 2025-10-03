@@ -2,8 +2,14 @@ package Project.HouseService;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
 
 @SpringBootApplication
+@ComponentScan(
+		basePackages = "Project.HouseService",
+		nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class
+)
 public class HouseServiceApplication {
 
 	public static void main(String[] args) {

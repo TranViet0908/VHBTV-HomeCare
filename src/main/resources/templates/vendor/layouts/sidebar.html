@@ -1,6 +1,6 @@
 <!-- /templates/vendor/layouts/sidebar.html -->
 <aside th:fragment="vendorSidebar"
-       class="w-64 flex-none bg-white shadow-sm min-h-screen border-r">
+       class="w-64 flex-none bg-white shadow-sm min-h-screen border-r" xmlns:th="http://www.w3.org/1999/xhtml">
   <nav class="p-4 space-y-2">
     <a th:href="@{/vendor}"
        class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl transition-all"
@@ -17,47 +17,60 @@
     </a>
 
     <!-- Các module nội trang dashboard: dùng tab + highlight tự động bởi JS trong dashboard.html -->
-    <a href="#schedule" onclick="showTab('schedule')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
+    <a th:href="@{/vendor/schedule}"
+       class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl transition-all"
+       th:classappend="${nav}=='schedule' ? ' sidebar-active'
+                  : ' text-gray-600 hover:bg-gray-50 hover:text-gray-900'">
       <i class="fas fa-calendar-check w-5"></i><span class="font-medium">Lịch làm việc</span>
     </a>
-    <a href="#services" onclick="showTab('services')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
+
+    <!-- đã đổi sang link thật -->
+    <a th:href="@{/vendor/services}"
+       class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl transition-all"
+       th:classappend="${nav}=='services' ? ' sidebar-active'
+                      : ' text-gray-600 hover:bg-gray-50 hover:text-gray-900'">
       <i class="fas fa-tools w-5"></i><span class="font-medium">Dịch vụ của tôi</span>
     </a>
-    <a href="#skills" onclick="showTab('skills')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
-      <i class="fas fa-code w-5"></i><span class="font-medium">Kỹ năng</span>
+    <a th:href="@{/vendor/skills}"
+       class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl transition-all"
+       th:classappend="${nav}=='skills' ? ' sidebar-active'
+                  : ' text-gray-600 hover:bg-gray-50 hover:text-gray-900'">
+      <i class="fas fa-tools w-5"></i><span class="font-medium">Kỹ năng</span>
     </a>
-    <a href="#media" onclick="showTab('media')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
+    <a th:href="@{/vendor/media}"
+       class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl transition-all"
+       th:classappend="${nav}=='media' ? ' sidebar-active'
+                  : ' text-gray-600 hover:bg-gray-50 hover:text-gray-900'">
       <i class="fas fa-images w-5"></i><span class="font-medium">Phương tiện dịch vụ</span>
     </a>
-    <a href="#coupons" onclick="showTab('coupons')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
+
+    <a th:href="@{/vendor/coupons}"
+       class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl transition-all"
+       th:classappend="${nav}=='coupons' ? ' sidebar-active'
+                  : ' text-gray-600 hover:bg-gray-50 hover:text-gray-900'">
       <i class="fas fa-percent w-5"></i><span class="font-medium">Mã giảm giá</span>
     </a>
-    <a href="#payments" onclick="showTab('payments')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
-      <i class="fas fa-dollar-sign w-5"></i><span class="font-medium">Thanh toán & Doanh thu</span>
-    </a>
-    <a href="#reports" onclick="showTab('reports')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
-      <i class="fas fa-chart-line w-5"></i><span class="font-medium">Thống kê & Báo cáo</span>
-    </a>
-    <a href="#service-reviews" onclick="showTab('service-reviews')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
-      <i class="fas fa-star w-5"></i><span class="font-medium">Đánh giá dịch vụ</span>
-    </a>
-    <a href="#vendor-reviews" onclick="showTab('vendor-reviews')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
-      <i class="fas fa-user-check w-5"></i><span class="font-medium">Đánh giá nhà cung cấp</span>
-    </a>
-    <a href="#chats" onclick="showTab('chats')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
-      <i class="fas fa-comments w-5"></i><span class="font-medium">Trò chuyện</span><span class="ml-auto bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded-full">2</span>
-    </a>
-    <a href="#search-export" onclick="showTab('search-export')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
-      <i class="fas fa-search w-5"></i><span class="font-medium">Tra cứu & Xuất báo cáo</span>
+
+    <a th:href="@{/vendor/payments}"
+       class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl transition-all"
+       th:classappend="${nav}=='payments' ? ' sidebar-active'
+                  : ' text-gray-600 hover:bg-gray-50 hover:text-gray-900'">
+      <i class="fas fa-dollar-sign w-5"></i><span class="font-medium">Báo cáo & Doanh thu</span>
     </a>
 
-    <div class="pt-4 border-t border-gray-200 mt-4">
-      <a href="#profile" onclick="showTab('profile')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
-        <i class="fas fa-id-badge w-5"></i><span class="font-medium">Hồ sơ & Xác minh</span>
-      </a>
-      <a href="#settings" onclick="showTab('settings')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
-        <i class="fas fa-cog w-5"></i><span class="font-medium">Cài đặt</span>
-      </a>
-    </div>
+    <!-- Đã đổi sang route thật cho module đánh giá -->
+    <a th:href="@{/vendor/service-reviews}"
+       class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl transition-all"
+       th:classappend="${nav}=='service-reviews' ? ' sidebar-active'
+                  : ' text-gray-600 hover:bg-gray-50 hover:text-gray-900'">
+      <i class="fas fa-star w-5"></i><span class="font-medium">Đánh giá dịch vụ</span>
+    </a>
+
+    <a th:href="@{/vendor/vendor-reviews}"
+       class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl transition-all"
+       th:classappend="${nav}=='vendor-reviews' ? ' sidebar-active'
+                  : ' text-gray-600 hover:bg-gray-50 hover:text-gray-900'">
+      <i class="fas fa-user-check w-5"></i><span class="font-medium">Đánh giá của tôi</span>
+    </a>
   </nav>
 </aside>

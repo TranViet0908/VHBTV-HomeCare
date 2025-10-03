@@ -1,0 +1,67 @@
+<!-- src/main/resources/templates/vendor/services/create.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thêm dịch vụ - VHBTV HomeCare</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>*{font-family:'Inter',sans-serif}.sidebar-active{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff}</style>
+</head>
+<body class="bg-gray-50">
+<th:block th:replace="vendor/layouts/header :: vendorHeader"></th:block>
+<div class="flex">
+  <th:block th:replace="vendor/layouts/sidebar :: vendorSidebar"></th:block>
+
+  <main class="flex-1 p-6">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">Thêm dịch vụ</h1>
+      <p class="text-gray-600">Chọn dịch vụ chuẩn rồi cấu hình cơ bản</p>
+    </div>
+
+    <a th:href="@{/vendor/services}" class="inline-block mb-4 text-blue-600 hover:underline"><i class="fa fa-chevron-left mr-1"></i>Quay về danh sách</a>
+
+    <section class="bg-white rounded-2xl shadow p-6 max-w-xl">
+      <form th:action="@{/vendor/services/create}" method="post" enctype="multipart/form-data" class="space-y-4">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Chọn dịch vụ chuẩn</label>
+          <select name="serviceId" required class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="" disabled selected>-- Chọn --</option>
+            <option th:each="s : ${assignableServices}" th:value="${s.id}"
+                    th:text="${s.name + ' (' + (s.unit != null ? s.unit : 'job') + ')'}">...</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Ảnh bìa</label>
+          <input type="file" name="cover" accept="image/*" class="w-full border rounded-lg px-3 py-2">
+          <p class="text-xs text-gray-500 mt-1">Tối đa 10MB. JPG/PNG/WebP.</p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Tiêu đề hiển thị (tuỳ chọn)</label>
+          <input type="text" name="title" placeholder="Mặc định dùng tên dịch vụ chuẩn"
+                 class="w-full border rounded-lg px-3 py-2">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Giá cơ bản (VNĐ)</label>
+          <input type="number" name="basePrice" min="0" step="1000" value="0"
+                 class="w-full border rounded-lg px-3 py-2">
+        </div>
+
+        <div class="flex gap-3">
+          <button type="submit" class="flex-1 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold">Thêm dịch vụ</button>
+          <a th:href="@{/vendor/services}" class="flex-1 px-4 py-2 rounded-lg border hover:bg-gray-50 text-center">Hủy</a>
+        </div>
+
+        <p th:if="${#lists.isEmpty(assignableServices)}" class="text-sm text-gray-500">Bạn đã thêm tất cả dịch vụ chuẩn.</p>
+      </form>
+    </section>
+  </main>
+</div>
+</body>
+</html>

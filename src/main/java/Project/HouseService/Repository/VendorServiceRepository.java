@@ -39,5 +39,13 @@ public interface VendorServiceRepository extends JpaRepository<VendorService, Lo
     Optional<VendorService> findById(Long id);
     long countByServiceId(Long serviceId);
     List<VendorService> findAllByOrderByTitleAsc();
+    List<VendorService> findByVendorIdAndStatusOrderByTitleAsc(Long vendorId, String status);
 
+    Optional<VendorService> findByVendorIdAndId(Long vendorId, Long id);
+    List<VendorService> findByVendorIdOrderByUpdatedAtDesc(Long vendorId);
+    boolean existsByVendorIdAndServiceId(Long vendorId, Long serviceId);
+    // thêm
+    Optional<VendorService> findByIdAndVendorId(Long id, Long vendorId);
+    long deleteByIdAndVendorId(Long id, Long vendorId);
+    List<VendorService> findByVendorIdOrderByTitleAsc(Long vendorId);
 }

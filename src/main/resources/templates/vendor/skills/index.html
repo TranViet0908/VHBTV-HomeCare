@@ -1,0 +1,60 @@
+<!-- /templates/vendor/skills/index.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Kỹ năng của tôi - VHBTV HomeCare</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+<th:block th:replace="vendor/layouts/header :: vendorHeader"></th:block>
+<div class="flex">
+  <th:block th:replace="vendor/layouts/sidebar :: vendorSidebar"></th:block>
+
+  <main class="flex-1 p-6">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold">Kỹ năng của tôi</h1>
+      <a th:href="@{/vendor/skills/create}" class="px-4 py-2 bg-blue-600 text-white rounded-lg">
+        <i class="fa fa-plus mr-2"></i>Thêm kỹ năng
+      </a>
+    </div>
+
+    <div th:if="${success}" class="mb-4 p-3 rounded bg-green-50 text-green-700" th:text="${success}"></div>
+    <div th:if="${error}" class="mb-4 p-3 rounded bg-red-50 text-red-700" th:text="${error}"></div>
+
+    <div class="bg-white rounded-xl shadow p-4">
+      <table class="min-w-full">
+        <thead>
+        <tr class="text-left text-gray-500 text-sm">
+          <th class="py-2 px-2">#</th>
+          <th class="py-2 px-2">Tên</th>
+          <th class="py-2 px-2">Slug</th>
+          <th class="py-2 px-2 text-right">Thao tác</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="s, i : ${skills}" class="border-t">
+          <td class="py-2 px-2" th:text="${i.index + 1}">1</td>
+          <td class="py-2 px-2 font-medium" th:text="${s.name}">Dọn vệ sinh</td>
+          <td class="py-2 px-2 text-gray-500" th:text="${s.slug}">don-ve-sinh</td>
+          <td class="py-2 px-2 text-right space-x-2">
+            <a th:href="@{|/vendor/skills/${s.id}/edit|}" class="px-3 py-1 text-sm bg-gray-100 rounded">Sửa</a>
+            <form th:action="@{|/vendor/skills/${s.id}/delete|}" method="post" class="inline">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <button type="submit" class="px-3 py-1 text-sm bg-red-100 text-red-700 rounded"
+                      onclick="return confirm('Xóa kỹ năng này?')">Xóa</button>
+            </form>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(skills)}">
+          <td colspan="4" class="py-6 text-center text-gray-500">Chưa có kỹ năng nào.</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+</body>
+</html>

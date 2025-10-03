@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Sửa hồ sơ Vendor</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+<th:block th:replace="vendor/layouts/header :: vendorHeader"></th:block>
+<div class="flex">
+  <th:block th:replace="vendor/layouts/sidebar :: vendorSidebar"></th:block>
+
+  <main class="flex-1 p-6">
+    <div class="max-w-3xl mx-auto">
+      <div th:if="${error}" class="mb-4 p-3 rounded bg-red-50 text-red-700" th:text="${error}"></div>
+
+      <form th:action="@{/vendor/profile/edit}" method="post" enctype="multipart/form-data" class="bg-white shadow rounded-2xl p-6 space-y-6">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <h2 class="text-xl font-bold">Thông tin hồ sơ</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-gray-700 mb-1">Tên hiển thị</label>
+            <input name="displayName" th:value="${vendorProfile.displayName}" class="w-full border rounded-lg px-3 py-2"/>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-700 mb-1">Tên pháp lý</label>
+            <input name="legalName" th:value="${vendorProfile.legalName}" class="w-full border rounded-lg px-3 py-2"/>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm text-gray-700 mb-1">Giới thiệu</label>
+            <textarea name="bio" rows="3" class="w-full border rounded-lg px-3 py-2" th:text="${vendorProfile.bio}"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-700 mb-1">Kinh nghiệm (năm)</label>
+            <input type="number" min="0" name="yearsExperience" th:value="${vendorProfile.yearsExperience}" class="w-full border rounded-lg px-3 py-2"/>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-700 mb-1">Địa chỉ</label>
+            <input name="addressLine" th:value="${vendorProfile.addressLine}" class="w-full border rounded-lg px-3 py-2"/>
+          </div>
+        </div>
+
+        <h2 class="text-xl font-bold">Tài khoản</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-gray-700 mb-1">Email</label>
+            <input required name="email" th:value="${user.email}" class="w-full border rounded-lg px-3 py-2"/>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-700 mb-1">Số điện thoại</label>
+            <input name="phone" th:value="${user.phone}" class="w-full border rounded-lg px-3 py-2"/>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm text-gray-700 mb-1">Ảnh đại diện</label>
+            <input type="file" name="avatar" accept="image/*" class="w-full border rounded-lg px-3 py-2"/>
+            <p class="text-xs text-gray-500 mt-1">Dung lượng tối đa 10MB.</p>
+            <div class="mt-2" th:if="${avatarUrl}">
+              <img th:src="${avatarUrl}" class="w-20 h-20 rounded-lg object-cover border" alt="avatar preview">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end space-x-3 pt-4 border-t">
+          <a th:href="@{/vendor/profile}" class="px-4 py-2 rounded-lg border">Hủy</a>
+          <button class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700" type="submit">
+            Lưu thay đổi
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+</body>
+</html>

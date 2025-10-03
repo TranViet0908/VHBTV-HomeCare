@@ -1,0 +1,150 @@
+<!-- /templates/vendor/payments/index.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Thanh toán & Doanh thu</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <!-- Giữ style active giống trang Coupons -->
+  <style>*{font-family:'Inter',sans-serif}.sidebar-active{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff}</style>
+</head>
+<body class="bg-gray-50">
+<!-- Header đồng nhất -->
+<div th:replace="vendor/layouts/header :: vendorHeader"></div>
+
+<div class="flex">
+  <!-- Sidebar đồng nhất -->
+  <div th:replace="vendor/layouts/sidebar :: vendorSidebar"></div>
+
+  <!-- Main -->
+  <main class="flex-1 p-6 space-y-6">
+    <!-- Bộ lọc -->
+    <form class="bg-white rounded-xl shadow-sm border p-4 flex flex-wrap items-end gap-4"
+          method="get" th:action="@{/vendor/payments}">
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Từ ngày</label>
+        <input class="border rounded-lg px-3 py-2" type="date" name="from" th:value="${from}"/>
+      </div>
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Đến ngày</label>
+        <input class="border rounded-lg px-3 py-2" type="date" name="to" th:value="${to}"/>
+      </div>
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Cổng</label>
+        <select class="border rounded-lg px-3 py-2" name="provider">
+          <option th:selected="${provider == null}" value="">Tất cả</option>
+          <option th:each="p : ${T(Project.HouseService.Entity.Payment.Provider).values()}"
+                  th:value="${p}" th:text="${p}"
+                  th:selected="${provider == p}"></option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Trạng thái</label>
+        <select class="border rounded-lg px-3 py-2" name="status">
+          <option th:selected="${status == null}" value="">Tất cả</option>
+          <option th:each="s : ${T(Project.HouseService.Entity.Payment.PaymentStatus).values()}"
+                  th:value="${s}" th:text="${s}"
+                  th:selected="${status == s}"></option>
+        </select>
+      </div>
+      <div class="ml-auto flex gap-2">
+        <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Lọc</button>
+        <a th:href="@{|/vendor/payments/export/pdf?from=${from}&to=${to}|}"
+           class="px-4 py-2 bg-green-600 text-white rounded-lg">Xuất PDF</a>
+      </div>
+    </form>
+
+    <!-- Chỉ số -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl shadow-sm border p-4">
+        <div class="text-sm text-gray-500">Doanh thu đã nhận</div>
+        <div class="text-2xl font-semibold" th:text="${#numbers.formatDecimal(summary.totalPaid, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border p-4">
+        <div class="text-sm text-gray-500">Tổng đơn</div>
+        <div class="text-2xl font-semibold" th:text="${#numbers.formatDecimal(summary.sumSubtotal, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border p-4">
+        <div class="text-sm text-gray-500">Giảm giá</div>
+        <div class="text-2xl font-semibold text-red-600" th:text="${#numbers.formatDecimal(summary.sumDiscount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border p-4">
+        <div class="text-sm text-gray-500">Phải thu</div>
+        <div class="text-2xl font-semibold" th:text="${#numbers.formatDecimal(summary.sumTotal, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</div>
+      </div>
+    </div>
+
+    <!-- Biểu đồ -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="bg-white rounded-xl shadow-sm border p-4">
+        <div class="font-medium mb-2">Doanh thu theo ngày</div>
+        <div th:utext="${summary.svgLine}"></div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border p-4">
+        <div class="font-medium mb-2">Doanh thu theo cổng thanh toán</div>
+        <div th:utext="${summary.svgBars}"></div>
+      </div>
+    </div>
+
+    <!-- Top dịch vụ -->
+    <div class="bg-white rounded-xl shadow-sm border p-4">
+      <div class="font-medium mb-3">Top 10 dịch vụ theo doanh thu</div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead>
+          <tr class="text-left text-gray-500">
+            <th class="py-2">Dịch vụ</th>
+            <th class="py-2">Số lượng</th>
+            <th class="py-2">Doanh thu</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="r : ${summary.topServices}" class="border-t">
+            <td class="py-2" th:text="${r[0]}">Tên dịch vụ</td>
+            <td class="py-2" th:text="${r[2]}">0</td>
+            <td class="py-2" th:text="${#numbers.formatDecimal(r[1], 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(summary.topServices)}">
+            <td colspan="3" class="py-4 text-center text-gray-500">Không có dữ liệu</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Bảng chi tiết thanh toán -->
+    <div class="bg-white rounded-xl shadow-sm border p-4">
+      <div class="font-medium mb-3">Chi tiết giao dịch</div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead>
+          <tr class="text-left text-gray-500">
+            <th class="py-2">Mã</th>
+            <th class="py-2">Cổng</th>
+            <th class="py-2">Trạng thái</th>
+            <th class="py-2">Số tiền</th>
+            <th class="py-2">Ngày thanh toán</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="p : ${payments}" class="border-t">
+            <td class="py-2" th:text="${p.id}">1</td>
+            <td class="py-2" th:text="${p.provider}">MOMO</td>
+            <td class="py-2" th:text="${p.status}">PAID</td>
+            <td class="py-2" th:text="${#numbers.formatDecimal(p.amount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</td>
+            <td class="py-2" th:text="${#temporals.format(p.paidAt, 'dd/MM/yyyy HH:mm')}">01/01/2025</td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(payments)}">
+            <td colspan="5" class="py-4 text-center text-gray-500">Không có dữ liệu</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

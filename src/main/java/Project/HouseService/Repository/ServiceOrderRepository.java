@@ -2,16 +2,15 @@
 package Project.HouseService.Repository;
 
 import Project.HouseService.Entity.ServiceOrder;
-import org.springframework.data.domain.*;
-import org.springframework.data.jpa.repository.*;
-import org.springframework.data.repository.query.Param;
-import Project.HouseService.Entity.ServiceOrder.Status;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.*;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface ServiceOrderRepository extends JpaRepository<ServiceOrder, Long> {
@@ -73,4 +72,31 @@ public interface ServiceOrderRepository extends JpaRepository<ServiceOrder, Long
     """)
     boolean existsCompletedBetweenCustomerAndVendor(@Param("customerId") Long customerId,
                                                     @Param("vendorId") Long vendorId);
+
+    @Query("select o.id, o.status from ServiceOrder o where o.id in :ids")
+    List<Object[]> findIdAndStatusByIdIn(@Param("ids") List<Long> ids);
+
+    @Query("""
+                select coalesce(sum(o.subtotal),0),
+                       coalesce(sum(o.discountAmount),0),
+                       coalesce(sum(o.total),0)
+                from ServiceOrder o
+                where o.vendorId = :vendorId
+                  and o.createdAt between :from and :to
+            """)
+    List<Object[]> sumOrderAmounts(@Param("vendorId") Long vendorId,
+                                   @Param("from") LocalDateTime from,
+                                   @Param("to") LocalDateTime to);
+
+
+    @Query("""
+                select o.status, count(o)
+                from ServiceOrder o
+                where o.vendorId = :vendorId
+                  and o.createdAt between :from and :to
+                group by o.status
+            """)
+    List<Object[]> countByOrderStatus(@Param("vendorId") Long vendorId,
+                                      @Param("from") LocalDateTime from,
+                                      @Param("to") LocalDateTime to);
 }

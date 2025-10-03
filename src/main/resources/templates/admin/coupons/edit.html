@@ -22,7 +22,7 @@
         </div>
       </div>
 
-      <form class="bg-white rounded-lg shadow p-6 space-y-4" method="post"
+      <form id="couponForm" class="bg-white rounded-lg shadow p-6 space-y-4" method="post"
             th:action="@{'/admin/coupons/' + ${coupon.id} + '/edit'}" th:object="${coupon}">
         <input type="hidden" name="scope" value="SERVICE"/>
 
@@ -86,5 +86,8 @@
     <div th:replace="/admin/fragments/footer :: footer"></div>
   </div>
 </div>
+<!-- Script for validation -->
+<script th:src="@{/js/validate/core.js}"></script>
+<script th:src="@{/js/validate/admin-coupon-form-validator.js}"></script>
 </body>
 </html>

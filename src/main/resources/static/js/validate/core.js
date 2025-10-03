@@ -172,6 +172,38 @@ class FormValidator {
             return age >= 18;
         }
 
+        // Pattern validation (custom regex)
+        if (rule.startsWith('pattern:')) {
+            const pattern = rule.substring(8); // Get regex pattern after 'pattern:'
+            try {
+                const regex = new RegExp(pattern);
+                return regex.test(value);
+            } catch (e) {
+                console.error(`Invalid regex pattern: ${pattern}`, e);
+                return false;
+            }
+        }
+
+        // Integer validation (non-negative integer)
+        if (rule === 'integer') {
+            const num = Number(value);
+            return Number.isInteger(num) && num >= 0;
+        }
+
+        // Minimum value validation
+        if (rule.startsWith('minValue:')) {
+            const minVal = parseFloat(rule.split(':')[1]);
+            const num = parseFloat(value);
+            return !isNaN(num) && num >= minVal;
+        }
+
+        // Maximum value validation
+        if (rule.startsWith('maxValue:')) {
+            const maxVal = parseFloat(rule.split(':')[1]);
+            const num = parseFloat(value);
+            return !isNaN(num) && num <= maxVal;
+        }
+
         return true;
     }
 
@@ -215,5 +247,5 @@ class FormValidator {
             this.clearError(field.element);
         }
     }
-}a
+}
 

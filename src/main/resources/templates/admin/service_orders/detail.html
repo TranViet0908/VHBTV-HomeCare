@@ -97,7 +97,7 @@
       <!-- Cập nhật liên hệ -->
       <section class="mt-6 bg-white rounded-xl border p-4">
         <h2 class="text-lg font-semibold mb-3">Cập nhật thông tin liên hệ</h2>
-        <form th:action="@{|/admin/service-orders/${order.id}/contact|}" method="post" class="grid gap-4 md:grid-cols-4">
+        <form id="update-contact-form" th:action="@{|/admin/service-orders/${order.id}/contact|}" method="post" class="grid gap-4 md:grid-cols-4">
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
           <div>
             <label class="text-sm text-gray-600">Tên liên hệ</label>
@@ -207,5 +207,7 @@
     <div th:replace="/admin/fragments/footer :: footer"></div>
   </div>
 </div>
+  <script src="/js/validate/core.js"></script>
+  <script src="/js/validate/admin-service-order-contact-validator.js"></script>
 </body>
 </html>

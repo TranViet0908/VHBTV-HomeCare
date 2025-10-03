@@ -19,7 +19,7 @@
         <a href="/admin/coupons" class="text-blue-700 hover:underline">Về danh sách</a>
       </div>
 
-      <form class="bg-white rounded-lg shadow p-6 space-y-4" method="post"
+      <form id="couponForm" class="bg-white rounded-lg shadow p-6 space-y-4" method="post"
             th:action="@{/admin/coupons/create}" th:object="${coupon}">
         <input type="hidden" name="scope" value="SERVICE"/>
 
@@ -117,5 +117,7 @@
     document.getElementById('previewBox').innerText = 'Giảm ~ ' + Math.floor(d);
   }
 </script>
+<script src="/js/validate/core.js"></script>
+<script src="/js/validate/admin-coupon-form-validator.js"></script>
 </body>
 </html>

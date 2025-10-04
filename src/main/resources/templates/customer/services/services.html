@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Dịch vụ - VHBTV HomeCare</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+          rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        .service-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .service-card:hover {
+            background: linear-gradient(145deg, #f8fafc 0%, #ffffff 100%);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+        .hero-pattern {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .service-icon {
+            transition: all 0.3s ease;
+        }
+        .service-card:hover .service-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-popular {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .badge-new {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-50">
+<th:block th:replace="~{layouts/header :: siteHeader}"></th:block>
+
+<!-- Hero Section -->
+<section class="hero-pattern min-h-[60vh] flex items-center pt-32 pb-12" id="services-hero">
+    <div class="container mx-auto px-4 lg:px-8 text-center">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+                Dịch vụ chăm sóc nhà cửa
+                <span class="block text-yellow-300">toàn diện</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-200 mb-8 leading-relaxed">
+                Từ vệ sinh, sửa chữa đến bảo trì - Tất cả dịch vụ cho ngôi nhà của bạn
+            </p>
+            <div class="flex flex-wrap justify-center gap-4 text-white">
+                <div class="flex items-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <span>Giá minh bạch</span>
+                </div>
+                <div class="flex items-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+                    <i class="fas fa-shield-alt mr-2"></i>
+                    <span>Bảo hành rõ ràng</span>
+                </div>
+                <div class="flex items-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+                    <i class="fas fa-star mr-2"></i>
+                    <span>Đối tác uy tín</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Grid Section -->
+<section class="py-20 bg-white">
+    <div class="container mx-auto px-4 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <!-- Bộ lọc & tìm kiếm -->
+            <form method="get" th:action="@{/services}" class="mb-10 grid grid-cols-1 md:grid-cols-6 gap-3">
+                <input class="md:col-span-3 px-4 py-3 rounded-lg text-gray-900 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       type="text" name="q" placeholder="Tìm theo tên dịch vụ…" th:value="${q}">
+                <select class="md:col-span-2 px-4 py-3 rounded-lg text-gray-900 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        name="parentId">
+                    <option value="">Tất cả nhóm</option>
+                    <option th:each="r : ${roots}" th:value="${r.id}" th:selected="${parentId==r.id}" th:text="${r.name}">Nhóm</option>
+                </select>
+                <button class="md:col-span-1 bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-semibold rounded-lg">
+                    Lọc
+                </button>
+            </form>
+
+            <!-- Không có kết quả -->
+            <div th:if="${#lists.size(sections)==0}" class="bg-white rounded-2xl p-10 text-center shadow">
+                <h3 class="text-xl font-semibold">Không tìm thấy dịch vụ phù hợp</h3>
+                <p class="text-gray-600 mt-2">Thử đổi từ khóa hoặc bỏ lọc nhóm.</p>
+            </div>
+
+            <!-- Các nhóm dịch vụ (động) -->
+            <div th:each="sec : ${sections}" class="mb-16">
+                <div class="flex items-center mb-8">
+                    <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mr-4">
+                        <i class="fas fa-layer-group text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-900" th:text="${sec.rootName}">Tên nhóm</h2>
+                        <p class="text-gray-600" th:text="${sec.rootDesc}">Mô tả nhóm</p>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <div class="service-card p-6 rounded-2xl shadow-lg relative" th:each="c : ${sec.cards}">
+                        <span class="badge badge-popular absolute top-4 right-4" th:if="${c.vendorActiveCount > 10}">Phổ biến</span>
+
+                        <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mb-4 service-icon">
+                            <i class="fas text-2xl text-white" th:classappend="' ' + ${c.icon}"></i>
+                        </div>
+
+                        <h3 class="text-xl font-bold text-gray-900 mb-3" th:text="${c.name}">Tên dịch vụ</h3>
+                        <p class="text-gray-600 text-sm mb-4 line-clamp-2" th:text="${c.description}">Mô tả ngắn</p>
+
+                        <div class="space-y-2 text-sm text-gray-600 mb-4">
+                            <div class="flex items-center" th:if="${c.minPrice != null}">
+                                <i class="fas fa-check text-green-500 mr-2 text-xs"></i>
+                                <span>Giá từ </span>
+                                <strong th:text="${#numbers.formatDecimal(c.minPrice, 0, 'POINT', 0, 'POINT')} + 'đ'">0đ</strong>
+                                <span th:text="' / ' + ${c.unit}">/job</span>
+                            </div>
+                            <div class="flex items-center" th:if="${c.avgDuration != null}">
+                                <i class="fas fa-clock text-blue-500 mr-2 text-xs"></i>
+                                <span th:text="'~' + ${c.avgDuration} + ' phút'">~60 phút</span>
+                            </div>
+                            <div class="flex items-center" th:if="${c.minNotice != null}">
+                                <i class="fas fa-calendar text-purple-500 mr-2 text-xs"></i>
+                                <span th:text="'Báo trước ' + ${c.minNotice} + 'h'">Báo trước 24h</span>
+                            </div>
+                            <div class="flex items-center" th:if="${c.ratingCount > 0}">
+                                <i class="fas fa-star text-yellow-500 mr-2 text-xs"></i>
+                                <span th:text="${#numbers.formatDecimal(c.ratingAvg, 1, 'POINT', 1, 'POINT')} + ' (' + ${c.ratingCount} + ' đánh giá)'">4.8 (20)</span>
+                            </div>
+
+                            <!-- THÊM MỚI: tổng đơn trong 180 ngày -->
+                            <div class="flex items-center">
+                                <i class="fas fa-bag-shopping text-indigo-500 mr-2 text-xs"></i>
+                                <span th:text="'Đơn 180 ngày: ' + ${c.orders180d}">Đơn 180 ngày: 0</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 flex items-center justify-between">
+                            <a th:href="@{|/services/${c.slug}/vendors|}"
+                               class="w-1/2 mr-2 text-center text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg">
+                                Xem các vendor
+                            </a>
+                            <a th:href="@{|/services/${c.slug}|}"
+                               class="w-1/2 ml-2 text-center text-blue-600 hover:text-blue-800 border border-blue-200 px-4 py-2 rounded-lg">
+                                Chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-20 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+    <div class="container mx-auto px-4 lg:px-8 text-center">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">
+                Sẵn sàng đặt dịch vụ?
+            </h2>
+            <p class="text-xl text-gray-300 mb-8">
+                Liên hệ ngay với chúng tôi để được tư vấn và báo giá chi tiết
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="/contact" class="bg-white text-blue-600 px-10 py-4 rounded-full font-semibold hover:bg-gray-100 transition duration-300 shadow-lg transform hover:scale-105">
+                    <i class="fas fa-phone mr-2"></i>
+                    Liên hệ ngay
+                </a>
+                <a href="/customer/chat" class="border-2 border-white text-white px-10 py-4 rounded-full font-semibold hover:bg-white hover:text-blue-600 transition duration-300 transform hover:scale-105">
+                    <i class="fas fa-robot mr-2"></i>
+                    Chat với CSKH
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<th:block th:replace="~{layouts/footer :: siteFooter}"></th:block>
+
+<!-- JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script>
+    // Mobile menu toggle
+    document.getElementById('mobile-menu-btn')?.addEventListener('click', function() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenu?.classList.toggle('hidden');
+    });
+
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+                document.getElementById('mobile-menu')?.classList.add('hidden');
+            }
+        });
+    });
+
+    // Navbar background on scroll
+    window.addEventListener('scroll', function() {
+        const navbar = document.getElementById('navbar');
+        if (navbar) {
+            if (window.scrollY > 100) {
+                navbar.classList.add('bg-white/95', 'backdrop-blur-md');
+            } else {
+                navbar.classList.remove('bg-white/95', 'backdrop-blur-md');
+            }
+        }
+    });
+
+    // Anime.js animations
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate service cards on load
+        anime({
+            targets: '.service-card',
+            translateY: [50, 0],
+            opacity: [0, 1],
+            delay: anime.stagger(100),
+            duration: 500,
+            easing: 'easeOutExpo'
+        });
+
+        // Animate service icons on hover
+        document.querySelectorAll('.service-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                anime({
+                    targets: this.querySelector('.service-icon'),
+                    scale: [1, 1.1],
+                    rotate: [0, 5],
+                    duration: 300,
+                    easing: 'easeOutQuad'
+                });
+            });
+
+            card.addEventListener('mouseleave', function() {
+                anime({
+                    targets: this.querySelector('.service-icon'),
+                    scale: [1.1, 1],
+                    rotate: [5, 0],
+                    duration: 300,
+                    easing: 'easeOutQuad'
+                });
+            });
+        });
+
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    anime({
+                        targets: entry.target,
+                        translateY: [30, 0],
+                        opacity: [0, 1],
+                        duration: 800,
+                        easing: 'easeOutExpo'
+                    });
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        // Observe category headers
+        document.querySelectorAll('.mb-16 > .flex.items-center').forEach(el => {
+            observer.observe(el);
+        });
+    });
+
+    // dropdown hồ sơ
+    document.addEventListener("DOMContentLoaded", () => {
+        const btn = document.getElementById("userMenuBtn");
+        const dropdown = document.getElementById("userDropdown");
+
+        if (btn && dropdown) {
+            btn.addEventListener("click", () => {
+                dropdown.classList.toggle("hidden");
+            });
+
+            window.addEventListener("click", (e) => {
+                if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.add("hidden");
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

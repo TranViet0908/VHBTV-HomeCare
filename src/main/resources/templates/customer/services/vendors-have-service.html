@@ -1,0 +1,323 @@
+<!-- resources/templates/customer/services/vendors-have-service.html (đã sửa để hero có nền và header trong suốt trên hero) -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title th:text="${serviceName != null ? serviceName + ' - VHBTV HomeCare' : 'Danh sách nhà cung cấp - VHBTV HomeCare'}">
+        Danh sách nhà cung cấp - VHBTV HomeCare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Fix: nền hero + header overlay trên hero -->
+    <style>
+        /* Nền hero đồng bộ trang chủ: lớp gradient nền + lớp pattern mờ */
+        .hero-pattern{
+          position: relative;
+          background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+          overflow: hidden;
+        }
+        .hero-pattern::before{
+          content:"";
+          position:absolute; inset:0;
+          background-image:
+            radial-gradient(circle at 25% 25%, rgba(255,255,255,0.14) 0%, transparent 50%),
+            radial-gradient(circle at 75% 75%, rgba(255,255,255,0.14) 0%, transparent 50%);
+          pointer-events:none;
+        }
+        /* Header trong suốt khi đứng trên hero */
+        body.header-on-hero #navbar{
+          background-color: transparent !important;
+          box-shadow: none !important;
+        }
+        /* Đổi màu chữ menu thành trắng khi overlay trên hero */
+        body.header-on-hero #navbar *,
+        body.header-on-hero #navbar a,
+        body.header-on-hero #navbar i{
+          color:#fff !important;
+          border-color:rgba(255,255,255,0.6) !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+<!-- Header -->
+<div th:replace="~{layouts/header :: siteHeader}"></div>
+
+<!-- Breadcrumb -->
+<section class="bg-white border-b">
+    <div class="container mx-auto px-4 py-4">
+        <nav class="flex items-center space-x-2 text-sm">
+            <a class="text-gray-500 hover:text-blue-600 transition-colors" href="/"><i class="fas fa-home"></i></a>
+            <span class="text-gray-400">/</span>
+            <a class="text-gray-500 hover:text-blue-600 transition-colors" href="/services">Dịch vụ</a>
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-medium" th:text="${serviceName ?: 'Danh sách nhà cung cấp'}">Dịch vụ</span>
+        </nav>
+    </div>
+</section>
+
+<!-- HERO: dùng layout trang chủ -->
+<section class="hero-pattern min-h-[60vh] flex items-center pt-32 pb-12" id="services-hero">
+    <div class="container mx-auto px-4 lg:px-8 text-center">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+                <span th:text="${serviceName ?: 'Dịch vụ chăm sóc nhà cửa'}">Dịch vụ chăm sóc nhà cửa</span>
+                <span class="block text-yellow-300">toàn diện</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-200 mb-8 leading-relaxed"
+               th:text="${serviceDescription ?: 'Từ vệ sinh, sửa chữa đến bảo trì - Tất cả dịch vụ cho ngôi nhà của bạn'}">
+                Từ vệ sinh, sửa chữa đến bảo trì - Tất cả dịch vụ cho ngôi nhà của bạn
+            </p>
+            <div class="flex flex-wrap justify-center gap-4 text-white">
+                <div class="flex items-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+                    <i class="fas fa-check-circle mr-2 text-emerald-300"></i><span>Giá minh bạch</span>
+                </div>
+                <div class="flex items-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+                    <i class="fas fa-shield-alt mr-2 text-sky-300"></i><span>Bảo hành rõ ràng</span>
+                </div>
+                <div class="flex items-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+                    <i class="fas fa-star mr-2 text-yellow-300"></i><span>Đối tác uy tín</span>
+                </div>
+                <div class="flex items-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full"
+                     th:if="${totalVendors != null}">
+                    <i class="fas fa-users mr-2 text-pink-300"></i><span th:text="${totalVendors + ' nhà cung cấp'}">0 nhà cung cấp</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Filter & Sort Bar -->
+<section class="bg-white border-b sticky top-0 z-40 shadow-sm">
+    <div class="container mx-auto px-4 py-4">
+        <form class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+              id="filterForm" method="get" th:action="@{|/services/${serviceSlug}/vendors|}">
+            <div class="flex flex-wrap items-center gap-3">
+                <input class="px-4 py-2 rounded-lg border border-gray-300 text-sm w-64" name="q"
+                       placeholder="Tìm vendor hoặc gói..."
+                       th:value="${param.q}"
+                       type="text">
+                <label class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-300 text-sm cursor-pointer">
+                    <input class="accent-blue-600" name="verified" th:checked="${param.verified != null}"
+                           type="checkbox"
+                           value="true">
+                    <span>Đã xác minh</span>
+                </label>
+                <div class="flex items-center gap-2">
+                    <input class="w-28 px-3 py-2 rounded-lg border border-gray-300 text-sm" min="0" name="priceMin"
+                           placeholder="Giá từ"
+                           th:value="${param.priceMin}"
+                           type="number">
+                    <span class="text-gray-400">-</span>
+                    <input class="w-28 px-3 py-2 rounded-lg border border-gray-300 text-sm" min="0" name="priceMax"
+                           placeholder="đến"
+                           th:value="${param.priceMax}"
+                           type="number">
+                </div>
+                <div class="flex items-center gap-2">
+                    <input class="w-28 px-3 py-2 rounded-lg border border-gray-300 text-sm" min="0" name="durationMin"
+                           placeholder="Phút từ"
+                           th:value="${param.durationMin}"
+                           type="number">
+                    <span class="text-gray-400">-</span>
+                    <input class="w-28 px-3 py-2 rounded-lg border border-gray-300 text-sm" min="0" name="durationMax"
+                           placeholder="đến"
+                           th:value="${param.durationMax}"
+                           type="number">
+                </div>
+                <div class="flex items-center gap-2">
+                    <input class="w-36 px-3 py-2 rounded-lg border border-gray-300 text-sm" min="0" name="noticeMax"
+                           placeholder="Báo trước ≤ giờ"
+                           th:value="${param.noticeMax}"
+                           type="number">
+                </div>
+                <button class="px-4 py-2 rounded-lg border border-blue-600 text-blue-600 text-sm font-medium hover:bg-blue-600 hover:text-white"
+                        type="submit">
+                    Lọc
+                </button>
+                <a class="px-3 py-2 rounded-lg border border-gray-300 text-sm hover:bg-gray-50"
+                   th:href="@{|/services/${serviceSlug}/vendors|}">Xoá lọc</a>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <label class="text-sm text-gray-600">Sắp xếp:</label>
+                <select class="px-4 py-2 border border-gray-300 rounded-lg text-sm" name="sort"
+                        th:onchange="'document.getElementById(\\'filterForm\\').submit()'">
+                    <option th:selected="${param.sort == null || param.sort=='recommend'}" value="recommend">Phổ biến
+                        nhất
+                    </option>
+                    <option th:selected="${param.sort=='rating'}" value="rating">Đánh giá cao</option>
+                    <option th:selected="${param.sort=='price-asc'}" value="price-asc">Giá thấp đến cao</option>
+                    <option th:selected="${param.sort=='price-desc'}" value="price-desc">Giá cao đến thấp</option>
+                    <option th:selected="${param.sort=='newest'}" value="newest">Mới nhất</option>
+                </select>
+                <input name="page" type="hidden" value="0"/>
+                <input name="size" th:value="${param.size ?: 12}" type="hidden"/>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Vendors Grid -->
+<section class="py-12">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6"
+             id="vendorsGrid"
+             th:if="${vendorServices != null and #lists.size(vendorServices) > 0}">
+            <div class="vendor-card bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer"
+                 th:each="vendorService : ${vendorServices}"
+                 th:onclick="'window.location.href = \'/vendor-services/' + ${vendorService.id} + '\''">
+                <div class="relative h-60 md:h-64 lg:h-72 overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100">
+                    <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                         th:alt="${vendorService.title}"
+                         th:src="${vendorService.coverUrl != null ? vendorService.coverUrl : '/placeholder.svg?height=200&width=400'}">
+                    <div class="absolute top-3 left-3 flex flex-col space-y-2">
+              <span class="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center space-x-1 w-fit"
+                    th:if="${vendorService.vendor.verified}">
+                <i class="fas fa-certificate"></i><span>Đã xác minh</span>
+              </span>
+                        <span class="bg-orange-500 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center space-x-1 w-fit"
+                              th:if="${(vendorService.vendor.ratingAvg?:0) >= 4.5 and (vendorService.vendor.ratingCount?:0) >= 50}">
+                <i class="fas fa-fire"></i><span>Phổ biến</span>
+              </span>
+                    </div>
+                    <button class="absolute top-3 right-3 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-all hover:scale-110">
+                        <i class="far fa-heart text-gray-700 hover:text-red-500"></i>
+                    </button>
+                </div>
+
+                <div class="p-5">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-sm font-bold"
+                             th:text="${vendorService.vendor.displayName != null ? #strings.substring(vendorService.vendor.displayName, 0, 1) : 'V'}">
+                            V
+                        </div>
+                        <span class="text-sm text-gray-600 font-medium" th:text="${vendorService.vendor.displayName}">Vendor</span>
+                    </div>
+
+                    <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors"
+                        th:text="${vendorService.title}">Tiêu đề gói</h3>
+                    <p class="text-sm text-gray-600 mb-4 line-clamp-2" th:text="${vendorService.description}">Mô tả
+                        gói</p>
+
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="flex items-center space-x-1">
+                            <i class="fas fa-star text-yellow-400 text-sm"></i>
+                            <span class="text-sm font-bold text-gray-900"
+                                  th:text="${#numbers.formatDecimal(vendorService.vendor.ratingAvg?:0,1,1)}">0.0</span>
+                        </div>
+                        <span class="text-sm text-gray-500"
+                              th:text="'(' + (${vendorService.vendor.ratingCount}?:0) + ' đánh giá)'">(0 đánh giá)</span>
+                    </div>
+
+                    <!-- Sau -->
+                    <div class="flex items-center justify-between flex-wrap gap-y-2 text-xs text-gray-500 mb-4 pb-4 border-b">
+                        <div class="flex items-center space-x-1"><i class="far fa-clock"></i>
+                            <span th:text="${vendorService.durationMinutes != null ? vendorService.durationMinutes + ' phút' : '—'}">—</span>
+                        </div>
+                        <div class="flex items-center space-x-1"><i class="far fa-calendar"></i>
+                            <span th:text="${vendorService.minNoticeHours != null ? 'Đặt trước ' + vendorService.minNoticeHours + 'h' : '—'}">—</span>
+                        </div>
+                        <div class="flex items-center space-x-1"><i class="fas fa-shield-alt"></i><span>Bảo hành</span>
+                        </div>
+                        <!-- Tổng đơn hàng đã đặt cho gói này -->
+                        <div class="flex items-center space-x-1">
+                            <i class="fas fa-receipt"></i>
+                            <span th:text="${ordersCountMap != null && #maps.containsKey(ordersCountMap, vendorService.id)
+                            ? ordersCountMap[vendorService.id] : 0} + ' đơn'">0 đơn</span>
+
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="leading-none">
+                            <div class="text-xl sm:text-2xl font-bold text-blue-600"
+                                 th:text="${#numbers.formatDecimal(vendorService.basePrice ?: 0, 0, 'COMMA', 0, 'POINT')} + 'đ'">
+                                0đ
+                            </div>
+                        </div>
+
+                        <form class="flex items-center gap-3" method="post" onclick="event.stopPropagation()"
+                              onsubmit="event.stopPropagation()" th:action="@{/cart/add}">
+                            <input name="vendorServiceId" th:value="${vendorService.id}" type="hidden"/>
+                            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+
+                            <div class="flex items-stretch rounded-md border border-gray-300 bg-white overflow-hidden select-none">
+                                <button aria-label="Giảm" class="px-2 py-1 text-gray-700 hover:bg-gray-50"
+                                        onclick="event.stopPropagation(); const i=this.nextElementSibling; i.stepDown(); i.dispatchEvent(new Event('change'))"
+                                        type="button">
+                                    <i class="fa-solid fa-minus"></i>
+                                </button>
+
+                                <input class="w-12 text-center outline-none py-1 border-x border-gray-200 appearance-none
+                    [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" min="1" name="quantity" onclick="event.stopPropagation()"
+                                       onfocus="event.stopPropagation()" type="number"
+                                       value="1">
+
+                                <button aria-label="Tăng" class="px-2 py-1 text-gray-700 hover:bg-gray-50"
+                                        onclick="event.stopPropagation(); const i=this.previousElementSibling; i.stepUp(); i.dispatchEvent(new Event('change'))"
+                                        type="button">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+
+                            <button class="inline-flex items-center gap-2 px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-md hover:shadow-md whitespace-nowrap"
+                                    type="submit">
+                                <i class="fa-solid fa-cart-plus"></i>
+                                <span>Thêm vào giỏ hàng</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty -->
+        <div class="text-center py-16" th:if="${vendorServices == null or #lists.isEmpty(vendorServices)}">
+            <p class="text-gray-600">Chưa có nhà cung cấp phù hợp bộ lọc.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<div th:replace="~{layouts/footer :: siteFooter}"></div>
+
+<!-- Scripts -->
+<script>
+    // Header overlay toggle theo vị trí hero
+    function toggleHeaderOverlay(){
+      const hero = document.getElementById('services-hero');
+      if(!hero) return;
+      const bottom = hero.getBoundingClientRect().bottom;
+      if (bottom > 80){ document.body.classList.add('header-on-hero'); }
+      else { document.body.classList.remove('header-on-hero'); }
+    }
+    window.addEventListener('load', toggleHeaderOverlay);
+    window.addEventListener('scroll', toggleHeaderOverlay);
+    window.addEventListener('resize', toggleHeaderOverlay);
+
+    // Animate cards
+    const observer = new IntersectionObserver((entries)=>{
+      entries.forEach((e, i)=>{
+        if(e.isIntersecting){
+          anime({targets:e.target, translateY:[50,0], opacity:[0,1], duration:800, delay:i*100, easing:'easeOutExpo'});
+          observer.unobserve(e.target);
+        }
+      });
+    }, {threshold:0.1, rootMargin:'0px 0px -50px 0px'});
+    document.querySelectorAll('.vendor-card').forEach(c=>observer.observe(c));
+
+    // Wishlist animation
+    document.addEventListener('click',(e)=>{
+      const btn = e.target.closest('.vendor-card button');
+      if(!btn) return;
+      e.stopPropagation();
+      const heart = btn.querySelector('i');
+      if(heart.classList.contains('far')){ heart.classList.remove('far'); heart.classList.add('fas','text-red-500');
+        anime({targets:heart, scale:[1,1.3,1], duration:400, easing:'easeOutElastic(1,.5)'}); }
+      else { heart.classList.remove('fas','text-red-500'); heart.classList.add('far'); }
+    });
+</script>
+</body>
+</html>

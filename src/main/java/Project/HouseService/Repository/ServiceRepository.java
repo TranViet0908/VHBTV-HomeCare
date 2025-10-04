@@ -45,4 +45,22 @@ public interface ServiceRepository extends JpaRepository<Service, Long> {
             nativeQuery = true
     )
     List<Service> findAssignableForVendor(@Param("vendorId") Long vendorId);
+
+    // Lấy nhóm cha
+    List<Service> findByParentIdIsNullOrderByNameAsc();
+
+    // Lấy con theo cha
+    List<Service> findByParentIdOrderByNameAsc(Long parentId);
+
+    // Tìm nhóm cha theo tên chứa (insensitive) — dùng LOWER để phù hợp dữ liệu
+    @Query("SELECT s FROM Service s WHERE s.parentId IS NULL AND LOWER(s.name) LIKE LOWER(:kw) ORDER BY s.name ASC")
+    List<Service> findRootByNameLike(@Param("kw") String keyword);
+
+    // Tìm con theo cha và tên chứa
+    @Query("SELECT s FROM Service s WHERE s.parentId = :pid AND LOWER(s.name) LIKE LOWER(:kw) ORDER BY s.name ASC")
+    List<Service> findChildrenByParentIdAndNameLike(@Param("pid") Long parentId, @Param("kw") String keyword);
+
+    // Bổ sung cho suggestions
+    List<Service> findByIdInOrderByNameAsc(List<Long> ids);
+
 }

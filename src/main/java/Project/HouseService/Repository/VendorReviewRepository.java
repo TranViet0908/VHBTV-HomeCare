@@ -29,4 +29,21 @@ public interface VendorReviewRepository extends JpaRepository<VendorReview, Long
     Object[] avgAndCountForVendor(@Param("vendorId") Long vendorId);
 
     boolean existsByServiceOrderId(Long serviceOrderId);
+    // Đếm review HIỂN THỊ cho VENDOR (hidden=false hoặc null)
+    @Query("""
+        select count(vr)
+        from VendorReview vr
+        where vr.vendorId = :vendorId
+          and (vr.hidden = false or vr.hidden is null)
+    """)
+    long countVisibleByVendorId(@Param("vendorId") Long vendorId);
+
+    // Trung bình sao HIỂN THỊ cho VENDOR
+    @Query("""
+        select coalesce(avg(vr.rating), 0)
+        from VendorReview vr
+        where vr.vendorId = :vendorId
+          and (vr.hidden = false or vr.hidden is null)
+    """)
+    Double avgByVendorIdVisible(@Param("vendorId") Long vendorId);
 }

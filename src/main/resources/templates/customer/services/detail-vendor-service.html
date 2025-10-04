@@ -1,0 +1,232 @@
+<!-- resources/templates/customer/services/detail-vendor-service.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title th:text="${vendorService != null ? vendorService.title : 'Dịch vụ'}">Dịch vụ</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .card { background: linear-gradient(145deg,#ffffff,#f8fafc); border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,.06); }
+        .thumb-active { outline: 2px solid #2563eb; outline-offset: 2px; }
+        /* Thay cho aspect-[16/9] để tương thích Tailwind 2.2 */
+        .ratio-16x9 { position: relative; width: 100%; }
+        .ratio-16x9::before { content:""; display:block; padding-top:56.25%; }
+        .ratio-16x9 > .fit { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+<th:block th:replace="layouts/header :: siteHeader"></th:block>
+
+<main class="container mx-auto px-4 lg:px-8 pt-28 pb-16">
+
+    <!-- Breadcrumb -->
+    <nav class="text-sm text-gray-600 mb-6">
+        <a href="/" class="hover:text-blue-600"><i class="fa fa-home mr-1"></i>Trang chủ</a>
+        <span class="mx-2 text-gray-400">/</span>
+        <a th:if="${service != null}" th:href="@{'/services/' + ${service.slug} + '/vendors'}" class="hover:text-blue-600" th:text="${service.name}">Dịch vụ</a>
+        <span class="mx-2 text-gray-400">/</span>
+        <span class="font-semibold" th:text="${vendorService.title}">Chi tiết</span>
+    </nav>
+
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div class="lg:col-span-2 card p-6">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h1 class="text-3xl font-extrabold mb-2" th:text="${vendorService.title}">Tiêu đề dịch vụ</h1>
+                    <div class="flex items-center text-gray-600 space-x-4">
+                        <div><i class="fa fa-stopwatch mr-1"></i><span th:text="${vendorService.durationMinutes} + ' phút'">90 phút</span></div>
+                        <div><i class="fa fa-bell mr-1"></i><span th:text="'Báo trước ' + (${vendorService.minNoticeHours} ?: 0) + ' giờ'">Báo trước</span></div>
+                        <div><i class="fa fa-shopping-bag mr-1"></i><span th:text="${ordersCount} + ' đơn đã đặt'">0 đơn đã đặt</span></div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-2xl font-bold text-blue-700">
+                        <span th:text="${#numbers.formatDecimal(vendorService.basePrice,0,'POINT',0,'POINT')}">0</span>
+                        <span class="text-sm text-gray-600" th:text="' / ' + (${vendorService.unit} ?: 'lần')">/ lần</span>
+                    </div>
+                    <button type="button" class="mt-2 text-red-500 hover:text-red-600">
+                        <i class="fa-regular fa-heart mr-1"></i> Yêu thích
+                    </button>
+                </div>
+            </div>
+
+            <!-- Gallery: ảnh lớn + thumbnails -->
+            <div class="mt-6">
+                <div class="ratio-16x9 bg-gray-200 rounded-xl overflow-hidden">
+                    <!-- GÁN SRC MẶC ĐỊNH TỪ SERVER: ảnh đầu của imageList, nếu rỗng thì coverUrl -->
+                    <img id="js-main"
+                         class="fit"
+                         alt="gallery"
+                         th:src="${!#lists.isEmpty(imageList) ? imageList.get(0).url : (vendorService.coverUrl != null ? vendorService.coverUrl : '')}">
+                </div>
+
+                <!-- thumbnails -->
+                <div class="mt-3 flex space-x-2 overflow-x-auto pb-1">
+                    <img th:each="m,iter : ${imageList}"
+                         th:src="${m.url}"
+                         th:attr="data-src=${m.url}"
+                         th:alt="${m.altText}"
+                         class="js-thumb w-24 h-16 object-cover rounded-lg cursor-pointer hover:opacity-90">
+                </div>
+
+                <!-- fallback nếu không có ảnh -->
+                <div th:if="${#lists.isEmpty(imageList) && vendorService.coverUrl == null}" class="w-full h-64 bg-gray-200 rounded-xl flex items-center justify-center text-gray-500 mt-3">
+                    Chưa có ảnh
+                </div>
+            </div>
+
+            <!-- Mô tả -->
+            <div class="mt-6 prose max-w-none">
+                <h2 class="text-xl font-semibold mb-2">Mô tả dịch vụ</h2>
+                <p th:utext="${#strings.escapeXml(vendorService.description) ?: 'Đang cập nhật'}">Đang cập nhật</p>
+            </div>
+
+            <!-- Media khác: video -->
+            <div class="mt-6" th:if="${!#lists.isEmpty(mediaList)}">
+                <h2 class="text-xl font-semibold mb-3">Thư viện khác</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <div th:each="m : ${mediaList}" th:if="${m.mediaType.name() == 'VIDEO'}" class="relative group">
+                        <div class="w-full h-40 bg-black rounded-lg flex items-center justify-center text-white">
+                            <i class="fa fa-play mr-2"></i><span th:text="${m.altText}">Video</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar: Vendor + Đặt lịch -->
+        <aside class="card p-6 space-y-6">
+            <!-- Vendor card -->
+            <div>
+                <h3 class="text-lg font-semibold mb-2">Nhà cung cấp</h3>
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-gray-200 mr-3 overflow-hidden">
+                        <img th:if="${vendorAvatarUrl}" th:src="${vendorAvatarUrl}" alt="avatar" class="w-12 h-12 object-cover">
+                    </div>
+                    <div>
+                        <div class="font-semibold">
+                            <a th:href="@{/vendor/profile}" th:text="${vendorDisplayName}">Vendor</a> <!-- dùng display_name -->
+                            <i th:if="${vendorVerified}" class="fa fa-badge-check text-blue-600 ml-1"></i>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <i class="fa fa-star text-yellow-400 mr-1"></i>
+                            <span th:text="${#numbers.formatDecimal(vendorAvgRating,1,1)}">0.0</span>
+                            <span th:text="'(' + ${vendorRatingCount} + ' đánh giá)'">(0 đánh giá)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-semibold mb-2">Đặt lịch</h3>
+                <form method="post" th:action="@{/cart/add}">
+                    <input type="hidden" name="_csrf" th:value="${_csrf?.token}">
+                    <input type="hidden" name="vendorServiceId" th:value="${vendorService.id}">
+                    <label class="block text-sm text-gray-700 mb-1">Thời gian mong muốn</label>
+                    <input type="datetime-local" name="scheduledAt" th:attr="min=${minScheduleAtISO}" class="w-full border rounded px-3 py-2 mb-3">
+                    <label class="block text-sm text-gray-700 mb-1">Số lượng</label>
+                    <input id="qty" type="number" name="quantity" value="1" min="1" class="w-full border rounded px-3 py-2">
+                    <div class="mt-4 p-3 bg-gray-100 rounded flex items-center justify-between">
+                        <span class="text-gray-600">Tạm tính</span>
+                        <strong id="pricePreview" class="text-blue-700" th:attr="data-price=${vendorService.basePrice}">0</strong>
+                        <span class="text-sm text-gray-500" th:text="'/ ' + (${vendorService.unit} ?: 'lần')"></span>
+                    </div>
+                    <div class="mt-4 grid grid-cols-2 gap-3">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-2 rounded"><i class="fa fa-cart-plus mr-1"></i>Thêm vào giỏ</button>
+                        <a th:href="@{'/orders/preview?vendorServiceId=' + ${vendorService.id}}" class="text-center bg-green-600 hover:bg-green-700 text-white py-2 rounded">Đặt ngay</a>
+                    </div>
+                </form>
+            </div>
+        </aside>
+    </section>
+
+    <!-- Đánh giá -->
+    <section class="card p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold">Đánh giá dịch vụ</h2>
+            <div class="text-gray-600">
+                <i class="fa fa-star text-yellow-400 mr-1"></i>
+                <span th:text="${#numbers.formatDecimal(avgRating,1,1)}">0.0</span>
+                <span th:text="'(' + ${ratingCount} + ' lượt)'">(0 lượt)</span>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(reviewsPage?.content)}" class="text-gray-500">Chưa có đánh giá.</div>
+
+        <div th:each="r : ${reviewsPage?.content}" class="border-t py-4">
+            <div class="flex items-center text-sm text-gray-600">
+                <i class="fa fa-user mr-2"></i>
+                <span th:text="${customerNamesById[r.customerId] ?: 'Khách hàng'}">Khách hàng</span>
+                <span class="mx-2">•</span>
+                <span><i class="fa fa-star text-yellow-400 mr-1"></i><span th:text="${r.rating}">5</span></span>
+                <span class="mx-2">•</span>
+                <span th:text="${#temporals.format(r.createdAt, 'dd/MM/yyyy HH:mm')}">01/10/2025</span>
+            </div>
+            <div class="mt-2 text-gray-800" th:text="${r.content}">Nội dung...</div>
+        </div>
+
+        <div class="mt-4 flex justify-end space-x-2" th:if="${reviewsPage != null}">
+            <a th:if="${!reviewsPage.first}" th:href="@{|/vendor-services/${vendorService.id}?page=${reviewsPage.number-1}&size=${reviewsPage.size}|}" class="px-3 py-1 border rounded">Trước</a>
+            <span class="px-3 py-1">Trang <span th:text="${reviewsPage.number+1}">1</span>/<span th:text="${reviewsPage.totalPages}">1</span></span>
+            <a th:if="${!reviewsPage.last}" th:href="@{|/vendor-services/${vendorService.id}?page=${reviewsPage.number+1}&size=${reviewsPage.size}|}" class="px-3 py-1 border rounded">Sau</a>
+        </div>
+    </section>
+
+</main>
+
+<th:block th:replace="layouts/footer :: siteFooter"></th:block>
+
+<script>
+    // Cập nhật tạm tính
+    (function(){
+      var qty = document.getElementById('qty');
+      var pv = document.getElementById('pricePreview');
+      if (qty && pv) {
+        var price = parseFloat(pv.dataset.price || '0');
+        function upd(){ pv.textContent = (price * (parseInt(qty.value||'1'))).toLocaleString('vi-VN'); }
+        qty.addEventListener('input', upd); upd();
+      }
+    })();
+
+    // Gallery: autoplay + fade + chọn thumbnail, fallback khi thiếu anime.js
+    (function() {
+      var main = document.getElementById('js-main');
+      var thumbs = Array.prototype.slice.call(document.querySelectorAll('.js-thumb'));
+      if (!main) return;
+      var hasAnime = typeof window.anime === 'function';
+      var idx = 0, timer = null, DURATION = 4000, F = 250;
+
+      function highlight(i){ thumbs.forEach(function(t,k){ t.classList.toggle('thumb-active', k===i); }); }
+      function setSrc(src, cb){
+        if (!hasAnime) { main.src = src; if (cb) cb(); return; }
+        anime({ targets: main, opacity: [1,0], duration: F, easing: 'easeInOutQuad',
+          complete: function(){
+            main.src = src;
+            anime({ targets: main, opacity: [0,1], duration: F, easing: 'easeInOutQuad', complete: cb });
+          }
+        });
+      }
+      function show(i, viaUser){
+        if (thumbs.length === 0) return;
+        idx = i;
+        var src = thumbs[idx].getAttribute('data-src') || thumbs[idx].getAttribute('src');
+        highlight(idx);
+        setSrc(src, function(){ if (viaUser) reset(); });
+      }
+      function next(){ if (thumbs.length>0) show((idx + 1) % thumbs.length, false); }
+      function reset(){ if (timer) clearInterval(timer); timer = setInterval(next, DURATION); }
+
+      thumbs.forEach(function(t,i){ t.addEventListener('click', function(){ show(i, true); }); });
+
+      // Khởi tạo: main đã có src từ server, chỉ cần đánh dấu thumb và   bật auto
+      highlight(0);
+      reset();
+    })();
+</script>
+</body>
+</html>

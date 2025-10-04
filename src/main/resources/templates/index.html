@@ -123,6 +123,13 @@
                         Nền tảng kết hợp dịch vụ chăm sóc nhà cửa và bán hàng gia dụng, kết nối khách hàng với kỹ thuật viên,
                         đội vệ sinh và nhà bán đã xác minh; đặt lịch nhanh, giá minh bạch, thanh toán an toàn, bảo hành rõ ràng.
                     </span>
+                <div class="text-center mt-10">
+                    <a class="inline-block bg-gradient-to-r from-blue-500 to-purple-600 text-white px-10 py-4 rounded-full font-semibold hover:shadow-xl transition duration-300 transform hover:scale-105"
+                       th:href="@{/about}">
+                        Giới thiệu về chúng tôi
+                        <i class="fas fa-arrow-right ml-3"></i>
+                    </a>
+                </div>
                 </p>
             </div>
 
@@ -302,8 +309,8 @@
 
                 <!-- Dịch vụ: Sửa ống nước -->
                 <div class="service-card p-8 rounded-2xl shadow-lg">
-                    <div class="w-20 h-20 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mb-6 transform rotate-6">
-                        <i class="fas fa-wrench text-3xl text-white"></i>
+                    <div class="w-20 h-20 bg-gradient-to-r from-green-500 to-green-700 rounded-2xl flex items-center justify-center mb-6 transform -rotate-3">
+                        <i class="fas fa-wrench text-white text-3xl"></i>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-4">Sửa ống nước</h3>
                     <p class="text-gray-600 mb-6 leading-relaxed">
@@ -322,15 +329,15 @@
                     </ul>
                 </div>
 
-            <div class="text-center mt-16">
-                <a class="inline-block bg-gradient-to-r from-blue-500 to-purple-600 text-white px-10 py-4 rounded-full font-semibold hover:shadow-xl transition duration-300 transform hover:scale-105"
-                   th:href="@{/services}">
-                    Xem tất cả dịch vụ
-                    <i class="fas fa-arrow-right ml-3"></i>
-                </a>
+                <div class="col-span-3 text-center mt-16">
+                    <a class="inline-block bg-gradient-to-r from-blue-500 to-purple-600 text-white px-10 py-4 rounded-full font-semibold hover:shadow-xl transition duration-300 transform hover:scale-105"
+                       th:href="@{/services}">
+                        Xem tất cả dịch vụ
+                        <i class="fas fa-arrow-right ml-3"></i>
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
     </div>
 </section>
 
@@ -350,52 +357,55 @@
             </div>
 
             <div class="grid md:grid-cols-3 gap-8">
+                <!-- Vendor 1 -->
                 <div class="group cursor-pointer">
                     <div class="relative overflow-hidden rounded-2xl card-hover shadow-lg">
                         <div class="w-full h-64 overflow-hidden">
-                            <img alt="VinGroup Campaign"
+                            <img alt="GreenHouse Cleaning"
                                  class="w-full h-full object-cover group-hover:scale-110 transition duration-700"
-                                 src="https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=600&h=400">
+                                 src="https://images.pexels.com/photos/4239034/pexels-photo-4239034.jpeg?auto=compress&cs=tinysrgb&w=600&h=400">
                         </div>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-500">
                             <div class="absolute bottom-6 left-6 text-white transform translate-y-4 group-hover:translate-y-0 transition duration-500">
-                                <h4 class="text-xl font-bold mb-2">Chiến dịch Tết VinGroup</h4>
-                                <p class="text-sm opacity-90 mb-1">Integrated Marketing Campaign</p>
-                                <p class="text-yellow-400 font-semibold">200M+ lượt tiếp cận</p>
+                                <h4 class="text-xl font-bold mb-2">GreenHouse Cleaning</h4>
+                                <p class="text-sm opacity-90 mb-1">Dịch vụ vệ sinh nhà cửa chuyên nghiệp</p>
+                                <p class="text-yellow-400 font-semibold">500+ khách hàng tin dùng</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Vendor 2 -->
                 <div class="group cursor-pointer">
                     <div class="relative overflow-hidden rounded-2xl card-hover shadow-lg">
                         <div class="w-full h-64 overflow-hidden">
-                            <img alt="Shopee Campaign"
+                            <img alt="Điện lạnh Tâm Phát"
                                  class="w-full h-full object-cover group-hover:scale-110 transition duration-700"
-                                 src="https://images.pexels.com/photos/3183165/pexels-photo-3183165.jpeg?auto=compress&cs=tinysrgb&w=600&h=400">
+                                 src="https://images.pexels.com/photos/6195111/pexels-photo-6195111.jpeg?auto=compress&cs=tinysrgb&w=600&h=400">
                         </div>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-500">
                             <div class="absolute bottom-6 left-6 text-white transform translate-y-4 group-hover:translate-y-0 transition duration-500">
-                                <h4 class="text-xl font-bold mb-2">Shopee Brand Launch</h4>
-                                <p class="text-sm opacity-90 mb-1">Digital Marketing & Branding</p>
-                                <p class="text-yellow-400 font-semibold">500K+ downloads ngày đầu</p>
+                                <h4 class="text-xl font-bold mb-2">Điện lạnh Tâm Phát</h4>
+                                <p class="text-sm opacity-90 mb-1">Bảo trì & vệ sinh điều hòa</p>
+                                <p class="text-yellow-400 font-semibold">1.200+ máy được bảo dưỡng</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Vendor 3 -->
                 <div class="group cursor-pointer">
                     <div class="relative overflow-hidden rounded-2xl card-hover shadow-lg">
                         <div class="w-full h-64 overflow-hidden">
-                            <img alt="Techcombank Rebranding"
+                            <img alt="An Gia Plumbing"
                                  class="w-full h-full object-cover group-hover:scale-110 transition duration-700"
-                                 src="https://dongphucvina.vn/wp-content/uploads/2023/05/logo-techcombank-dongphucvina.vn_.png">
+                                 src="https://images.pexels.com/photos/5854199/pexels-photo-5854199.jpeg?auto=compress&cs=tinysrgb&w=600&h=400">
                         </div>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-500">
                             <div class="absolute bottom-6 left-6 text-white transform translate-y-4 group-hover:translate-y-0 transition duration-500">
-                                <h4 class="text-xl font-bold mb-2">Techcombank Rebranding</h4>
-                                <p class="text-sm opacity-90 mb-1">Brand Identity & Strategy</p>
-                                <p class="text-yellow-400 font-semibold">+40% Brand awareness</p>
+                                <h4 class="text-xl font-bold mb-2">An Gia Plumbing</h4>
+                                <p class="text-sm opacity-90 mb-1">Sửa chữa & thay thế đường ống nước</p>
+                                <p class="text-yellow-400 font-semibold">800+ ca xử lý thành công</p>
                             </div>
                         </div>
                     </div>

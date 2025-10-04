@@ -15,16 +15,19 @@
                 </div>
 
                 <div class="hidden md:flex space-x-8 items-center">
-                    <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium" href="#home">
+                    <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium" th:href="@{/}">
                         <i class="fas fa-house mr-1"></i>Trang chủ
                     </a>
                     <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium" href="#about">
                         <i class="fas fa-info-circle mr-1"></i>Giới thiệu
                     </a>
-                    <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium" href="#services">
+                    <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium"
+                       th:href="@{/services}">
                         <i class="fas fa-tools mr-1"></i>Dịch vụ
                     </a>
-
+                    <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium" href="/vendor/list">
+                        <i class="fas fa-people-carry mr-1"></i>Vendor
+                    </a>
                     <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium" href="/customer/chat">
                         <i class="fas fa-robot mr-1"></i>Chatbot CSKH
                     </a>

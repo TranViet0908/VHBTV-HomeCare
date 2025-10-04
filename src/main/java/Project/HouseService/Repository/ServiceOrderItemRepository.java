@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public interface ServiceOrderItemRepository extends JpaRepository<ServiceOrderItem, Long> {
     List<ServiceOrderItem> findByServiceOrderId(Long serviceOrderId);
@@ -107,5 +108,41 @@ public interface ServiceOrderItemRepository extends JpaRepository<ServiceOrderIt
                                         @Param("from") LocalDateTime from,
                                         @Param("to") LocalDateTime to,
                                         @Param("limit") int limit);
+    @Query(value = """
+        SELECT vs.service_id AS service_id, COUNT(*) AS cnt
+        FROM service_order o
+        JOIN service_order_item oi ON oi.service_order_id = o.id
+        JOIN vendor_service vs ON vs.id = oi.vendor_service_id
+        WHERE o.status = 'COMPLETED'
+          AND o.created_at >= :since
+          AND vs.service_id IN (:ids)
+        GROUP BY vs.service_id
+        """, nativeQuery = true)
+    List<Map<String, Object>> completedCountByServiceIdsSince(@Param("ids") Collection<Long> serviceIds,
+                                                              @Param("since") LocalDateTime since);
+
+    @Query(value = """
+        SELECT vs.service_id AS service_id, COUNT(*) AS cnt
+        FROM service_order o
+        JOIN service_order_item oi ON oi.service_order_id = o.id
+        JOIN vendor_service vs ON vs.id = oi.vendor_service_id
+        WHERE o.status = 'COMPLETED'
+          AND o.created_at >= :since
+        GROUP BY vs.service_id
+        ORDER BY cnt DESC
+        LIMIT :limit
+        """, nativeQuery = true)
+    List<Map<String, Object>> topTrendingServicesSince(@Param("since") LocalDateTime since,
+                                                       @Param("limit") int limit);
+
+    // THÊM VÀO: đếm item thuộc đơn đã COMPLETED theo vendor_service_id
+    @org.springframework.data.jpa.repository.Query(value = """
+    SELECT COUNT(oi.id)
+        FROM service_order o
+        JOIN service_order_item oi ON oi.service_order_id = o.id
+        WHERE oi.vendor_service_id = :vsId
+          AND o.status = 'COMPLETED'
+    """, nativeQuery = true)
+    long countCompletedItemsByVendorServiceId(@org.springframework.data.repository.query.Param("vsId") Long vendorServiceId);
 
 }

@@ -35,7 +35,7 @@ public class ReportAdminController {
         this.servletContext = servletContext;
     }
 
-    @GetMapping({"/admin/reports", "/admin/reports/", "/admin/reports/index", "/admin/reports/index.html"})
+    @GetMapping({"/admin/reports", "/admin/reports/", "/admin/reports/index", "/admin/reports/services.html"})
     public String index(Model model,
                         @RequestParam(required = false) String from,
                         @RequestParam(required = false) String to,

@@ -167,7 +167,16 @@
              th:if="${vendorServices != null and #lists.size(vendorServices) > 0}">
             <div class="vendor-card bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer"
                  th:each="vendorService : ${vendorServices}"
-                 th:onclick="'window.location.href = \'/vendor-services/' + ${vendorService.id} + '\''">
+                 th:with="
+                    svcSlug=${serviceSlug != null ? serviceSlug : slug},
+                    isMap=${vendorService.vendor instanceof T(java.util.Map)},
+                    vUser=${isMap ? vendorService.vendor['username'] : vendorService.vendor.username},
+                    vName=${isMap ? (vendorService.vendor['displayName'] ?: vendorService.vendor['display_name']) : vendorService.vendor.displayName},
+                    vKey=${#strings.isEmpty(vUser) ? vName : vUser},
+                    destUrl=|/vendor-services/${vKey}/${svcSlug}|
+                 "
+                 th:attr="data-url=${destUrl}"
+                 onclick="window.location.href=this.dataset.url">
                 <div class="relative h-60 md:h-64 lg:h-72 overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100">
                     <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                          th:alt="${vendorService.title}"
@@ -201,14 +210,13 @@
                     <p class="text-sm text-gray-600 mb-4 line-clamp-2" th:text="${vendorService.description}">Mô tả
                         gói</p>
 
-                    <div class="flex items-center space-x-2 mb-4">
-                        <div class="flex items-center space-x-1">
-                            <i class="fas fa-star text-yellow-400 text-sm"></i>
-                            <span class="text-sm font-bold text-gray-900"
-                                  th:text="${#numbers.formatDecimal(vendorService.vendor.ratingAvg?:0,1,1)}">0.0</span>
-                        </div>
+                    <!-- Điểm trung bình + sao + (số đánh giá) -->
+                    <div class="flex items-center space-x-1">
+                        <i class="fas fa-star text-yellow-400 text-sm"></i>
+                        <span class="text-sm font-bold text-gray-900"
+                              th:text="${#numbers.formatDecimal((vendorService['vendor'] != null and vendorService['vendor']['ratingAvg'] != null) ? vendorService['vendor']['ratingAvg'] : 0, 1, 1)}">0.0</span>
                         <span class="text-sm text-gray-500"
-                              th:text="'(' + (${vendorService.vendor.ratingCount}?:0) + ' đánh giá)'">(0 đánh giá)</span>
+                              th:text="|(${vendorService['vendor'] != null and vendorService['vendor']['ratingCount'] != null ? vendorService['vendor']['ratingCount'] : 0} đánh giá)|">(0 đánh giá)</span>
                     </div>
 
                     <!-- Sau -->

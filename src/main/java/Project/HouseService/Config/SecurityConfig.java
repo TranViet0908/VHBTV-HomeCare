@@ -5,19 +5,23 @@ import Project.HouseService.Security.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
+import org.springframework.security.web.util.matcher.RegexRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
+
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
 
-    // BẮT BUỘC: dùng resolver chuẩn (tránh lỗi multipart + CSRF)
     @Bean
     public MultipartResolver multipartResolver() {
         return new StandardServletMultipartResolver();
@@ -47,9 +51,9 @@ public class SecurityConfig {
 
     private void applyCsrf(HttpSecurity http) throws Exception {
         var repo = new HttpSessionCsrfTokenRepository();
-        repo.setParameterName("_csrf");          // tên field mà form gửi
+        repo.setParameterName("_csrf");
         var handler = new CsrfTokenRequestAttributeHandler();
-        handler.setCsrfRequestAttributeName("_csrf"); // để Thymeleaf đọc ${_csrf.token}
+        handler.setCsrfRequestAttributeName("_csrf");
         http.csrf(csrf -> csrf
                 .csrfTokenRepository(repo)
                 .csrfTokenRequestHandler(handler)
@@ -89,21 +93,47 @@ public class SecurityConfig {
 
     @Bean
     @Order(2)
-    public SecurityFilterChain appChain(HttpSecurity http, DaoAuthenticationProvider appAuthProvider) throws Exception {
+    public SecurityFilterChain appChain(HttpSecurity http,
+                                        DaoAuthenticationProvider appAuthProvider) throws Exception {
         http.authenticationProvider(appAuthProvider);
         applyCsrf(http);
 
+        // PUBLIC cho đúng 2 route chi tiết vendor và API tóm tắt
+        List<RequestMatcher> publicVendor = List.of(
+                new RegexRequestMatcher("^/vendor/id/\\d+$", "GET"),
+                // /vendor/{username} nhưng loại trừ các trang console của vendor
+                new RegexRequestMatcher("^/vendor/(?!dashboard$|profile$|orders$|services$|coupons$|reviews$|media$|settings$)[^/]+$", "GET"),
+                new RegexRequestMatcher("^/api/vendors/.*$", "GET")
+        );
+
         http.authorizeHttpRequests(reg -> reg
-                // mở cả GET trang chat và POST gửi tin
-                .requestMatchers(
+                .requestMatchers("/", "/login", "/register",
+                        "/css/**", "/js/**", "/images/**", "/uploads/**", "/favicon.ico",
                         "/customer/chat", "/customer/chat/**",
                         "/customer/chatbot", "/customer/chatbot/**",
                         "/api/chat/**"
                 ).permitAll()
 
-                .requestMatchers("/", "/login", "/register",
-                        "/css/**", "/js/**", "/images/**", "/uploads/**", "/favicon.ico").permitAll()
+                // KHÓA console vendor trước
+                .requestMatchers(
+                        "/vendor/dashboard", "/vendor/dashboard/**",
+                        "/vendor/profile",   "/vendor/profile/**",
+                        "/vendor/orders",    "/vendor/orders/**",
+                        "/vendor/services",  "/vendor/services/**",
+                        "/vendor/coupons",   "/vendor/coupons/**",
+                        "/vendor/reviews",   "/vendor/reviews/**",
+                        "/vendor/media",     "/vendor/media/**",
+                        "/vendor/settings",  "/vendor/settings/**"
+                ).hasAnyRole("VENDOR","ADMIN")
+
+                // MỞ PUBLIC cho detail + root + API tóm tắt
+                .requestMatchers(HttpMethod.GET, "/vendor", "/vendor/").permitAll()
+                .requestMatchers(HttpMethod.GET, "/vendor/*", "/vendor/id/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/vendors/**").permitAll()
+
+                // Phần còn lại của /vendor/**
                 .requestMatchers("/vendor/**").hasAnyRole("VENDOR","ADMIN")
+
                 .requestMatchers("/customer/**").hasAnyRole("CUSTOMER","VENDOR","ADMIN")
                 .anyRequest().permitAll()
         );

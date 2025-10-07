@@ -98,4 +98,14 @@ public interface VendorServiceReviewRepository extends JpaRepository<VendorServi
           and (r.hidden = false or r.hidden is null)
     """)
     Double avgByVendorIdVisible(@Param("vendorId") Long vendorId);
+
+    @Query(value = """
+        SELECT r.vendor_service_id AS vsId,
+               COUNT(*)            AS cnt,
+               AVG(r.rating)       AS avg_rating
+        FROM vendor_service_review r
+        WHERE r.vendor_service_id IN (:ids)
+        GROUP BY r.vendor_service_id
+    """, nativeQuery = true)
+    List<Object[]> aggregateByVendorServiceIds(@Param("ids") Collection<Long> ids);
 }

@@ -12,13 +12,11 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-// ✗ BỎ DÒNG SAI — alias import không hợp lệ trong Java
-// import org.springframework.stereotype.Service as Svc;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
-@org.springframework.stereotype.Service // ✓ dùng FQN để tránh trùng tên với Entity Service
+@org.springframework.stereotype.Service
 @Transactional
 public class VendorBrowsingService {
 
@@ -60,17 +58,15 @@ public class VendorBrowsingService {
             String slug,
             Filters f,
             Pageable pageable,
-            String sort,          // "recommend" | "price-asc" | "price-desc" | "rating" | "newest"
-            Long currentUserId,   // hiện chưa dùng vì CustomerEvent không có userId
+            String sort,
+            Long currentUserId,
             String sessionId
     ) {
         Service svc = serviceRepository.findBySlug(slug)
                 .orElseThrow(() -> new NoSuchElementException("Service not found: " + slug));
 
-        // Log sự kiện mở danh sách
         tryLogViewVendorList(svc.getId(), sessionId, f, sort, pageable);
 
-        // WHERE + params
         StringBuilder where = new StringBuilder("""
             FROM vendor_service vs
             JOIN service s ON s.id = vs.service_id
@@ -96,7 +92,6 @@ public class VendorBrowsingService {
             if (f.noticeMax() != null)   { where.append(" AND vs.min_notice_hours <= :noticeMax "); params.put("noticeMax", f.noticeMax()); }
         }
 
-        // SELECT
         String select = """
             SELECT
               vs.id                           AS id,
@@ -123,7 +118,6 @@ public class VendorBrowsingService {
               COALESCE(vs.created_at, vs.id)  AS created_sort
             """;
 
-        // ORDER BY
         String order;
         switch (sort == null ? "recommend" : sort) {
             case "price-asc" -> order = " ORDER BY vs.base_price ASC, vs.id DESC ";
@@ -137,7 +131,6 @@ public class VendorBrowsingService {
             default -> order = " ORDER BY vs.id DESC ";
         }
 
-        // Main query
         String sql = select + " " + where + " " + order;
         Query listQ = em.createNativeQuery(sql);
         params.forEach(listQ::setParameter);
@@ -151,8 +144,8 @@ public class VendorBrowsingService {
             Map<String, Object> vendor = new LinkedHashMap<>();
             vendor.put("vendorId",           toLong(r[8]));
             vendor.put("displayName",        toStr(r[9]));
-            vendor.put("ratingAvg",          toDouble(r[10]));
-            vendor.put("ratingCount",        toLong(r[11]));
+            vendor.put("ratingAvg",          toDouble(r[10])); // sẽ bị ghi đè nếu có rating theo gói
+            vendor.put("ratingCount",        toLong(r[11]));   // sẽ bị ghi đè nếu có rating theo gói
             vendor.put("yearsExperience",    toInt(r[12]));
             vendor.put("verified",           toBool(r[13]));
             vendor.put("addressLine",        toStr(r[14]));
@@ -170,13 +163,55 @@ public class VendorBrowsingService {
             items.add(m);
         }
 
-        // Count for pagination
+        // ===== GHI ĐÈ rating theo từng vendor_service (KHÔNG đổi API) =====
+        if (!items.isEmpty()) {
+            List<Long> vsIds = new ArrayList<>(items.size());
+            for (Map<String, Object> it : items) {
+                Long id = (Long) it.get("id");
+                if (id != null) vsIds.add(id);
+            }
+            if (!vsIds.isEmpty()) {
+                // Lấy count + avg rating theo vendor_service_id
+                String aggSql = """
+                    SELECT r.vendor_service_id, COUNT(1) AS cnt, AVG(r.rating) AS avg_rating
+                    FROM vendor_service_review r
+                    WHERE r.vendor_service_id IN (:ids)
+                    GROUP BY r.vendor_service_id
+                    """;
+                Query aggQ = em.createNativeQuery(aggSql);
+                aggQ.setParameter("ids", vsIds);
+                @SuppressWarnings("unchecked")
+                List<Object[]> agg = aggQ.getResultList();
+
+                Map<Long, Long> cntMap = new HashMap<>();
+                Map<Long, Double> avgMap = new HashMap<>();
+                for (Object[] a : agg) {
+                    Long id = toLong(a[0]);
+                    Long cnt = toLong(a[1]);
+                    Double avg = toDouble(a[2]);
+                    if (id != null) {
+                        cntMap.put(id, cnt == null ? 0L : cnt);
+                        avgMap.put(id, avg == null ? 0.0 : avg);
+                    }
+                }
+
+                // Ghi đè vào vendor.rating*
+                for (Map<String, Object> it : items) {
+                    Long id = (Long) it.get("id");
+                    if (id == null) continue;
+                    Map<String, Object> v = castMap(it.get("vendor"));
+                    if (v == null) continue;
+                    if (avgMap.containsKey(id)) v.put("ratingAvg", avgMap.get(id));
+                    if (cntMap.containsKey(id)) v.put("ratingCount", cntMap.get(id));
+                }
+            }
+        }
+
         String countSql = "SELECT COUNT(1) " + where;
         Query cntQ = em.createNativeQuery(countSql);
         params.forEach(cntQ::setParameter);
         long total = ((Number) cntQ.getSingleResult()).longValue();
 
-        // Count distinct vendors for header
         String distinctVSql = "SELECT COUNT(DISTINCT vs.vendor_id) " + where;
         Query dvQ = em.createNativeQuery(distinctVSql);
         params.forEach(dvQ::setParameter);
@@ -191,34 +226,29 @@ public class VendorBrowsingService {
                                       Filters f, String sort, Pageable pageable) {
         try {
             CustomerEvent e = new CustomerEvent();
-            // ✓ enum thay vì String
             e.setAction(CustomerEvent.Action.VIEW_VENDOR_LIST);
             e.setServiceId(serviceId);
             e.setVendorId(null);
             e.setVendorServiceId(null);
-            // ✓ CustomerEvent có sessionId + occurredAt + meta
-            try {
-                CustomerEvent.class.getMethod("setSessionId", String.class).invoke(e, sessionId);
-            } catch (NoSuchMethodException ignore) {}
-            try {
-                CustomerEvent.class.getMethod("setOccurredAt", LocalDateTime.class).invoke(e, LocalDateTime.now());
-            } catch (NoSuchMethodException ignore) {}
+            try { CustomerEvent.class.getMethod("setSessionId", String.class).invoke(e, sessionId); } catch (NoSuchMethodException ignore) {}
+            try { CustomerEvent.class.getMethod("setOccurredAt", LocalDateTime.class).invoke(e, LocalDateTime.now()); } catch (NoSuchMethodException ignore) {}
             String meta = String.format("q=%s;sort=%s;page=%d;size=%d",
                     f != null ? safe(f.q()) : null,
                     sort,
                     pageable.getPageNumber(),
                     pageable.getPageSize());
-            try {
-                CustomerEvent.class.getMethod("setMeta", String.class).invoke(e, meta);
-            } catch (NoSuchMethodException ignore) {}
+            try { CustomerEvent.class.getMethod("setMeta", String.class).invoke(e, meta); } catch (NoSuchMethodException ignore) {}
             customerEventRepository.save(e);
         } catch (Exception ignore) {
-            // không chặn render nếu log lỗi
         }
     }
 
-    private static String safe(String s) { return s == null ? null : s.length() > 200 ? s.substring(0,200) : s; }
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> castMap(Object o) {
+        return (o instanceof Map) ? (Map<String, Object>) o : null;
+    }
 
+    private static String safe(String s) { return s == null ? null : s.length() > 200 ? s.substring(0,200) : s; }
     private static Long toLong(Object o){ return o==null?null:((Number)o).longValue(); }
     private static Integer toInt(Object o){ return o==null?null:((Number)o).intValue(); }
     private static Double toDouble(Object o){ return o==null?0.0:((Number)o).doubleValue(); }

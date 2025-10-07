@@ -46,4 +46,21 @@ public interface VendorReviewRepository extends JpaRepository<VendorReview, Long
           and (vr.hidden = false or vr.hidden is null)
     """)
     Double avgByVendorIdVisible(@Param("vendorId") Long vendorId);
+
+    @Query(value = "SELECT COUNT(*) FROM vendor_review WHERE vendor_id = :vendorId", nativeQuery = true)
+    Long countByVendorIdNative(@Param("vendorId") Long vendorId);
+
+    @Query(value = "SELECT COALESCE(AVG(rating),0) FROM vendor_review WHERE vendor_id = :vendorId", nativeQuery = true)
+    Double avgRatingByVendorId(@Param("vendorId") Long vendorId);
+
+    @org.springframework.data.jpa.repository.Query(value = """
+    SELECT vr.vendor_id       AS vendor_id,
+           AVG(vr.rating)     AS avg_rating,
+           COUNT(vr.id)       AS cnt
+    FROM vendor_review vr
+    WHERE vr.vendor_id IN (:ids)
+    GROUP BY vr.vendor_id
+""", nativeQuery = true)
+    java.util.List<Object[]> aggRatingByVendorIds(
+            @org.springframework.data.repository.query.Param("ids") java.util.Collection<Long> ids);
 }

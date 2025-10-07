@@ -145,4 +145,25 @@ public interface ServiceOrderItemRepository extends JpaRepository<ServiceOrderIt
     """, nativeQuery = true)
     long countCompletedItemsByVendorServiceId(@org.springframework.data.repository.query.Param("vsId") Long vendorServiceId);
 
+    @Query(value = """
+                SELECT oi.vendor_id AS vendor_id, COUNT(*) AS cnt
+                FROM service_order o
+                JOIN service_order_item oi ON oi.service_order_id = o.id
+                WHERE o.status = 'COMPLETED'
+                  AND oi.vendor_id IN (:vendorIds)
+                GROUP BY oi.vendor_id
+            """, nativeQuery = true)
+    List<Object[]> countCompletedByVendorIds(@Param("vendorIds") java.util.Collection<Long> vendorIds);
+
+    @org.springframework.data.jpa.repository.Query(value = """
+                SELECT COALESCE(oi.vendor_id, vs.vendor_id) AS vendor_id,
+                       COUNT(*)                             AS cnt
+                FROM service_order o
+                JOIN service_order_item oi ON oi.service_order_id = o.id
+                LEFT JOIN vendor_service vs ON oi.vendor_service_id = vs.id
+                WHERE o.status = 'COMPLETED'
+                  AND COALESCE(oi.vendor_id, vs.vendor_id) IN (:vendorIds)
+                GROUP BY COALESCE(oi.vendor_id, vs.vendor_id)
+            """, nativeQuery = true)
+    java.util.List<Object[]> countCompletedByVendorIdsSafe(@org.springframework.data.repository.query.Param("vendorIds") java.util.Collection<Long> vendorIds);
 }

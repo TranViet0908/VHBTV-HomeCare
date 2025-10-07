@@ -88,7 +88,6 @@
 
             <!-- Media khác: video -->
             <div class="mt-6" th:if="${!#lists.isEmpty(mediaList)}">
-                <h2 class="text-xl font-semibold mb-3">Thư viện khác</h2>
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     <div th:each="m : ${mediaList}" th:if="${m.mediaType.name() == 'VIDEO'}" class="relative group">
                         <div class="w-full h-40 bg-black rounded-lg flex items-center justify-center text-white">
@@ -102,15 +101,20 @@
         <!-- Sidebar: Vendor + Đặt lịch -->
         <aside class="card p-6 space-y-6">
             <!-- Vendor card -->
+            <!-- yêu cầu model có: vendorUsername -->
             <div>
                 <h3 class="text-lg font-semibold mb-2">Nhà cung cấp</h3>
+
                 <div class="flex items-center">
-                    <div class="w-12 h-12 rounded-full bg-gray-200 mr-3 overflow-hidden">
+                    <a class="w-12 h-12 rounded-full bg-gray-200 mr-3 overflow-hidden block"
+                       th:href="@{/vendor/{name}(name=${vendorDisplayName})}">
                         <img th:if="${vendorAvatarUrl}" th:src="${vendorAvatarUrl}" alt="avatar" class="w-12 h-12 object-cover">
-                    </div>
+                    </a>
+
                     <div>
                         <div class="font-semibold">
-                            <a th:href="@{/vendor/profile}" th:text="${vendorDisplayName}">Vendor</a> <!-- dùng display_name -->
+                            <a th:href="@{/vendor/{name}(name=${vendorDisplayName})}"
+                               th:text="${vendorDisplayName}">Vendor</a>
                             <i th:if="${vendorVerified}" class="fa fa-badge-check text-blue-600 ml-1"></i>
                         </div>
                         <div class="text-sm text-gray-600">

@@ -1,0 +1,296 @@
+<!-- src/main/resources/templates/customer/vendor/vendors.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width,initial-scale=1.0" name="viewport">
+    <title>Vendor - VHBTV HomeCare</title>
+    <link href="data:," rel="icon">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+          rel="stylesheet">
+    <style>
+        *{font-family:'Inter',sans-serif}
+        .vendor-card{background:linear-gradient(145deg,#fff 0%,#f8fafc 100%);transition:all .3s cubic-bezier(.4,0,.2,1)}
+        .vendor-card:hover{background:linear-gradient(145deg,#f8fafc 0%,#fff 100%);transform:translateY(-8px) scale(1.02);box-shadow:0 25px 50px rgba(0,0,0,.15)}
+        .hero-pattern{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)}
+        .badge{display:inline-block;padding:.25rem .75rem;border-radius:9999px;font-size:.75rem;font-weight:600}
+        .badge-top{background:linear-gradient(135deg,#f093fb 0%,#f5576c 100%);color:#fff}
+    </style>
+</head>
+<body class="font-sans bg-gray-50">
+<th:block th:replace="~{layouts/header :: siteHeader}"></th:block>
+
+<!-- Hero Section -->
+<section class="hero-pattern min-h-[60vh] flex items-center pt-32 pb-12" id="vendors-hero">
+    <div class="container mx-auto px-4 lg:px-8 text-center">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+                Vendor <span class="block text-yellow-300">uy tín & chuyên nghiệp</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-200 mb-8 leading-relaxed">
+                Kết nối với hàng trăm Vendor chăm sóc nhà cửa
+            </p>
+            <div class="flex flex-wrap justify-center gap-4 text-white">
+                <div class="flex items-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+                    <i class="fas fa-check-circle mr-2 text-emerald-300"></i>
+                    <span>Giá minh bạch</span>
+                </div>
+                <div class="flex items-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+                    <i class="fas fa-shield-alt mr-2 text-sky-300"></i>
+                    <span>Bảo hành rõ ràng</span>
+                </div>
+                <div class="flex items-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+                    <i class="fas fa-star mr-2 text-amber-300"></i>
+                    <span>Đối tác uy tín</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="bg-white border-b sticky top-0 z-40 shadow-sm">
+    <div class="container mx-auto px-4 lg:px-8 py-4">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+            <div class="flex items-center space-x-2 text-sm text-gray-600">
+                <i class="fas fa-store text-blue-600"></i>
+                <span><strong th:text="${total}">0</strong> Vendor</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <button class="filter-btn active px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium"><i
+                        class="fas fa-th-large mr-2"></i>Tất cả
+                </button>
+                <button class="filter-btn px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium"><i
+                        class="fas fa-star mr-2"></i>Top rated
+                </button>
+                <select class="px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                    <option th:selected="${params!=null and params['sort']=='popular'}" value="popular">Phổ biến nhất
+                    </option>
+                    <option th:selected="${params!=null and params['sort']=='rating_desc'}" value="rating_desc">Đánh giá
+                        cao
+                    </option>
+                    <option th:selected="${params!=null and params['sort']=='newest'}" value="newest">Mới nhất</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-12 bg-white">
+    <div class="container mx-auto px-4 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="vendorsGrid">
+
+                <!-- 1) Render gợi ý trước -->
+                <div class="vendor-card p-6 rounded-2xl shadow-lg relative"
+                     th:each="item : ${suggested}">
+                    <div class="relative h-32 -mx-6 -mt-6 mb-4 overflow-hidden rounded-t-2xl bg-gradient-to-br from-blue-100 to-purple-100 z-0">
+                        <div class="absolute top-3 right-3">
+                          <span class="badge badge-top"
+                                th:if="${(item['ratingAvg']!=null and item['ratingAvg']>=4.8 and item['ratingCount']!=null and item['ratingCount']>=100)
+                                         or (item['completedOrders']!=null and item['completedOrders']>=100)}">
+                            <i class="fas fa-crown text-xs mr-1"></i>Top
+                          </span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center -mt-16 mb-4 relative">
+                        <div class="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 relative z-10">
+                            <img class="w-full h-full object-cover" th:alt="${item['displayName']}"
+                                 th:if="${item['avatarUrl'] != null}" th:src="${item['avatarUrl']}">
+                            <div class="w-full h-full flex items-center justify-center text-white text-2xl font-bold"
+                                 th:if="${item['avatarUrl'] == null}"
+                                 th:text="${#strings.substring(item['displayName'],0,1)}">V
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2" th:text="${item['displayName']}">Vendor</h3>
+
+                        <!-- rating nếu có -->
+                        <div class="flex items-center justify-center space-x-2 mb-3"
+                             th:if="${item['ratingCount'] != null and item['ratingCount'] > 0}">
+                            <div class="flex items-center space-x-1">
+                                <i class="fas fa-star text-yellow-400"></i>
+                                <span class="text-lg font-bold text-gray-900"
+                                      th:text="${#numbers.formatDecimal(item['ratingAvg'],1,1)}">0.0</span>
+                            </div>
+                            <span class="text-sm text-gray-500"
+                                  th:text="'(' + ${item['ratingCount']} + ' đánh giá)'">(0 đánh giá)</span>
+                        </div>
+                        <div class="text-sm text-gray-500 mb-3"
+                             th:if="${item['ratingCount'] == null or item['ratingCount'] == 0}">
+                            Chưa có đánh giá
+                        </div>
+
+                        <!-- bio nếu có -->
+                        <p class="text-sm text-gray-600 mb-4 line-clamp-2"
+                           th:if="${item['bio'] != null and !#strings.isEmpty(item['bio'])}"
+                           th:text="${item['bio']}"></p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mb-4 pb-4 border-b">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-blue-600"
+                                 th:text="${item['completedOrders'] != null ? item['completedOrders'] : 0}">0
+                            </div>
+                            <div class="text-xs text-gray-500">Đơn hoàn thành</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-purple-600"
+                                 th:text="${item['ratingCount'] != null ? item['ratingCount'] : 0}">0
+                            </div>
+                            <div class="text-xs text-gray-500">Lượt đánh giá</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="text-xs text-gray-500 mb-1">Dịch vụ tiêu biểu</div>
+                        <ul class="space-y-1">
+                            <li th:each="sv : ${item['servicesSample']}">
+                                <span class="text-sm font-medium" th:text="${sv['title']}">Dịch vụ</span>
+                                <span class="text-sm text-gray-500">· từ </span>
+                                <span class="text-sm font-semibold text-gray-800"
+                                      th:text="${sv['priceFrom'] != null ? #numbers.formatDecimal(sv['priceFrom'],0,0) : '0'}">0</span>
+                                <span class="text-sm text-gray-500" th:if="${sv['durationMinutes'] != null}">· <span
+                                        th:text="${sv['durationMinutes']}">0</span> phút</span>
+                            </li>
+                            <li class="text-sm text-gray-500" th:if="${#lists.isEmpty(item['servicesSample'])}">Chưa cập
+                                nhật
+                            </li>
+                        </ul>
+                    </div>
+
+                    <a class="block text-center w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition"
+                       th:href="@{|/vendor/${item['displayName']}|}">
+                        Xem chi tiết
+                    </a>
+                </div>
+
+                <!-- 2) Render các item còn lại, bỏ trùng với suggested -->
+                <div class="vendor-card p-6 rounded-2xl shadow-lg relative"
+                     th:each="item : ${items}"
+                     th:if="${suggestedIds == null or !#lists.contains(suggestedIds, item['vendorId'])}">
+                    <div class="relative h-32 -mx-6 -mt-6 mb-4 overflow-hidden rounded-t-2xl bg-gradient-to-br from-blue-100 to-purple-100 z-0">
+                        <div class="absolute top-3 right-3">
+                          <span class="badge badge-top"
+                                th:if="${(item['ratingAvg']!=null and item['ratingAvg']>=4.8 and item['ratingCount']!=null and item['ratingCount']>=100)
+                                         or (item['completedOrders']!=null and item['completedOrders']>=100)}">
+                            <i class="fas fa-crown text-xs mr-1"></i>Top
+                          </span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center -mt-16 mb-4 relative">
+                        <div class="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 relative z-10">
+                            <img class="w-full h-full object-cover" th:alt="${item['displayName']}"
+                                 th:if="${item['avatarUrl'] != null}" th:src="${item['avatarUrl']}">
+                            <div class="w-full h-full flex items-center justify-center text-white text-2xl font-bold"
+                                 th:if="${item['avatarUrl'] == null}"
+                                 th:text="${#strings.substring(item['displayName'],0,1)}">V
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2" th:text="${item['displayName']}">Vendor</h3>
+
+                        <!-- rating nếu có -->
+                        <div class="flex items-center justify-center space-x-2 mb-3"
+                             th:if="${item['ratingCount'] != null and item['ratingCount'] > 0}">
+                            <div class="flex items-center space-x-1">
+                                <i class="fas fa-star text-yellow-400"></i>
+                                <span class="text-lg font-bold text-gray-900"
+                                      th:text="${#numbers.formatDecimal(item['ratingAvg'],1,1)}">0.0</span>
+                            </div>
+                            <span class="text-sm text-gray-500"
+                                  th:text="'(' + ${item['ratingCount']} + ' đánh giá)'">(0 đánh giá)</span>
+                        </div>
+                        <div class="text-sm text-gray-500 mb-3"
+                             th:if="${item['ratingCount'] == null or item['ratingCount'] == 0}">
+                            Chưa có đánh giá
+                        </div>
+
+                        <!-- bio nếu có -->
+                        <p class="text-sm text-gray-600 mb-4 line-clamp-2"
+                           th:if="${item['bio'] != null and !#strings.isEmpty(item['bio'])}"
+                           th:text="${item['bio']}"></p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mb-4 pb-4 border-b">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-blue-600"
+                                 th:text="${item['completedOrders'] != null ? item['completedOrders'] : 0}">0
+                            </div>
+                            <div class="text-xs text-gray-500">Đơn hoàn thành</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-purple-600"
+                                 th:text="${item['ratingCount'] != null ? item['ratingCount'] : 0}">0
+                            </div>
+                            <div class="text-xs text-gray-500">Lượt đánh giá</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="text-xs text-gray-500 mb-1">Dịch vụ tiêu biểu</div>
+                        <ul class="space-y-1">
+                            <li th:each="sv : ${item['servicesSample']}">
+                                <span class="text-sm font-medium" th:text="${sv['title']}">Dịch vụ</span>
+                                <span class="text-sm text-gray-500">· từ </span>
+                                <span class="text-sm font-semibold text-gray-800"
+                                      th:text="${sv['priceFrom'] != null ? #numbers.formatDecimal(sv['priceFrom'],0,0) : '0'}">0</span>
+                                <span class="text-sm text-gray-500" th:if="${sv['durationMinutes'] != null}">· <span
+                                        th:text="${sv['durationMinutes']}">0</span> phút</span>
+                            </li>
+                            <li class="text-sm text-gray-500" th:if="${#lists.isEmpty(item['servicesSample'])}">Chưa cập
+                                nhật
+                            </li>
+                        </ul>
+                    </div>
+
+                    <a class="block text-center w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition"
+                       th:href="@{|/vendor/${item['displayName']}|}">
+                        Xem chi tiết
+                    </a>
+                </div>
+                <!-- /cards -->
+            </div>
+
+            <!-- Pagination -->
+            <div class="mt-12 flex justify-center"
+                 th:with="totalPages=${(total + size - 1) / size}, curr=${page}">
+                <nav class="inline-flex items-center space-x-1">
+
+                    <a th:if="${curr > 0}"
+                       th:href="@{|/vendors?page=${curr - 1}&size=${size}|}"
+                       class="px-3 py-2 rounded-lg border text-gray-700 hover:bg-gray-100">Trước</a>
+
+                    <a th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                       th:href="@{|/vendors?page=${i}&size=${size}|}"
+                       th:text="${i + 1}"
+                       class="px-3 py-2 rounded-lg border"
+                       th:classappend="${i == curr} ? ' bg-blue-600 text-white border-blue-600' : ' bg-white text-gray-700 hover:bg-gray-100'">
+                    </a>
+
+                    <a th:if="${curr + 1 < totalPages}"
+                       th:href="@{|/vendors?page=${curr + 1}&size=${size}|}"
+                       class="px-3 py-2 rounded-lg border text-gray-700 hover:bg-gray-100">Sau</a>
+
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
+
+<th:block th:replace="~{layouts/footer :: siteFooter}"></th:block>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      anime({ targets: '.vendor-card', translateY:[50,0], opacity:[0,1], delay: anime.stagger(80), duration:700, easing:'easeOutExpo' });
+    });
+</script>
+</body>
+</html>

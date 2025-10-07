@@ -86,4 +86,73 @@ public interface VendorServiceRepository extends JpaRepository<VendorService, Lo
     GROUP BY vendor_service_id
     """, nativeQuery = true)
     List<Map<String,Object>> countOrdersByVendorServiceIds(@Param("ids") Collection<Long> ids);
+
+    // Lấy Page dịch vụ ACTIVE của vendor, mới nhất trước
+    Page<VendorService> findByVendorIdAndStatusOrderByCreatedAtDesc(Long vendorId, String status, Pageable pageable);
+
+    // Lấy tất cả dịch vụ ACTIVE của vendor (fallback để tự phân trang)
+    List<VendorService> findByVendorIdAndStatus(Long vendorId, String status);
+
+    // Lấy một vài dịch vụ ACTIVE mới nhất để tìm cover cho vendor
+    @org.springframework.data.jpa.repository.Query(value = """
+                SELECT * FROM vendor_service
+                WHERE vendor_id = :vendorId AND status = 'ACTIVE'
+                ORDER BY created_at DESC
+                LIMIT 5
+            """, nativeQuery = true)
+    List<VendorService> findTopByVendorIdActiveOrderByCreatedDesc(@org.springframework.data.repository.query.Param("vendorId") Long vendorId);
+
+    @Query(value = """
+                SELECT vs.*
+                FROM vendor_service vs
+                JOIN service s ON s.id = vs.service_id
+                WHERE vs.vendor_id = :vendorId AND s.slug = :serviceSlug
+                LIMIT 1
+            """, nativeQuery = true)
+    Optional<VendorService> findByVendorIdAndServiceSlug(@Param("vendorId") Long vendorId,
+                                                         @Param("serviceSlug") String serviceSlug);
+
+    @Query(value = """
+                SELECT vs.*
+                FROM vendor_service vs
+                JOIN service s ON s.id = vs.service_id
+                JOIN vendor_profile vp ON vp.user_id = vs.vendor_id
+                JOIN user u ON u.id = vs.vendor_id
+                WHERE s.slug = :serviceSlug
+                  AND (
+                      lower(u.username) = lower(:vendorName)
+                   OR lower(vp.display_name) = lower(:vendorName)
+                   OR lower(REPLACE(vp.display_name,' ','-')) = lower(:vendorName)
+                  )
+                LIMIT 1
+            """, nativeQuery = true)
+    Optional<VendorService> findByVendorNameAndServiceSlug(@Param("vendorName") String vendorName,
+                                                           @Param("serviceSlug") String serviceSlug);
+
+    @Query("""
+            select coalesce(min(vs.basePrice),0) as minPrice,
+                   coalesce(max(vs.basePrice),0) as maxPrice
+            from VendorService vs
+            where upper(vs.status) = 'ACTIVE'
+            """)
+    java.util.List<Object[]> globalPriceRangeActive();
+
+    @Query("select vs from VendorService vs where vs.vendorId in :vendorIds and upper(vs.status) = 'ACTIVE' order by vs.vendorId asc, vs.basePrice asc")
+    List<VendorService> findActiveByVendorIdInOrderByPrice(@Param("vendorIds") Collection<Long> vendorIds);
+
+    @Query("""
+               select distinct vs.vendorId from VendorService vs
+               where vs.vendorId in :vendorIds
+                 and upper(vs.status) = 'ACTIVE'
+                 and (:priceMin is null or vs.basePrice >= :priceMin)
+                 and (:priceMax is null or vs.basePrice <= :priceMax)
+                 and (:durationMax is null or vs.durationMinutes <= :durationMax)
+                 and (:noticeMax is null or vs.minNoticeHours <= :noticeMax)
+            """)
+    List<Long> filterVendorsByServiceConstraints(
+            @Param("vendorIds") Collection<Long> vendorIds,
+            @Param("priceMin") BigDecimal priceMin,
+            @Param("priceMax") BigDecimal priceMax,
+            @Param("durationMax") Integer durationMax,
+            @Param("noticeMax") Integer noticeMax);
 }

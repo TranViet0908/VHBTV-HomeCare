@@ -63,18 +63,29 @@ public interface CustomerEventRepository extends JpaRepository<CustomerEvent, Lo
                                         @Param("since") LocalDateTime since,
                                         @Param("lambda") double lambda);
 
-    // Lấy vendor vừa click theo session để ưu tiên xếp hạng runtime
     @Query(value = """
-        SELECT DISTINCT e.vendor_id
-        FROM customer_event e
-        WHERE e.session_id = :sessionId
-          AND e.vendor_id IS NOT NULL
-          AND e.action IN ('CLICK_VENDOR','CLICK_VENDOR_SERVICE')
-          AND e.occurred_at >= :since
-        ORDER BY MAX(e.occurred_at) DESC
-        LIMIT :limit
-        """, nativeQuery = true)
-    List<Long> recentClickedVendorsBySession(@Param("sessionId") String sessionId,
-                                             @Param("since") LocalDateTime since,
-                                             @Param("limit") int limit);
+                SELECT e.vendor_id, MAX(e.occurred_at) AS last_click
+                FROM customer_event e
+                WHERE e.session_id = :sessionId
+                  AND e.vendor_id IN (:vendorIds)
+                  AND e.action IN ('CLICK_VENDOR','CLICK_VENDOR_SERVICE')
+                GROUP BY e.vendor_id
+            """, nativeQuery = true)
+    List<Object[]> lastClicksForVendors(@Param("sessionId") String sessionId,
+                                        @Param("vendorIds") java.util.Collection<Long> vendorIds);
+
+    @org.springframework.data.jpa.repository.Query(value = """
+            SELECT e.vendor_id, MAX(e.occurred_at) AS last_click
+            FROM customer_event e
+            WHERE e.session_id = :sessionId
+              AND e.vendor_id IS NOT NULL
+              AND e.action IN ('CLICK_VENDOR','CLICK_VENDOR_SERVICE')
+              AND e.occurred_at >= :since
+            GROUP BY e.vendor_id
+            ORDER BY last_click DESC
+            """, nativeQuery = true)
+    java.util.List<Object[]> recentClickedVendorsWithLastClick(
+            @org.springframework.data.repository.query.Param("sessionId") String sessionId,
+            @org.springframework.data.repository.query.Param("since") java.time.LocalDateTime since,
+            org.springframework.data.domain.Pageable pageable);
 }

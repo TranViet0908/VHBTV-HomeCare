@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.Normalizer;
 import java.util.Locale;
 
 @Component("utils")
@@ -162,4 +163,20 @@ public class ThymeleafUtils {
                 })
                 .orElse("User #" + userId);
     }
+    public String vendorSlug(String username, String displayName) {
+        if (username != null && !username.isBlank()) return username; // giữ nguyên username để khớp DB
+        return toSlug(displayName);
+    }
+
+    public String toSlug(String input) {
+        if (input == null) return "";
+        String n = java.text.Normalizer.normalize(input, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        n = n.replaceAll("[^\\p{Alnum}]+", "-")
+                .replaceAll("^-+|-+$", "")
+                .replaceAll("-{2,}", "-")
+                .toLowerCase(java.util.Locale.ROOT);
+        return n;
+    }
+
 }

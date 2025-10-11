@@ -1,0 +1,332 @@
+<!-- resources/templates/index.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Giỏ hàng - VHBTV HomeCare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <style>
+        .gradient-text { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .modal-show { opacity: 1; pointer-events: auto; }
+        .modal-hide { opacity: 0; pointer-events: none; }
+    </style>
+</head>
+<body class="bg-gray-50">
+<div th:replace="~{layouts/header :: siteHeader}"></div>
+
+<main class="pt-24 pb-16">
+    <div class="container mx-auto px-4 lg:px-8 max-w-7xl">
+        <nav class="mb-8 text-sm">
+            <ol class="flex items-center space-x-2 text-gray-600">
+                <li><a class="hover:text-blue-600" href="/"><i class="fas fa-home"></i></a></li>
+                <li><i class="fas fa-chevron-right text-xs"></i></li>
+                <li class="text-gray-900 font-medium">Giỏ hàng</li>
+            </ol>
+        </nav>
+
+        <div class="text-center py-20 hidden" id="cartEmpty">
+            <div class="inline-block p-8 bg-white rounded-full shadow-lg mb-6">
+                <i class="fas fa-shopping-cart text-6xl text-gray-300"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Giỏ hàng trống</h2>
+            <p class="text-gray-600 mb-8">Hãy thêm dịch vụ vào giỏ hàng để tiếp tục</p>
+            <a class="inline-block bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-full font-medium hover:shadow-lg transition"
+               href="/services">
+                <i class="fas fa-search mr-2"></i>Khám phá dịch vụ
+            </a>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-8 hidden" id="cartRoot"></div>
+    </div>
+</main>
+
+<div th:replace="~{layouts/footer :: siteFooter}"></div>
+
+<!-- MODAL THÔNG BÁO -->
+<div id="notifyModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 modal-hide transition-opacity duration-200">
+    <div class="bg-white rounded-2xl shadow-xl w-[90%] max-w-md p-6">
+        <div class="flex items-center gap-3 mb-3">
+            <div id="notifyIcon" class="w-9 h-9 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+                <i class="fas fa-info"></i>
+            </div>
+            <h3 id="notifyTitle" class="text-lg font-semibold">Thông báo</h3>
+        </div>
+        <p id="notifyMessage" class="text-gray-700 mb-5">...</p>
+        <div class="flex justify-end gap-2">
+            <button id="notifyOk" class="px-4 py-2 bg-blue-600 text-white rounded-lg">OK</button>
+        </div>
+    </div>
+</div>
+
+<script th:inline="none">
+    // ===== helper =====
+    function vnd(n){ try{return Number(n).toLocaleString('vi-VN')+'đ';}catch(e){return n;} }
+    function csrfHeaders(){
+      var h=(document.querySelector('meta[name="_csrf_header"]')||{}).content||'X-CSRF-TOKEN';
+      var t=(document.querySelector('meta[name="_csrf"]')||{}).content||'';
+      var o={}; o[h]=t; return o;
+    }
+    function goLogin(){
+      var next = location.pathname + location.search;
+      window.location.href = '/auth/login?next=' + encodeURIComponent(next);
+    }
+    function needLogin(res){
+      if (!res) return false;
+      if (res.redirected && res.url && res.url.indexOf('/auth/login') !== -1) return true;
+      return res.status===401 || res.status===403;
+    }
+
+    // ===== modal =====
+    (function(){
+      var $m = document.getElementById('notifyModal');
+      var $ok= document.getElementById('notifyOk');
+      window.showModal = function(title, msg, type){
+        document.getElementById('notifyTitle').textContent = title || 'Thông báo';
+        document.getElementById('notifyMessage').textContent = msg || '';
+        var $icon = document.getElementById('notifyIcon');
+        $icon.className = 'w-9 h-9 rounded-full flex items-center justify-center';
+        if(type==='success'){ $icon.classList.add('bg-green-100','text-green-600'); $icon.innerHTML='<i class="fas fa-check"></i>'; }
+        else if(type==='error'){ $icon.classList.add('bg-red-100','text-red-600'); $icon.innerHTML='<i class="fas fa-times"></i>'; }
+        else { $icon.classList.add('bg-blue-100','text-blue-600'); $icon.innerHTML='<i class="fas fa-info"></i>'; }
+        $m.classList.remove('modal-hide'); $m.classList.add('modal-show');
+      };
+      window.hideModal = function(){ $m.classList.remove('modal-show'); $m.classList.add('modal-hide'); };
+      $ok.addEventListener('click', hideModal);
+      $m.addEventListener('click', function(e){ if(e.target===$m) hideModal(); });
+    })();
+
+    // ===== data helpers =====
+    function groupByVendor(items){
+      var g={};
+      items.forEach(function(it){
+        var id = it.vendorId==null ? 'unknown' : String(it.vendorId);
+        if(!g[id]){
+          g[id]={ name: it.vendorName||('Vendor #'+id),
+                  avatar: it.vendorAvatar||'/images/avatar-default.png',
+                  items: [] };
+        }
+        if(it.vendorName && (!g[id].name || g[id].name.indexOf('Vendor #')===0)) g[id].name = it.vendorName;
+        if(it.vendorAvatar) g[id].avatar = it.vendorAvatar;
+        g[id].items.push(it);
+      });
+      return g;
+    }
+
+    async function refetchCart(){
+      const res = await fetch('/customer/cart/json',{
+        method:'GET',
+        headers:{ 'Accept':'application/json','X-Requested-With':'XMLHttpRequest' },
+        credentials:'same-origin',
+        cache:'no-store'
+      });
+      if (!res.ok) throw new Error('bad-response');
+      return await res.json();
+    }
+
+    // ===== render =====
+    function renderCart(j){
+      var empty=document.getElementById('cartEmpty');
+      var root=document.getElementById('cartRoot');
+
+      if(typeof window.updateCartCount==='function') window.updateCartCount(j.count||0);
+
+      if(!j.items || !j.items.length){
+        if(empty) empty.classList.remove('hidden');
+        if(root){ root.classList.add('hidden'); root.innerHTML=''; }
+        return;
+      }
+      if(empty) empty.classList.add('hidden');
+      if(root) root.classList.remove('hidden');
+
+      var groups = groupByVendor(j.items);
+      var leftHtml = '';
+
+      Object.keys(groups).forEach(function(id){
+        var meta = groups[id];
+        leftHtml += ''
+          +'<div class="bg-white rounded-xl shadow-sm p-5 mb-6">'
+            +'<div class="flex items-center justify-between mb-3">'
+              +'<div class="flex items-center gap-3">'
+                +'<img src="'+meta.avatar+'" class="w-9 h-9 rounded-full object-cover"'
+                  +' onerror="this.onerror=null;this.src=\'/images/avatar-default.png\'" alt="avatar">'
+                +'<div class="font-semibold text-lg">'+meta.name+'</div>'
+              +'</div>'
+            +'</div>';
+
+        meta.items.forEach(function(it){
+          var cover = it.serviceCover || '/images/placeholder-4x3.png';
+          var schedule = it.scheduleAt ? (it.scheduleAt+'').slice(0,16) : '';
+          leftHtml += ''
+          +'<div class="flex gap-4 p-4 rounded-lg border mb-3">'
+            +'<img src="'+cover+'" alt="" class="w-28 h-20 object-cover rounded"'
+              +' onerror="this.onerror=null;this.src=\'/images/placeholder-4x3.png\'">'
+            +'<div class="flex-1">'
+              +'<div class="font-medium">'+(it.serviceTitle||('Dịch vụ #'+(it.vendorServiceId||'')))+'</div>'
+              +'<div class="text-xs text-gray-500">'+(it.durationMinutes||60)+' phút • '+(it.unit||'lần')+'</div>'
+              +'<div class="mt-2 flex items-center gap-2 text-sm text-gray-600">'
+                +'<span>Lịch:</span>'
+                +'<input type="datetime-local" class="schedule-input border rounded px-2 py-1 text-sm"'
+                +' data-item-id="'+it.id+'" value="'+schedule+'">'
+              +'</div>'
+              +'<input class="address-input w-full border rounded px-3 py-1.5 text-sm mt-2"'
+              +' data-item-id="'+it.id+'" placeholder="Địa chỉ" value="'+(it.address||'')+'">'
+              +'<textarea class="notes-input w-full border rounded px-3 py-1.5 text-sm mt-2" rows="2"'
+              +' data-item-id="'+it.id+'" placeholder="Ghi chú">'+(it.notes||'')+'</textarea>'
+            +'</div>'
+            +'<div class="flex flex-col items-end gap-3">'
+              +'<div class="text-right">'
+                +'<div class="text-lg font-bold text-blue-600">'+vnd(it.subtotal)+'</div>'
+                +'<div class="text-xs text-gray-500">'+vnd(it.unitPrice)+'/'+(it.unit||'lần')+'</div>'
+              +'</div>'
+              +'<div class="flex items-center gap-2 border rounded-lg">'
+                +'<button type="button" class="px-3 py-1 hover:bg-gray-100 qty-decrease" data-item-id="'+it.id+'"><i class="fas fa-minus text-sm"></i></button>'
+                +'<span class="px-3 font-medium qty-display">'+it.quantity+'</span>'
+                +'<button type="button" class="px-3 py-1 hover:bg-gray-100 qty-increase" data-item-id="'+it.id+'"><i class="fas fa-plus text-sm"></i></button>'
+              +'</div>'
+              +'<button type="button" class="remove-item text-red-500 hover:text-red-700" data-item-id="'+it.id+'"><i class="fas fa-trash"></i></button>'
+            +'</div>'
+          +'</div>';
+        });
+
+        leftHtml += '</div>';
+      });
+
+      var couponCode = (j.coupon && j.coupon.code) ? j.coupon.code : '';
+      var rightHtml = ''
+        +'<div class="bg-white rounded-xl shadow-sm p-6 sticky top-24">'
+          +'<h2 class="text-xl font-bold text-gray-900 mb-4">Tóm tắt đơn hàng</h2>'
+          +'<label class="text-sm text-gray-600 mb-1 block">Mã giảm giá</label>'
+          +'<div class="flex gap-2 mb-3">'
+            +'<input id="couponCode" class="flex-1 border rounded px-3 py-2" placeholder="Nhập mã giảm giá" value="'+couponCode+'">'
+            +'<button id="applyCoupon" class="px-4 py-2 bg-blue-600 text-white rounded">Áp dụng</button>'
+            +(couponCode ? '<button id="removeCoupon" class="px-3 py-2 bg-gray-200 text-gray-800 rounded" title="Bỏ mã">Bỏ</button>' : '')
+          +'</div>'
+          +(couponCode ? '<div class="text-xs text-gray-600 mb-2">Đang áp dụng: <span class="font-medium">'+couponCode+'</span></div>' : '')
+          +'<div class="flex justify-between text-sm text-gray-600"><span>Tạm tính</span><span>'+vnd(j.total||0)+'</span></div>'
+          +'<div class="flex justify-between text-sm '+((j.discount||0)>0?'text-green-600':'text-gray-400')+'"><span>Giảm giá</span><span>-'+vnd(j.discount||0)+'</span></div>'
+          +'<div class="border-t my-3"></div>'
+          +'<div class="flex justify-between items-center mb-4"><span class="text-lg font-semibold">Tổng cộng</span>'
+            +'<span class="text-2xl font-bold text-blue-600">'+vnd((j.grandTotal!=null)?j.grandTotal:(j.total||0))+'</span></div>'
+          +'<a href="/customer/checkout/details" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white text-center py-3 rounded-lg font-semibold hover:shadow-lg transition">Tiến hành thanh toán</a>'
+          +'<a href="/services" class="block w-full text-center text-blue-600 py-3 mt-3 hover:underline">Tiếp tục mua sắm</a>'
+        +'</div>';
+
+      document.getElementById('cartRoot').innerHTML =
+        '<div class="lg:col-span-2">'+leftHtml+'</div><div class="lg:col-span-1">'+rightHtml+'</div>';
+
+      attachCartEventListeners();
+    }
+
+    // ===== events =====
+    function attachCartEventListeners(){
+      var root=document.getElementById('cartRoot'); if(!root) return;
+
+      // +/- số lượng
+      root.querySelectorAll('.qty-increase, .qty-decrease').forEach(function(btn){
+        btn.addEventListener('click', async function(){
+          var id=this.dataset.itemId;
+          var wrap=this.parentElement;
+          var disp=wrap.querySelector('.qty-display');
+          var cur=parseInt(disp.textContent||'1',10);
+          var next=this.classList.contains('qty-increase')?cur+1:Math.max(1,cur-1);
+          if(next===cur) return;
+
+          var url = this.classList.contains('qty-increase')
+            ? '/customer/cart/items/'+id+'/inc'
+            : '/customer/cart/items/'+id+'/dec';
+
+          try{
+            const res = await fetch(url,{
+              method:'POST',
+              headers:Object.assign({'X-Requested-With':'XMLHttpRequest'}, csrfHeaders()),
+              credentials:'same-origin'
+            });
+            if (needLogin(res)) return goLogin();
+            const data = await res.json();
+            renderCart(data);
+            showModal('Cập nhật', 'Đã cập nhật số lượng.', 'success');
+          }catch(e){
+            showModal('Lỗi', 'Không thể cập nhật số lượng.', 'error');
+          }
+        });
+      });
+
+      // Xóa item
+      root.querySelectorAll('.remove-item').forEach(function(btn){
+        btn.addEventListener('click', async function(){
+          if(!confirm('Xóa dịch vụ này khỏi giỏ?')) return;
+          try{
+            const res = await fetch('/customer/cart/items/'+btn.dataset.itemId,{
+              method:'DELETE',
+              headers:Object.assign({'X-Requested-With':'XMLHttpRequest'}, csrfHeaders()),
+              credentials:'same-origin'
+            });
+            if (needLogin(res)) return goLogin();
+            const data = await res.json();
+            renderCart(data);
+            showModal('Đã xóa', 'Đã xóa dịch vụ khỏi giỏ.', 'success');
+          }catch(e){
+            showModal('Lỗi', 'Không thể xóa dịch vụ.', 'error');
+          }
+        });
+      });
+
+      // Áp mã
+      var ap=document.getElementById('applyCoupon');
+      if(ap){ ap.addEventListener('click', async function(){
+        var code=(document.getElementById('couponCode')||{}).value||'';
+        code=code.trim(); if(!code){ showModal('Thiếu mã', 'Vui lòng nhập mã giảm giá.', 'info'); return; }
+        try{
+          const res = await fetch('/customer/cart/apply-coupon',{
+            method:'POST',
+            headers:Object.assign({'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'}, csrfHeaders()),
+            credentials:'same-origin',
+            body:new URLSearchParams({code:code}).toString()
+          });
+          if (needLogin(res)) return goLogin();
+          const data = await res.json();
+          renderCart(data);
+          showModal('Áp dụng thành công', 'Đã áp dụng mã ' + code + '.', 'success');
+        }catch(e){
+          showModal('Lỗi', 'Không thể áp dụng mã giảm giá.', 'error');
+        }
+      });}
+
+      // Bỏ mã
+      var rm=document.getElementById('removeCoupon');
+      if(rm){ rm.addEventListener('click', async function(){
+        try{
+          const res = await fetch('/customer/cart/coupon',{
+            method:'DELETE',
+            headers:Object.assign({'X-Requested-With':'XMLHttpRequest'}, csrfHeaders()),
+            credentials:'same-origin'
+          });
+          if (needLogin(res)) return goLogin();
+          const data = await res.json();
+          renderCart(data);
+          showModal('Đã bỏ mã', 'Mã giảm giá đã được gỡ bỏ.', 'success');
+        }catch(e){
+          showModal('Lỗi', 'Không thể bỏ mã giảm giá.', 'error');
+        }
+      });}
+    }
+
+    // ===== init =====
+    document.addEventListener('DOMContentLoaded', function(){
+      var empty=document.getElementById('cartEmpty');
+      var root=document.getElementById('cartRoot');
+      if(empty) empty.classList.remove('hidden');
+      if(root){ root.classList.add('hidden'); root.innerHTML=''; }
+
+      refetchCart()
+        .then(function(j){ renderCart(j); })
+        .catch(function(){ showModal('Lỗi', 'Không tải được giỏ hàng.', 'error'); });
+    });
+</script>
+</body>
+</html>

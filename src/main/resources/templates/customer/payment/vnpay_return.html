@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết quả thanh toán - VHBTV HomeCare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+<div th:replace="~{layouts/header :: siteHeader}"></div>
+
+<main class="pt-24 pb-16 min-h-screen">
+    <div class="container mx-auto px-4 lg:px-8 max-w-2xl">
+        <!-- Success State -->
+        <div th:if="${paymentStatus == 'SUCCESS'}" class="text-center">
+            <div class="inline-block p-8 bg-green-100 rounded-full mb-6">
+                <i class="fas fa-check-circle text-6xl text-green-600"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">Thanh toán thành công!</h1>
+            <p class="text-gray-600 mb-8">
+                Cảm ơn bạn đã sử dụng dịch vụ của VHBTV HomeCare. Đơn hàng của bạn đã được xác nhận.
+            </p>
+
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-8 text-left">
+                <h2 class="font-semibold text-gray-900 mb-4">Thông tin giao dịch</h2>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Mã giao dịch:</span>
+                        <span class="font-mono font-semibold" th:text="${transactionRef}">VNPAY-20250921-0001</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Số tiền:</span>
+                        <span class="font-semibold text-green-600" th:text="${#numbers.formatDecimal(amount, 0, 'COMMA', 0, 'POINT')} + 'đ'">585,000đ</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Thời gian:</span>
+                        <span th:text="${#temporals.format(paidAt, 'dd/MM/yyyy HH:mm:ss')}">21/09/2025 08:20:00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Phương thức:</span>
+                        <span class="font-semibold">VNPAY</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-4 justify-center">
+                <a href="/customer/orders/success" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition">
+                    <i class="fas fa-receipt mr-2"></i>Xem đơn hàng
+                </a>
+                <a href="/" class="border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
+                    <i class="fas fa-home mr-2"></i>Về trang chủ
+                </a>
+            </div>
+        </div>
+
+        <!-- Failed State -->
+        <div th:if="${paymentStatus == 'FAILED'}" class="text-center">
+            <div class="inline-block p-8 bg-red-100 rounded-full mb-6">
+                <i class="fas fa-times-circle text-6xl text-red-600"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">Thanh toán thất bại</h1>
+            <p class="text-gray-600 mb-8">
+                Rất tiếc, giao dịch của bạn không thành công. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.
+            </p>
+
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-8 text-left">
+                <h2 class="font-semibold text-gray-900 mb-4">Thông tin giao dịch</h2>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Mã giao dịch:</span>
+                        <span class="font-mono font-semibold" th:text="${transactionRef}">VNPAY-20250921-0001</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Lý do:</span>
+                        <span class="text-red-600" th:text="${failureReason}">Giao dịch bị hủy</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Thời gian:</span>
+                        <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm:ss')}">21/09/2025 08:20:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-4 justify-center">
+                <a href="/customer/checkout/confirm" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition">
+                    <i class="fas fa-redo mr-2"></i>Thử lại
+                </a>
+                <a href="/customer/cart" class="border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
+                    <i class="fas fa-shopping-cart mr-2"></i>Về giỏ hàng
+                </a>
+            </div>
+        </div>
+
+        <!-- Pending State -->
+        <div th:if="${paymentStatus == 'PENDING'}" class="text-center">
+            <div class="inline-block p-8 bg-yellow-100 rounded-full mb-6">
+                <i class="fas fa-clock text-6xl text-yellow-600"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">Đang xử lý thanh toán</h1>
+            <p class="text-gray-600 mb-8">
+                Giao dịch của bạn đang được xử lý. Chúng tôi sẽ thông báo kết quả sớm nhất.
+            </p>
+
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+                <div class="flex items-center gap-4 text-left">
+                    <i class="fas fa-info-circle text-3xl text-blue-600"></i>
+                    <div class="text-sm text-gray-700">
+                        <p class="font-semibold mb-1">Vui lòng kiểm tra:</p>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Email xác nhận từ VHBTV HomeCare</li>
+                            <li>Thông báo trên ứng dụng</li>
+                            <li>Lịch sử đơn hàng trong tài khoản</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-4 justify-center">
+                <a href="/customer/orders/history" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition">
+                    <i class="fas fa-history mr-2"></i>Lịch sử đơn hàng
+                </a>
+                <a href="/" class="border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
+                    <i class="fas fa-home mr-2"></i>Về trang chủ
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{layouts/footer :: siteFooter}"></div>
+
+<script>
+    anime({
+        targets: '.text-center > *',
+        opacity: [0, 1],
+        scale: [0.9, 1],
+        delay: anime.stagger(100),
+        easing: 'easeOutElastic(1, .8)'
+    });
+</script>
+</body>
+</html>

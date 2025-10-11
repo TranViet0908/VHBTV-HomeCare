@@ -98,10 +98,4 @@ public class ListVendorController {
         resp.put("suggested", service.suggestedVendors(request, 8));
         return resp;
     }
-
-    // ĐỔI: dùng /vendors/{displayName} và redirect về /vendor/{displayName} để tránh trùng mapping
-    @GetMapping("/vendors/{displayName}")
-    public String vendorDetailRedirect(@PathVariable String displayName) {
-        return "redirect:/vendor/" + displayName;
-    }
 }

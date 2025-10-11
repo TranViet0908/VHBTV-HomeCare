@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thông tin thanh toán - VHBTV HomeCare</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <style>
+    .gradient-text {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .step-active { @apply bg-blue-600 text-white; }
+    .step-completed { @apply bg-green-500 text-white; }
+    .step-inactive { @apply bg-gray-200 text-gray-500; }
+  </style>
+</head>
+<body class="bg-gray-50">
+<div th:replace="~{layouts/header :: siteHeader}"></div>
+
+<main class="pt-24 pb-16">
+  <div class="container mx-auto px-4 lg:px-8 max-w-6xl">
+    <!-- Progress Steps -->
+    <div class="mb-12">
+      <div class="flex items-center justify-center">
+        <div class="flex items-center">
+          <div class="flex items-center">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center step-completed">
+              <i class="fas fa-check"></i>
+            </div>
+            <span class="ml-2 font-medium text-gray-700">Giỏ hàng</span>
+          </div>
+          <div class="w-24 h-1 bg-blue-600 mx-4"></div>
+          <div class="flex items-center">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center step-active">2</div>
+            <span class="ml-2 font-medium text-gray-900">Thông tin</span>
+          </div>
+          <div class="w-24 h-1 bg-gray-200 mx-4"></div>
+          <div class="flex items-center">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center step-inactive">3</div>
+            <span class="ml-2 font-medium text-gray-500">Xác nhận</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <form action="/customer/checkout/confirm" method="post">
+      <div class="grid lg:grid-cols-3 gap-8">
+        <!-- Contact & Address Form -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Contact Information -->
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">
+              <i class="fas fa-user mr-2 text-blue-600"></i>
+              Thông tin liên hệ
+            </h2>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Họ và tên *</label>
+                <input type="text" name="contactName" required
+                       th:value="${customer.fullName}"
+                       class="w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Số điện thoại *</label>
+                <input type="tel" name="contactPhone" required
+                       th:value="${customer.phone}"
+                       class="w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              </div>
+            </div>
+          </div>
+
+          <!-- Service Items with Schedule -->
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">
+              <i class="fas fa-calendar-check mr-2 text-blue-600"></i>
+              Xác nhận lịch hẹn
+            </h2>
+
+            <div th:each="item, iterStat : ${cartItems}" class="mb-6 last:mb-0 pb-6 last:pb-0 border-b last:border-b-0">
+              <div class="flex gap-4">
+                <img th:src="${item.vendorService.coverUrl ?: '/placeholder.svg?height=80&width=80'}"
+                     alt="Service" class="w-20 h-20 rounded-lg object-cover">
+                <div class="flex-1">
+                  <h3 class="font-semibold text-gray-900 mb-1" th:text="${item.vendorService.title}">Service</h3>
+                  <p class="text-sm text-gray-600 mb-2" th:text="${item.vendor.displayName}">Vendor</p>
+
+                  <div class="grid md:grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs font-medium text-gray-700 mb-1">Thời gian thực hiện *</label>
+                      <input type="datetime-local"
+                             th:name="'items[' + ${iterStat.index} + '].scheduleAt'"
+                             th:value="${#temporals.format(item.scheduleAt, 'yyyy-MM-dd\'T\'HH:mm')}"
+                             required
+                             class="w-full border rounded px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-gray-700 mb-1">Địa chỉ thực hiện *</label>
+                      <input type="text"
+                             th:name="'items[' + ${iterStat.index} + '].address'"
+                             th:value="${item.addressSnapshot}"
+                             required
+                             placeholder="Nhập địa chỉ"
+                             class="w-full border rounded px-3 py-2 text-sm">
+                    </div>
+                  </div>
+
+                  <div class="mt-2">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Ghi chú</label>
+                    <textarea th:name="'items[' + ${iterStat.index} + '].notes'"
+                              th:text="${item.notes}"
+                              placeholder="Ghi chú cho dịch vụ này..."
+                              class="w-full border rounded px-3 py-2 text-sm"
+                              rows="2"></textarea>
+                  </div>
+
+                  <input type="hidden" th:name="'items[' + ${iterStat.index} + '].itemId'" th:value="${item.id}">
+                </div>
+                <div class="text-right">
+                  <div class="text-sm text-gray-600">SL: <span th:text="${item.quantity}">1</span></div>
+                  <div class="font-bold text-blue-600" th:text="${#numbers.formatDecimal(item.subtotal, 0, 'COMMA', 0, 'POINT')} + 'đ'">350,000đ</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="lg:col-span-1">
+          <div class="bg-white rounded-xl shadow-sm p-6 sticky top-24">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">Tóm tắt đơn hàng</h2>
+
+            <div class="space-y-3 mb-6 pb-6 border-b">
+              <div class="flex justify-between text-gray-600">
+                <span>Tạm tính</span>
+                <span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 0, 'POINT')} + 'đ'">1,000,000đ</span>
+              </div>
+              <div th:if="${discountAmount > 0}" class="flex justify-between text-green-600">
+                <span>Giảm giá</span>
+                <span th:text="'-' + ${#numbers.formatDecimal(discountAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'">-100,000đ</span>
+              </div>
+            </div>
+
+            <div class="flex justify-between items-center mb-6">
+              <span class="text-lg font-semibold text-gray-900">Tổng cộng</span>
+              <span class="text-2xl font-bold text-blue-600" th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')} + 'đ'">900,000đ</span>
+            </div>
+
+            <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition">
+              <i class="fas fa-arrow-right mr-2"></i>Tiếp tục
+            </button>
+
+            <a href="/customer/cart" class="block w-full text-center text-blue-600 py-3 mt-3 hover:underline">
+              <i class="fas fa-arrow-left mr-2"></i>Quay lại giỏ hàng
+            </a>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</main>
+
+<div th:replace="~{layouts/footer :: siteFooter}"></div>
+
+<script>
+  anime({
+      targets: '.bg-white',
+      opacity: [0, 1],
+      translateY: [20, 0],
+      delay: anime.stagger(100),
+      easing: 'easeOutQuad'
+  });
+</script>
+</body>
+</html>

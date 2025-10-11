@@ -1,6 +1,6 @@
 <!-- resources/templates/customer/services/vendors-have-service.html (đã sửa để hero có nền và header trong suốt trên hero) -->
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
@@ -9,7 +9,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
+    <meta name="_csrf" th:content="${_csrf?.token}">
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}">
     <!-- Fix: nền hero + header overlay trên hero -->
     <style>
         /* Nền hero đồng bộ trang chủ: lớp gradient nền + lớp pattern mờ */
@@ -245,37 +246,6 @@
                                 0đ
                             </div>
                         </div>
-
-                        <form class="flex items-center gap-3" method="post" onclick="event.stopPropagation()"
-                              onsubmit="event.stopPropagation()" th:action="@{/cart/add}">
-                            <input name="vendorServiceId" th:value="${vendorService.id}" type="hidden"/>
-                            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
-
-                            <div class="flex items-stretch rounded-md border border-gray-300 bg-white overflow-hidden select-none">
-                                <button aria-label="Giảm" class="px-2 py-1 text-gray-700 hover:bg-gray-50"
-                                        onclick="event.stopPropagation(); const i=this.nextElementSibling; i.stepDown(); i.dispatchEvent(new Event('change'))"
-                                        type="button">
-                                    <i class="fa-solid fa-minus"></i>
-                                </button>
-
-                                <input class="w-12 text-center outline-none py-1 border-x border-gray-200 appearance-none
-                    [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" min="1" name="quantity" onclick="event.stopPropagation()"
-                                       onfocus="event.stopPropagation()" type="number"
-                                       value="1">
-
-                                <button aria-label="Tăng" class="px-2 py-1 text-gray-700 hover:bg-gray-50"
-                                        onclick="event.stopPropagation(); const i=this.previousElementSibling; i.stepUp(); i.dispatchEvent(new Event('change'))"
-                                        type="button">
-                                    <i class="fa-solid fa-plus"></i>
-                                </button>
-                            </div>
-
-                            <button class="inline-flex items-center gap-2 px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-md hover:shadow-md whitespace-nowrap"
-                                    type="submit">
-                                <i class="fa-solid fa-cart-plus"></i>
-                                <span>Thêm vào giỏ hàng</span>
-                            </button>
-                        </form>
                     </div>
                 </div>
             </div>
@@ -293,13 +263,13 @@
 
 <!-- Scripts -->
 <script>
-    // Header overlay toggle theo vị trí hero
+    // Header overlay
     function toggleHeaderOverlay(){
       const hero = document.getElementById('services-hero');
       if(!hero) return;
       const bottom = hero.getBoundingClientRect().bottom;
-      if (bottom > 80){ document.body.classList.add('header-on-hero'); }
-      else { document.body.classList.remove('header-on-hero'); }
+      if (bottom > 80) document.body.classList.add('header-on-hero');
+      else document.body.classList.remove('header-on-hero');
     }
     window.addEventListener('load', toggleHeaderOverlay);
     window.addEventListener('scroll', toggleHeaderOverlay);
@@ -307,7 +277,7 @@
 
     // Animate cards
     const observer = new IntersectionObserver((entries)=>{
-      entries.forEach((e, i)=>{
+      entries.forEach((e,i)=>{
         if(e.isIntersecting){
           anime({targets:e.target, translateY:[50,0], opacity:[0,1], duration:800, delay:i*100, easing:'easeOutExpo'});
           observer.unobserve(e.target);
@@ -316,16 +286,51 @@
     }, {threshold:0.1, rootMargin:'0px 0px -50px 0px'});
     document.querySelectorAll('.vendor-card').forEach(c=>observer.observe(c));
 
-    // Wishlist animation
+    // Wishlist toggle
     document.addEventListener('click',(e)=>{
       const btn = e.target.closest('.vendor-card button');
       if(!btn) return;
       e.stopPropagation();
       const heart = btn.querySelector('i');
-      if(heart.classList.contains('far')){ heart.classList.remove('far'); heart.classList.add('fas','text-red-500');
-        anime({targets:heart, scale:[1,1.3,1], duration:400, easing:'easeOutElastic(1,.5)'}); }
-      else { heart.classList.remove('fas','text-red-500'); heart.classList.add('far'); }
+      if(heart.classList.contains('far')){
+        heart.classList.remove('far'); heart.classList.add('fas','text-red-500');
+        anime({targets:heart, scale:[1,1.3,1], duration:400, easing:'easeOutElastic(1,.5)'});
+      } else { heart.classList.remove('fas','text-red-500'); heart.classList.add('far'); }
     });
+
+    // Add to cart: KHÔNG dùng scheduleAt
+    (function(){
+      // chặn submit mặc định, gửi bằng fetch
+      document.addEventListener('submit', function(e){
+        const f = e.target.closest('.add-to-cart-form');
+        if(!f) return;
+        e.preventDefault(); e.stopPropagation();
+
+        const fd = new FormData(f);
+        fd.delete('scheduleAt');                 // đảm bảo không gửi
+        if(!fd.get('quantity')) fd.set('quantity','1');
+
+        const body = new URLSearchParams();
+        fd.forEach((v,k)=>body.append(k,v));     // gồm cả _csrf hidden của form
+
+        fetch('/cart/items', {
+          method:'POST',
+          headers:{'Content-Type':'application/x-www-form-urlencoded'},
+          body
+        })
+        .then(r=>{ if(!r.ok) throw r; return r.json(); })
+        .then(j=>{
+          if (window.updateCartCount) updateCartCount(j.count||0);
+          if (window.toast) toast('Đã thêm vào giỏ hàng');
+        })
+        .catch(()=>{ if (window.toast) toast('Lỗi thêm vào giỏ'); });
+      }, true);
+
+      // ngăn click trong form làm trigger click card
+      document.addEventListener('click', function(e){
+        if (e.target.closest('.add-to-cart-form')) e.stopPropagation();
+      }, true);
+    })();
 </script>
 </body>
 </html>

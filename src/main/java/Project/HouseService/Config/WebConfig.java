@@ -19,6 +19,10 @@ public class WebConfig implements WebMvcConfigurer {
         String uploadPath = uploadDir.toFile().getAbsolutePath();
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:" + uploadPath + "/");
+        // images -> classpath:/static/img/
+        registry.addResourceHandler("/images/**")
+                .addResourceLocations("classpath:/static/img/")
+                .setCachePeriod(3600);
     }
     @Bean
     public Java8TimeDialect java8TimeDialect() {

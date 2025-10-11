@@ -10,4 +10,5 @@ public interface CouponVendorRepository extends JpaRepository<CouponVendor, Long
     boolean existsByCoupon_IdAndVendor_Id(Long couponId, Long vendorId);
     void deleteByCoupon_IdAndVendor_Id(Long couponId, Long vendorId);
     long countByCoupon_Id(Long couponId);
+    boolean existsByCoupon_IdAndVendorId(Long couponId, Long vendorId);
 }

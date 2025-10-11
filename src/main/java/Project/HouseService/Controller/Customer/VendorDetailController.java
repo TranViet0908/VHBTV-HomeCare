@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-@RequestMapping
+@RequestMapping("/vendors")
 public class VendorDetailController {
 
     private final VendorDetailService svc;
@@ -24,10 +24,11 @@ public class VendorDetailController {
         this.svc = svc;
     }
 
-    @GetMapping({"/vendor", "/vendor/"})
-    public String vendorRootRedirect() { return "redirect:/"; }
+    // BỎ hẳn root mapping để tránh đụng ListVendorController
+    // @GetMapping({"", "/"})
+    // public String vendorRootRedirect() { return "redirect:/"; }
 
-    @GetMapping("/vendor/{name}")
+    @GetMapping("/{name}")
     public String vendorByName(@PathVariable("name") String name,
                                @RequestParam(defaultValue = "0") int page,
                                @RequestParam(defaultValue = "8") int size,
@@ -37,7 +38,6 @@ public class VendorDetailController {
         var summary    = svc.buildVendorSummary(vendorUser);
 
         Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1));
-        // ĐỔI: lấy cả ACTIVE + PAUSED
         Page<VendorService> services = svc.pageVendorServicesIncludingPaused(vendorUser.getId(), pageable);
         List<Coupon> coupons         = svc.listActiveCouponsForVendor(vendorUser.getId(), 5);
 

@@ -1,6 +1,6 @@
-<!-- resources/templates/customer/services/detail-vendor-service.html -->
+<!-- SAU: resources/templates/customer/services/detail-vendor-service.html -->
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
@@ -8,11 +8,12 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <meta name="_csrf" th:content="${_csrf?.token}">
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}">
     <style>
         * { font-family: 'Inter', sans-serif; }
         .card { background: linear-gradient(145deg,#ffffff,#f8fafc); border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,.06); }
         .thumb-active { outline: 2px solid #2563eb; outline-offset: 2px; }
-        /* Thay cho aspect-[16/9] để tương thích Tailwind 2.2 */
         .ratio-16x9 { position: relative; width: 100%; }
         .ratio-16x9::before { content:""; display:block; padding-top:56.25%; }
         .ratio-16x9 > .fit { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
@@ -24,7 +25,6 @@
 
 <main class="container mx-auto px-4 lg:px-8 pt-28 pb-16">
 
-    <!-- Breadcrumb -->
     <nav class="text-sm text-gray-600 mb-6">
         <a href="/" class="hover:text-blue-600"><i class="fa fa-home mr-1"></i>Trang chủ</a>
         <span class="mx-2 text-gray-400">/</span>
@@ -55,17 +55,14 @@
                 </div>
             </div>
 
-            <!-- Gallery: ảnh lớn + thumbnails -->
             <div class="mt-6">
                 <div class="ratio-16x9 bg-gray-200 rounded-xl overflow-hidden">
-                    <!-- GÁN SRC MẶC ĐỊNH TỪ SERVER: ảnh đầu của imageList, nếu rỗng thì coverUrl -->
                     <img id="js-main"
                          class="fit"
                          alt="gallery"
                          th:src="${!#lists.isEmpty(imageList) ? imageList.get(0).url : (vendorService.coverUrl != null ? vendorService.coverUrl : '')}">
                 </div>
 
-                <!-- thumbnails -->
                 <div class="mt-3 flex space-x-2 overflow-x-auto pb-1">
                     <img th:each="m,iter : ${imageList}"
                          th:src="${m.url}"
@@ -74,19 +71,16 @@
                          class="js-thumb w-24 h-16 object-cover rounded-lg cursor-pointer hover:opacity-90">
                 </div>
 
-                <!-- fallback nếu không có ảnh -->
                 <div th:if="${#lists.isEmpty(imageList) && vendorService.coverUrl == null}" class="w-full h-64 bg-gray-200 rounded-xl flex items-center justify-center text-gray-500 mt-3">
                     Chưa có ảnh
                 </div>
             </div>
 
-            <!-- Mô tả -->
             <div class="mt-6 prose max-w-none">
                 <h2 class="text-xl font-semibold mb-2">Mô tả dịch vụ</h2>
                 <p th:utext="${#strings.escapeXml(vendorService.description) ?: 'Đang cập nhật'}">Đang cập nhật</p>
             </div>
 
-            <!-- Media khác: video -->
             <div class="mt-6" th:if="${!#lists.isEmpty(mediaList)}">
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     <div th:each="m : ${mediaList}" th:if="${m.mediaType.name() == 'VIDEO'}" class="relative group">
@@ -98,22 +92,19 @@
             </div>
         </div>
 
-        <!-- Sidebar: Vendor + Đặt lịch -->
         <aside class="card p-6 space-y-6">
-            <!-- Vendor card -->
-            <!-- yêu cầu model có: vendorUsername -->
             <div>
                 <h3 class="text-lg font-semibold mb-2">Nhà cung cấp</h3>
 
                 <div class="flex items-center">
                     <a class="w-12 h-12 rounded-full bg-gray-200 mr-3 overflow-hidden block"
-                       th:href="@{/vendor/{name}(name=${vendorDisplayName})}">
+                       th:href="@{/vendors/{name}(name=${vendorDisplayName})}">
                         <img th:if="${vendorAvatarUrl}" th:src="${vendorAvatarUrl}" alt="avatar" class="w-12 h-12 object-cover">
                     </a>
 
                     <div>
                         <div class="font-semibold">
-                            <a th:href="@{/vendor/{name}(name=${vendorDisplayName})}"
+                            <a th:href="@{/vendors/{name}(name=${vendorDisplayName})}"
                                th:text="${vendorDisplayName}">Vendor</a>
                             <i th:if="${vendorVerified}" class="fa fa-badge-check text-blue-600 ml-1"></i>
                         </div>
@@ -128,28 +119,43 @@
 
             <div>
                 <h3 class="text-lg font-semibold mb-2">Đặt lịch</h3>
-                <form method="post" th:action="@{/cart/add}">
-                    <input type="hidden" name="_csrf" th:value="${_csrf?.token}">
+                <div sec:authorize="isAnonymous()" class="space-y-3">
+                    <p class="text-gray-600 text-sm">Bạn cần đăng nhập để thêm vào giỏ hàng.</p>
+                    <a class="login-next block w-full text-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded"
+                       sec:authorize="isAnonymous()"
+                       th:href="@{/auth/login}">
+                        <i class="fa fa-sign-in-alt mr-1"></i>Đăng nhập
+                    </a>
+                </div>
+                <!-- SỬA action: /customer/cart/items -->
+                <form sec:authorize="isAuthenticated()" method="post" th:action="@{/customer/cart/items}">
                     <input type="hidden" name="vendorServiceId" th:value="${vendorService.id}">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
                     <label class="block text-sm text-gray-700 mb-1">Thời gian mong muốn</label>
-                    <input type="datetime-local" name="scheduledAt" th:attr="min=${minScheduleAtISO}" class="w-full border rounded px-3 py-2 mb-3">
+                    <input type="datetime-local" name="scheduleAt" class="w-full border rounded px-3 py-2 mb-3">
+
                     <label class="block text-sm text-gray-700 mb-1">Số lượng</label>
                     <input id="qty" type="number" name="quantity" value="1" min="1" class="w-full border rounded px-3 py-2">
+
                     <div class="mt-4 p-3 bg-gray-100 rounded flex items-center justify-between">
                         <span class="text-gray-600">Tạm tính</span>
                         <strong id="pricePreview" class="text-blue-700" th:attr="data-price=${vendorService.basePrice}">0</strong>
                         <span class="text-sm text-gray-500" th:text="'/ ' + (${vendorService.unit} ?: 'lần')"></span>
                     </div>
+
                     <div class="mt-4 grid grid-cols-2 gap-3">
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-2 rounded"><i class="fa fa-cart-plus mr-1"></i>Thêm vào giỏ</button>
-                        <a th:href="@{'/orders/preview?vendorServiceId=' + ${vendorService.id}}" class="text-center bg-green-600 hover:bg-green-700 text-white py-2 rounded">Đặt ngay</a>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-2 rounded">
+                            <i class="fa fa-cart-plus mr-1"></i>Thêm vào giỏ
+                        </button>
+                        <a th:href="@{'/orders/preview?vendorServiceId=' + ${vendorService.id}}"
+                           class="text-center bg-green-600 hover:bg-green-700 text-white py-2 rounded">Đặt ngay</a>
                     </div>
                 </form>
             </div>
         </aside>
     </section>
 
-    <!-- Đánh giá -->
     <section class="card p-6">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-semibold">Đánh giá dịch vụ</h2>
@@ -186,50 +192,72 @@
 <th:block th:replace="layouts/footer :: siteFooter"></th:block>
 
 <script>
-    // Cập nhật tạm tính
     (function(){
-      var qty = document.getElementById('qty');
-      var pv = document.getElementById('pricePreview');
-      if (qty && pv) {
-        var price = parseFloat(pv.dataset.price || '0');
-        function upd(){ pv.textContent = (price * (parseInt(qty.value||'1'))).toLocaleString('vi-VN'); }
-        qty.addEventListener('input', upd); upd();
+      var qty=document.getElementById('qty'), pv=document.getElementById('pricePreview');
+      if(qty&&pv){
+        var price=parseFloat(pv.dataset.price||'0');
+        function upd(){ pv.textContent=(price*(parseInt(qty.value||'1'))).toLocaleString('vi-VN'); }
+        qty.addEventListener('input',upd); upd();
       }
     })();
 
-    // Gallery: autoplay + fade + chọn thumbnail, fallback khi thiếu anime.js
-    (function() {
-      var main = document.getElementById('js-main');
-      var thumbs = Array.prototype.slice.call(document.querySelectorAll('.js-thumb'));
-      if (!main) return;
-      var hasAnime = typeof window.anime === 'function';
-      var idx = 0, timer = null, DURATION = 4000, F = 250;
-
-      function highlight(i){ thumbs.forEach(function(t,k){ t.classList.toggle('thumb-active', k===i); }); }
-      function setSrc(src, cb){
-        if (!hasAnime) { main.src = src; if (cb) cb(); return; }
-        anime({ targets: main, opacity: [1,0], duration: F, easing: 'easeInOutQuad',
-          complete: function(){
-            main.src = src;
-            anime({ targets: main, opacity: [0,1], duration: F, easing: 'easeInOutQuad', complete: cb });
-          }
-        });
+    (function(){
+      var main=document.getElementById('js-main');
+      var thumbs=[].slice.call(document.querySelectorAll('.js-thumb'));
+      if(!main) return;
+      var hasAnime=typeof window.anime==='function', idx=0, timer=null, D=4000, F=250;
+      function hi(i){ thumbs.forEach(function(t,k){ t.classList.toggle('thumb-active', k===i); }); }
+      function set(src,cb){
+        if(!hasAnime){ main.src=src; cb&&cb(); return; }
+        anime({targets:main,opacity:[1,0],duration:F,easing:'easeInOutQuad',complete:function(){
+          main.src=src; anime({targets:main,opacity:[0,1],duration:F,easing:'easeInOutQuad',complete:cb});
+        }});
       }
-      function show(i, viaUser){
-        if (thumbs.length === 0) return;
-        idx = i;
-        var src = thumbs[idx].getAttribute('data-src') || thumbs[idx].getAttribute('src');
-        highlight(idx);
-        setSrc(src, function(){ if (viaUser) reset(); });
+      function show(i,u){ if(!thumbs.length) return; idx=i; var src=thumbs[i].dataset.src||thumbs[i].src; hi(i); set(src,function(){ if(u) reset(); }); }
+      function next(){ if(thumbs.length) show((idx+1)%thumbs.length,false); }
+      function reset(){ if(timer) clearInterval(timer); timer=setInterval(next,D); }
+      thumbs.forEach(function(t,i){ t.addEventListener('click',function(){ show(i,true); }); });
+      hi(0); reset();
+    })();
+
+    document.addEventListener('DOMContentLoaded', function(){
+      var next=location.pathname+location.search;
+      document.querySelectorAll('a.login-next').forEach(function(a){
+        a.setAttribute('href','/auth/login?next='+encodeURIComponent(next));
+      });
+    });
+
+    (function(){
+      function csrfHeaders(){
+        var h=document.querySelector('meta[name="_csrf_header"]')?.content;
+        var t=document.querySelector('meta[name="_csrf"]')?.content;
+        var o={'Content-Type':'application/x-www-form-urlencoded'}; if(h&&t) o[h]=t; return o;
       }
-      function next(){ if (thumbs.length>0) show((idx + 1) % thumbs.length, false); }
-      function reset(){ if (timer) clearInterval(timer); timer = setInterval(next, DURATION); }
+      document.addEventListener('DOMContentLoaded', function(){
+        // Gửi đúng endpoint /customer/cart/items
+        var form=document.querySelector('form[action$="/customer/cart/items"]');
+        if(!form) return;
+        form.addEventListener('submit', function(e){
+          e.preventDefault();
+          var fd=new FormData(form);
+          fd.delete('scheduleAt');
+          var q=fd.get('quantity'); if(!q||+q<1) fd.set('quantity','1');
 
-      thumbs.forEach(function(t,i){ t.addEventListener('click', function(){ show(i, true); }); });
-
-      // Khởi tạo: main đã có src từ server, chỉ cần đánh dấu thumb và   bật auto
-      highlight(0);
-      reset();
+          var body=new URLSearchParams(); fd.forEach(function(v,k){ body.append(k,v); });
+          fetch('/customer/cart/items', {
+            method:'POST',
+            headers: csrfHeaders(),
+            body: body,
+            credentials: 'same-origin'
+          })
+          .then(function(r){ if(!r.ok) throw r; return r.json(); })
+          .then(function(j){
+            if(window.updateCartCount) updateCartCount(j.count||0);
+            if(window.toast) toast('Đã thêm vào giỏ hàng');
+          })
+          .catch(function(){ if(window.toast) toast('Lỗi thêm vào giỏ'); });
+        }, {once:false});
+      });
     })();
 </script>
 </body>

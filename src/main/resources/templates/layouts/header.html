@@ -1,4 +1,4 @@
-<!-- templates/layouts/header.html -->
+<!-- SAU: templates/layouts/header.html -->
 <th:block th:fragment="siteHeader"
           xmlns:th="http://www.thymeleaf.org"
           xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
@@ -25,14 +25,31 @@
                        th:href="@{/services}">
                         <i class="fas fa-tools mr-1"></i>Dịch vụ
                     </a>
+                    <!-- Desktop: Vendor list => /vendors -->
                     <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium"
                        href="/vendors" th:href="@{/vendors}">
                         <i class="fas fa-people-carry mr-1"></i>Vendor
                     </a>
-                    <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium" href="/customer/chat">
+                    <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium"
+                       th:href="@{/customer/chat}">
                         <i class="fas fa-robot mr-1"></i>Chatbot CSKH
                     </a>
-
+                    <!-- Cart desktop -->
+                    <a sec:authorize="isAnonymous()"
+                       th:href="@{'/login?(next=' + '/customer/cart' + ')'}"
+                       class="relative inline-flex items-center text-gray-700 hover:text-blue-600 transition font-medium">
+                        <i class="fas fa-shopping-cart text-lg"></i>
+                        <span class="ml-2">Giỏ hàng</span>
+                    </a>
+                    <a sec:authorize="isAuthenticated()"
+                       th:href="@{/customer/cart}"
+                       class="relative inline-flex items-center text-gray-700 hover:text-blue-600 transition font-medium">
+                        <i class="fas fa-shopping-cart text-lg"></i>
+                        <span class="ml-2">Giỏ hàng</span>
+                        <span id="cartCountBadge"
+                              class="ml-2 inline-flex items-center justify-center text-xs font-semibold bg-blue-600 text-white rounded-full px-2 py-0.5"
+                              aria-label="Số lượng">0</span>
+                    </a>
                     <!-- CHƯA là vendor: hiện 'Đăng ký làm nhà cung cấp' -->
                     <a class="text-green-600 hover:text-green-700 transition duration-300 font-medium"
                        th:href="@{/customer/vendor/apply}"
@@ -40,7 +57,7 @@
                         <i class="fas fa-user-plus mr-1"></i>Trở thành đối tác
                     </a>
 
-                    <!-- ĐÃ là vendor: hiện 'Trang chủ Vendor' -->
+                    <!-- ĐÃ là vendor: giữ dashboard ở /vendor -->
                     <a class="text-purple-600 hover:text-purple-700 transition duration-300 font-medium"
                        th:href="@{/vendor}"
                        sec:authorize="hasRole('VENDOR')">
@@ -122,14 +139,30 @@
                 <a class="block py-2 text-gray-700 hover:text-blue-600 font-medium flex items-center" href="#about">
                     <i class="fas fa-info-circle mr-2 w-4"></i>Giới thiệu
                 </a>
-                <a class="block py-2 text-gray-700 hover:text-blue-600 font-medium flex items-center" href="#services">
+                <a class="block py-2 text-gray-700 hover:text-blue-600 font-medium flex items-center" th:href="@{/services}">
                     <i class="fas fa-tools mr-2 w-4"></i>Dịch vụ
                 </a>
-                <a class="block py-2 text-gray-700 hover:text-blue-600 font-medium flex items-center" href="#portfolio">
-                    <i class="fas fa-users mr-2 w-4"></i>Đối tác
+                <!-- Mobile: Vendor list => /vendors -->
+                <a class="block py-2 text-gray-700 hover:text-blue-600 font-medium flex items-center"
+                   th:href="@{/vendors}">
+                    <i class="fas fa-people-carry mr-2 w-4"></i>Vendor
                 </a>
-                <a class="block py-2 text-gray-700 hover:text-blue-600 font-medium flex items-center" href="/user/chat">
+                <a class="block py-2 text-gray-700 hover:text-blue-600 font-medium flex items-center"
+                   th:href="@{/customer/chat}">
                     <i class="fas fa-robot mr-2 w-4"></i>Chatbot CSKH
+                </a>
+                <!-- Mobile Cart -->
+                <a sec:authorize="isAnonymous()"
+                   th:href="@{'/login?(next=' + '/customer/cart' + ')'}"
+                   class="block py-2 text-gray-700 hover:text-blue-600 font-medium flex items-center">
+                    <i class="fas fa-shopping-cart mr-2 w-4"></i>Giỏ hàng
+                </a>
+                <a sec:authorize="isAuthenticated()"
+                   th:href="@{/customer/cart}"
+                   class="block py-2 text-gray-700 hover:text-blue-600 font-medium flex items-center">
+                    <i class="fas fa-shopping-cart mr-2 w-4"></i>Giỏ hàng
+                    <span id="cartCountBadgeMobile"
+                          class="ml-2 inline-flex items-center justify-center text-xs font-semibold bg-blue-600 text-white rounded-full px-2 py-0.5">0</span>
                 </a>
 
                 <div class="border-t border-gray-200 my-2"></div>
@@ -169,7 +202,7 @@
                         <i class="fas fa-user mr-2 w-4"></i>Hồ sơ người dùng
                     </a>
                     <a class="block py-2 text-gray-700 hover:text-blue-600 flex items-center" href="/user/orders">
-                        <i class="fas fa-shopping-cart mr-2 w-4"></i>Đơn hàng
+                        <i class="fas a-shopping-cart mr-2 w-4"></i>Đơn hàng
                     </a>
                     <form method="post" th:action="@{/logout}" class="mt-2">
                         <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
@@ -180,6 +213,7 @@
                 </div>
             </div>
         </div>
+        <div id="toastHost" class="pointer-events-none fixed top-20 right-4 z-[9999] space-y-2"></div>
     </nav>
 
     <!-- JS dành riêng cho header -->
@@ -208,7 +242,6 @@
             });
         });
 
-        // Animation on scroll
         const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -228,7 +261,6 @@
             });
         });
 
-        // Navbar background on scroll
         window.addEventListener('scroll', function() {
             const navbar = document.getElementById('navbar');
             if (navbar) {
@@ -240,7 +272,6 @@
             }
         });
 
-        // Counter animation
         function animateCounters() {
             const counters = document.querySelectorAll('.achievement-counter');
             counters.forEach(counter => {
@@ -289,5 +320,30 @@
                 });
             }
         });
+        window.toast = function(msg){
+            var host=document.getElementById('toastHost'); if(!host) return;
+            var el=document.createElement('div');
+            el.className='toast px-4 py-2 bg-gray-900 text-white text-sm rounded shadow';
+            el.textContent=msg;
+            host.appendChild(el);
+            setTimeout(function(){ el.style.opacity='0'; el.style.transform='translateY(-6px)'; }, 2000);
+            setTimeout(function(){ host.removeChild(el); }, 2600);
+        };
+        window.updateCartCount = function(n){
+            var b1=document.getElementById('cartCountBadge');
+            var b2=document.getElementById('cartCountBadgeMobile');
+            if(b1) b1.textContent=n;
+            if(b2) b2.textContent=n;
+        };
+        // Favicon inline
+        (function(){
+          if (!document.querySelector('link[rel*="icon"]')) {
+            var link = document.createElement('link');
+            link.rel = 'icon';
+            link.type = 'image/svg+xml';
+            link.href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs/><rect width="64" height="64" rx="12" fill="%232563eb"/><path d="M12 30 32 14 52 30v20a4 4 0 0 1-4 4H16a4 4 0 0 1-4-4V30z" fill="white"/><rect x="28" y="36" width="8" height="18" rx="1.5" fill="%232563eb"/></svg>';
+            document.head.appendChild(link);
+          }
+        })();
     </script>
 </th:block>

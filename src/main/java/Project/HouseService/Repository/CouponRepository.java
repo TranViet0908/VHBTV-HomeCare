@@ -32,4 +32,5 @@ public interface CouponRepository extends JpaRepository<Coupon, Long> {
     Page<Coupon> findByVendor(@Param("vendorId") Long vendorId,
                               @Param("q") String q,
                               Pageable pageable);
+
 }

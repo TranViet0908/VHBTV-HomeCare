@@ -31,7 +31,6 @@
       <p class="text-gray-600">Quản lý và theo dõi tất cả đơn hàng của bạn</p>
     </div>
 
-    <!-- Tabs -->
     <div class="bg-white rounded-xl shadow-sm p-2 mb-6 flex gap-2 overflow-x-auto">
       <a th:href="@{/customer/orders/history(status='ALL')}"
          th:classappend="${currentStatus == 'ALL' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}"
@@ -65,7 +64,6 @@
       </a>
     </div>
 
-    <!-- Empty -->
     <div th:if="${#lists.isEmpty(orders)}" class="text-center py-20">
       <div class="inline-block p-8 bg-white rounded-full shadow-lg mb-6">
         <i class="fas fa-inbox text-6xl text-gray-300"></i>
@@ -77,7 +75,6 @@
       </a>
     </div>
 
-    <!-- Orders -->
     <div th:if="${!#lists.isEmpty(orders)}" class="space-y-4">
       <div th:each="order : ${orders}" class="bg-white rounded-xl shadow-sm hover:shadow-md transition">
         <div class="p-6 border-b">
@@ -86,10 +83,21 @@
               <img th:src="${order.vendor.avatarUrl != null ? order.vendor.avatarUrl : '/placeholder.svg?height=48&width=48'}"
                    alt="Vendor" class="w-12 h-12 rounded-full object-cover">
               <div>
-                <h3 class="font-semibold text-gray-900" th:text="${order.vendor.displayName}">Vendor</h3>
-                <div class="flex items-center gap-2 text-sm text-gray-600">
-                  <i class="fas fa-star text-yellow-400"></i>
-                  <span th:text="${order.vendor.ratingAvg}">0</span>
+                <a class="font-semibold text-gray-900 hover:text-blue-600"
+                   th:href="${order.vendor.slug != null} ? @{'/vendors/' + ${order.vendor.slug}} : @{'/vendors/' + ${order.vendor.id}}"
+                   th:text="${order.vendor.displayName}">Vendor</a>
+                <!-- Sao: full/half/empty theo rating -->
+                <div class="flex items-center gap-2 text-sm text-gray-600 mt-1"
+                     th:with="r=${order.vendor.ratingAvg != null ? order.vendor.ratingAvg : 0}">
+                  <span>
+                    <i class="mr-0.5"
+                       th:class="${r >= i} ? 'fas fa-star text-yellow-400' :
+                                 (${r >= (i - 0.5)} ? 'fas fa-star-half-stroke text-yellow-400' :
+                                                       'far fa-star text-gray-300')"
+                       th:each="i : ${#numbers.sequence(1,5)}"></i>
+                  </span>
+                  <span th:text="${#numbers.formatDecimal(r,1,'COMMA',1,'POINT')}">0.0</span>
+                  <span>(<span th:text="${order.vendor.ratingCount}">0</span>)</span>
                   <span th:if="${order.vendor.verified}" class="text-blue-600"><i class="fas fa-check-circle"></i></span>
                 </div>
               </div>
@@ -101,16 +109,13 @@
           </div>
 
           <div class="grid md:grid-cols-3 gap-4 text-sm">
-            <div>
-              <span class="text-gray-600">Ngày đặt:</span>
+            <div><span class="text-gray-600">Ngày đặt:</span>
               <span class="font-medium ml-2" th:text="${#temporals.format(order.createdAt,'dd/MM/yyyy HH:mm')}">--</span>
             </div>
-            <div>
-              <span class="text-gray-600">Tổng tiền:</span>
+            <div><span class="text-gray-600">Tổng tiền:</span>
               <span class="font-bold text-blue-600 ml-2" th:text="${#numbers.formatDecimal(order.total,0,'COMMA',0,'POINT')} + 'đ'">0đ</span>
             </div>
-            <div>
-              <span class="text-gray-600">Thanh toán:</span>
+            <div><span class="text-gray-600">Thanh toán:</span>
               <span class="font-medium ml-2" th:text="${order.paymentMethod}">—</span>
             </div>
           </div>
@@ -122,8 +127,7 @@
                  alt="Service" class="w-16 h-16 rounded-lg object-cover">
             <div class="flex-1">
               <h4 class="font-medium text-gray-900" th:text="${item.vendorService != null ? item.vendorService.title : 'Dịch vụ'}">Dịch vụ</h4>
-              <div class="text-sm text-gray-600 mt-1">
-                <i class="fas fa-calendar mr-1"></i>
+              <div class="text-sm text-gray-600 mt-1"><i class="fas fa-calendar mr-1"></i>
                 <span th:text="${#temporals.format(item.scheduleAt,'dd/MM/yyyy HH:mm')}">--</span>
               </div>
             </div>
@@ -142,14 +146,9 @@
              class="flex-1 text-center border-2 border-blue-600 text-blue-600 py-2 rounded-lg font-medium hover:bg-blue-50 transition">
             <i class="fas fa-eye mr-2"></i>Xem chi tiết
           </a>
-          <a th:if="${order.status == 'PENDING' or order.status == 'CONFIRMED'}"
-             th:href="@{/customer/chat/order/{code}(code=${order.orderCode})}"
-             class="flex-1 text-center bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition">
-            <i class="fas fa-comments mr-2"></i>Nhắn tin
-          </a>
           <button th:if="${order.status == 'PENDING'}"
-                  th:attr="data-order-id=${order.id},data-order-code=${order.orderCode}"
-                  class="flex-1 bg-red-600 text-white py-2 rounded-lg font-medium hover:bg-red-700 transition cancel-btn">
+                  class="flex-1 bg-red-600 text-white py-2 rounded-lg font-medium hover:bg-red-700 transition cancel-open"
+                  th:attr="data-order-code=${order.orderCode}">
             <i class="fas fa-times mr-2"></i>Hủy đơn
           </button>
         </div>
@@ -176,21 +175,34 @@
 
 <div th:replace="~{layouts/footer :: siteFooter}"></div>
 
+<div class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50" id="cancelModal">
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">Xác nhận hủy đơn</h3>
+    <p class="text-gray-600 mb-4">Bạn có chắc muốn hủy đơn hàng này?</p>
+    <div class="flex gap-3 justify-end">
+      <button class="px-4 py-2 rounded-lg border hover:bg-gray-50" id="cancelClose">Đóng</button>
+      <button class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700" id="cancelConfirm">Hủy đơn</button>
+    </div>
+  </div>
+</div>
+
 <script>
   anime({targets:'.bg-white',opacity:[0,1],translateY:[20,0],delay:anime.stagger(100),easing:'easeOutQuad'});
-
   const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
   const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
-
-  document.querySelectorAll('.cancel-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      if (!confirm('Bạn có chắc muốn hủy đơn hàng này?')) return;
-      const code = this.dataset.orderCode;
-      fetch(`/customer/orders/${code}/cancel`, {
-        method: 'POST',
-        headers: csrfHeader && csrfToken ? { [csrfHeader]: csrfToken } : {}
-      }).then(r => location.reload());
-    });
+  const modal = document.getElementById('cancelModal');
+  const btnClose = document.getElementById('cancelClose');
+  const btnConfirm = document.getElementById('cancelConfirm');
+  let pendingCode = null;
+  function openModal(code){ pendingCode = code; modal.classList.remove('hidden'); modal.classList.add('flex'); }
+  function closeModal(){ modal.classList.add('hidden'); modal.classList.remove('flex'); pendingCode = null; }
+  document.querySelectorAll('.cancel-open').forEach(b=>{ b.addEventListener('click', ()=> openModal(b.dataset.orderCode)); });
+  btnClose.addEventListener('click', closeModal);
+  modal.addEventListener('click', e=>{ if(e.target===modal) closeModal(); });
+  btnConfirm.addEventListener('click', ()=>{
+    if(!pendingCode) return;
+    fetch(`/customer/orders/${pendingCode}/cancel`, { method: 'POST', headers: csrfHeader && csrfToken ? { [csrfHeader]: csrfToken } : {} })
+      .then(()=> location.reload());
   });
 </script>
 </body>

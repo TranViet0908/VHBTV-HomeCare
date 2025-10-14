@@ -52,12 +52,14 @@ public class CheckoutService {
             }
         }
 
+        // THÊM cột address_snapshot để lấy địa chỉ người dùng đã nhập trong giỏ
         String sql = """
-            select ci.id, ci.vendor_service_id, ci.quantity, ci.schedule_at, ci.notes, ci.vendor_id, ci.unit_price, ci.subtotal
-            from cart_items ci
-            where ci.cart_id = :cartId
-            order by ci.id asc
-        """;
+        select ci.id, ci.vendor_service_id, ci.quantity, ci.schedule_at, ci.notes,
+               ci.vendor_id, ci.unit_price, ci.subtotal, ci.address_snapshot
+        from cart_items ci
+        where ci.cart_id = :cartId
+        order by ci.id asc
+    """;
         state.items.clear();
         if (cartId == null) {
             state.couponCode = couponCode; // null nếu không có
@@ -97,6 +99,7 @@ public class CheckoutService {
             Long vId = toLong(r[5]);
             BigDecimal unitPrice = r[6] == null ? null : new BigDecimal(r[6].toString());
             BigDecimal subtotal = r[7] == null ? null : new BigDecimal(r[7].toString());
+            String addressSnapshot = r[8] == null ? null : String.valueOf(r[8]); // <— địa chỉ từ giỏ
 
             VendorService vs = vsMap.get(vsId);
             if (vs == null) continue;
@@ -111,6 +114,9 @@ public class CheckoutService {
             it.subtotal = subtotal != null ? subtotal : it.unitPrice.multiply(BigDecimal.valueOf(it.quantity));
             it.scheduledAt = sched;
             it.notes = notes;
+            // GÁN địa chỉ để form confirm gửi lên và OrderService ghi vào service_order.address_line
+            it.addressLine = (addressSnapshot != null && !addressSnapshot.isBlank()) ? addressSnapshot.trim() : null;
+
             state.items.add(it);
         }
 
@@ -131,8 +137,7 @@ public class CheckoutService {
             vp = v; break;
         }
 
-        Project.HouseService.Controller.Customer.CheckoutController.Item it =
-                new Project.HouseService.Controller.Customer.CheckoutController.Item();
+        Item it = new Item();
         it.itemId = null;
         it.vendorService = vs;
         it.vendorId = vs.getVendorId();
@@ -142,6 +147,7 @@ public class CheckoutService {
         it.subtotal = it.unitPrice.multiply(java.math.BigDecimal.valueOf(it.quantity));
         it.scheduledAt = parseIso(scheduleAtIso);
         it.notes = null;
+        it.addressLine = null; // địa chỉ sẽ nhập ở bước tiếp theo
 
         state.items.add(it);
     }

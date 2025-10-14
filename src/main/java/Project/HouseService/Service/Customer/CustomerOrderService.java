@@ -6,12 +6,7 @@ import Project.HouseService.Entity.ServiceOrder;
 import Project.HouseService.Entity.ServiceOrderItem;
 import Project.HouseService.Entity.VendorProfile;
 import Project.HouseService.Entity.VendorService;
-import Project.HouseService.Repository.CouponRepository;
-import Project.HouseService.Repository.PaymentRepository;
-import Project.HouseService.Repository.ServiceOrderItemRepository;
-import Project.HouseService.Repository.ServiceOrderRepository;
-import Project.HouseService.Repository.VendorProfileRepository;
-import Project.HouseService.Repository.VendorServiceRepository;
+import Project.HouseService.Repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -36,19 +31,22 @@ public class CustomerOrderService {
     private final CouponRepository couponRepository;
     private final VendorServiceRepository vendorServiceRepository;
     private final VendorProfileRepository vendorProfileRepository;
+    private final VendorReviewRepository vendorReviewRepository;
 
     public CustomerOrderService(ServiceOrderRepository serviceOrderRepository,
                                 ServiceOrderItemRepository serviceOrderItemRepository,
                                 PaymentRepository paymentRepository,
                                 CouponRepository couponRepository,
                                 VendorServiceRepository vendorServiceRepository,
-                                VendorProfileRepository vendorProfileRepository) {
+                                VendorProfileRepository vendorProfileRepository,
+                                VendorReviewRepository vendorReviewRepository) {
         this.serviceOrderRepository = serviceOrderRepository;
         this.serviceOrderItemRepository = serviceOrderItemRepository;
         this.paymentRepository = paymentRepository;
         this.couponRepository = couponRepository;
         this.vendorServiceRepository = vendorServiceRepository;
         this.vendorProfileRepository = vendorProfileRepository;
+        this.vendorReviewRepository = vendorReviewRepository;
     }
 
     // ===== LISTING =====
@@ -155,6 +153,24 @@ public class CustomerOrderService {
                 if (key != null) m.put(key, vp);
             }
         }
+        return m;
+    }
+
+    // Lấy thống kê sao + số đơn hoàn tất của vendor theo userId
+    public java.util.Map<String,Object> getVendorStats(Long vendorUserId) {
+        java.math.BigDecimal ratingAvg = vendorReviewRepository.avgRatingByVendorId(vendorUserId);
+        long ratingCount = vendorReviewRepository.countByVendorUserId(vendorUserId);
+
+        long completed = serviceOrderRepository
+                .countDistinctByVendorIdAndStatusIn(
+                        vendorUserId,
+                        java.util.Set.of("COMPLETED")
+                );
+
+        java.util.Map<String,Object> m = new java.util.HashMap<>();
+        m.put("ratingAvg", ratingAvg == null ? java.math.BigDecimal.ZERO : ratingAvg);
+        m.put("ratingCount", ratingCount);
+        m.put("completedOrders", completed);
         return m;
     }
 

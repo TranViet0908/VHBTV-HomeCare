@@ -292,9 +292,21 @@ public class CheckoutController {
     @PostMapping("/process")
     @Transactional
     public String process(@RequestParam("paymentMethod") String paymentMethod,
+                          @RequestParam(value = "addressLine", required = false) String addressLine,
+                          @RequestParam(value = "notes", required = false) String notes,
                           @ModelAttribute("checkout") CheckoutState state,
                           SessionStatus sessionStatus, Model model) {
         User user = requireCurrentUser();
+
+        // đưa địa chỉ/ghi chú từ form vào state.contact để service ghi xuống service_order
+        if (state != null && state.contact != null) {
+            if (addressLine != null && !addressLine.isBlank()) {
+                state.contact.addressLine = addressLine.trim();
+            }
+            if (notes != null && !notes.isBlank()) {
+                state.contact.notes = notes.trim();
+            }
+        }
 
         String code = (state != null && state.couponCode != null && !"__NONE__".equals(state.couponCode.trim()))
                 ? state.couponCode.trim() : null;

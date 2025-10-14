@@ -139,9 +139,8 @@ public class CustomerOrderController {
     }
 
     // ===== Helpers to build view Map for list/detail (giữ nguyên UI sẵn có) =====
-
-    private Map<String,Object> toOrderView(ServiceOrder o) {
-        Map<String,Object> m = new LinkedHashMap<>();
+    private java.util.Map<String,Object> toOrderView(ServiceOrder o) {
+        var m = new java.util.LinkedHashMap<String,Object>();
         m.put("id", o.getId());
         m.put("orderCode", o.getOrderCode());
         m.put("status", safe(o.getStatus()));
@@ -156,14 +155,14 @@ public class CustomerOrderController {
         m.put("paymentStatus", latest != null ? safeObj(getField(latest,"status")) : "PENDING");
         m.put("paymentStatusDisplay", paymentStatusDisplay(latest));
 
-        List<ServiceOrderItem> items = customerOrderService.getItems(o.getId());
-        List<Map<String,Object>> viewItems = new ArrayList<>();
-
-        Set<Long> serviceIds = items.stream().map(this::extractVendorServiceId).filter(Objects::nonNull).collect(Collectors.toSet());
-        Map<Long, VendorService> svcById = customerOrderService.loadVendorServicesByIds(serviceIds);
+        var items = customerOrderService.getItems(o.getId());
+        var viewItems = new java.util.ArrayList<java.util.Map<String,Object>>();
+        var serviceIds = items.stream().map(this::extractVendorServiceId)
+                .filter(java.util.Objects::nonNull).collect(java.util.stream.Collectors.toSet());
+        var svcById = customerOrderService.loadVendorServicesByIds(serviceIds);
 
         for (ServiceOrderItem it : items) {
-            Map<String,Object> iv = new LinkedHashMap<>();
+            var iv = new java.util.LinkedHashMap<String,Object>();
             iv.put("quantity", getNum(it,"quantity"));
             iv.put("unitPrice", getBig(it,"unitPrice"));
             iv.put("subtotal", getBig(it,"subtotal"));
@@ -177,36 +176,46 @@ public class CustomerOrderController {
         m.put("items", viewItems);
 
         Long vendorUserId = items.isEmpty() ? null : extractVendorUserIdFromItem(items.get(0));
-        VendorProfile vp = null;
+        var v = new java.util.LinkedHashMap<String,Object>();
         if (vendorUserId != null) {
-            vp = customerOrderService.loadVendorsByUserIds(Set.of(vendorUserId)).get(vendorUserId);
-        }
+            // thống kê sao + đơn
+            var stats = customerOrderService.getVendorStats(vendorUserId);
+            v.put("ratingAvg", stats.get("ratingAvg"));
+            v.put("ratingCount", stats.get("ratingCount"));   // số review
+            v.put("orderCount", stats.get("orderCount"));     // số đơn COMPLETED
 
-        Map<String,Object> v = new LinkedHashMap<>();
-        if (vp != null) {
-            v.put("displayName", vp.getDisplayName());
-            v.put("ratingAvg", getBig(vp,"ratingAvg"));
-            v.put("ratingCount", getNum(vp,"ratingCount"));
-            v.put("verified", getBool(vp,"verified"));
-            try {
-                Object u = getField(vp, "user");
-                Object av = (u != null) ? getField(u, "avatarUrl") : null;
-                if (av != null) v.put("avatarUrl", String.valueOf(av));
-            } catch (Exception ignored) {}
+            var vp = customerOrderService.loadVendorsByUserIds(java.util.Set.of(vendorUserId)).get(vendorUserId);
+            if (vp != null) {
+                v.put("id", vp.getId());
+                v.put("slug", makeSlug(vp.getDisplayName()));
+                v.put("displayName", vp.getDisplayName());
+                v.put("verified", getBool(vp,"verified"));
+                try {
+                    Object u = getField(vp, "user");
+                    Object av = (u != null) ? getField(u, "avatarUrl") : null;
+                    if (av != null) v.put("avatarUrl", String.valueOf(av));
+                } catch (Exception ignored) {}
+            }
         }
-
-        // đảm bảo luôn có đủ key để Thymeleaf truy cập bằng dot mà không ném lỗi
+        v.putIfAbsent("id", null);
+        v.putIfAbsent("slug", null);
         v.putIfAbsent("displayName", "Vendor");
-        v.putIfAbsent("ratingAvg", java.math.BigDecimal.ZERO);
-        v.putIfAbsent("ratingCount", 0);
         v.putIfAbsent("verified", Boolean.FALSE);
         v.putIfAbsent("avatarUrl", null);
+        v.putIfAbsent("ratingAvg", java.math.BigDecimal.ZERO);
+        v.putIfAbsent("ratingCount", 0L);
+        v.putIfAbsent("orderCount", 0L);
 
         m.put("vendor", v);
-
         return m;
     }
 
+    private static String makeSlug(String s){
+        if (s == null) return null;
+        String t = s.trim().toLowerCase().replaceAll("\\s+","-");
+        t = t.replaceAll("[^a-z0-9\\-]","");
+        return t.isEmpty()?null:t;
+    }
     private Map<String,Object> toOrderDetailView(ServiceOrder o) {
         Map<String,Object> m = toOrderView(o);
         m.put("contactName", getStr(o,"contactName"));

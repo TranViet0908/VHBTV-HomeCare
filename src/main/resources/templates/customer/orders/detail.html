@@ -1,3 +1,4 @@
+<!-- SAU KHI SỬA: templates/customer/orders/detail.html -->
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -58,32 +59,43 @@
             <img th:src="${order.vendor.avatarUrl != null ? order.vendor.avatarUrl : '/placeholder.svg?height=64&width=64'}"
                  alt="Vendor" class="w-16 h-16 rounded-full object-cover">
             <div class="flex-1">
-              <h3 class="font-semibold text-gray-900 mb-1" th:text="${order.vendor.displayName}">Vendor</h3>
+              <!-- Click mở trang vendor -->
+              <a class="font-semibold text-gray-900 mb-1 hover:text-blue-600"
+                 th:href="${order.vendor.slug != null} ? @{'/vendors/' + ${order.vendor.slug}} : @{'/vendors/' + ${order.vendor.id}}"
+                 th:text="${order.vendor.displayName}">Vendor</a>
+              <!-- Sao chuẩn -->
               <div class="flex items-center gap-3 text-sm text-gray-600">
-                <div class="flex items-center gap-1">
-                  <i class="fas fa-star text-yellow-400"></i>
-                  <span th:text="${order.vendor.ratingAvg}">0</span>
-                  <span>(<span th:text="${order.vendor.ratingCount}">0</span> đánh giá)</span>
+                <div class="relative text-gray-300">
+                  <div class="flex">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                          class="fas fa-star"></i><i class="fas fa-star"></i>
+                  </div>
+                  <div class="absolute inset-0 overflow-hidden"
+                       th:style="'width:' + (${order.vendor.ratingAvg} * 20) + '%'">
+                    <div class="flex text-yellow-400">
+                      <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                  </div>
                 </div>
+                <span th:text="${#numbers.formatDecimal(order.vendor.ratingAvg,1,'COMMA',1,'POINT')}">0.0</span>
+                <span>(<span th:text="${order.vendor.ratingCount}">0</span> đánh giá)</span>
                 <span th:if="${order.vendor.verified}" class="text-blue-600">
                   <i class="fas fa-check-circle"></i> Đã xác minh
                 </span>
               </div>
             </div>
-            <a th:href="@{/customer/chat/order/{code}(code=${order.orderCode})}"
-               class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-              <i class="fas fa-comments mr-2"></i>Nhắn tin
-            </a>
+            <!-- Bỏ nhắn tin -->
           </div>
         </div>
 
         <!-- Contact -->
         <div class="bg-white rounded-xl shadow-sm p-6">
-          <h2 class="text-xl font-bold text-gray-900 mb-4"><i class="fas fa-user mr-2 text-blue-600"></i>Thông tin liên hệ</h2>
+          <h2 class="text-xl font-bold text-gray-900 mb-4"><i class="fas fa-user mr-2 text-blue-600"></i>Thông tin liên
+            hệ Customer</h2>
           <div class="grid md:grid-cols-2 gap-4 text-sm">
             <div><span class="text-gray-600">Họ tên:</span><span class="font-medium ml-2" th:text="${order.contactName}">--</span></div>
             <div><span class="text-gray-600">Điện thoại:</span><span class="font-medium ml-2" th:text="${order.contactPhone}">--</span></div>
-            <div class="md:col-span-2"><span class="text-gray-600">Địa chỉ:</span><span class="font-medium ml-2" th:text="${order.addressLine}">--</span></div>
             <div th:if="${order.notes}" class="md:col-span-2"><span class="text-gray-600">Ghi chú:</span><span class="font-medium ml-2" th:text="${order.notes}">--</span></div>
           </div>
         </div>
@@ -109,7 +121,8 @@
                   </div>
                   <div><i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>
                     <span class="font-medium">Địa chỉ:</span>
-                    <span th:text="${item.address != null ? item.address : order.addressLine}">--</span>
+                    <!-- CHỈ lấy địa chỉ khách nhập trong đơn -->
+                    <span th:text="${order.addressLine != null and !#strings.isEmpty(order.addressLine) ? order.addressLine : '—'}">--</span>
                   </div>
                   <div th:if="${item.notes}">
                     <i class="fas fa-note-sticky mr-2 text-blue-600"></i>
@@ -173,15 +186,10 @@
           </div>
 
           <div class="space-y-3">
-            <a th:if="${order.status == 'PENDING' or order.status == 'CONFIRMED'}"
-               th:href="@{/customer/chat/order/{code}(code=${order.orderCode})}"
-               class="block w-full text-center bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
-              <i class="fas fa-comments mr-2"></i>Nhắn tin với vendor
-            </a>
-
+            <!-- Bỏ nhắn tin -->
             <button th:if="${order.status == 'PENDING'}"
                     th:attr="data-order-code=${order.orderCode}"
-                    class="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition cancel-btn">
+                    class="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition cancel-open">
               <i class="fas fa-times mr-2"></i>Hủy đơn hàng
             </button>
 
@@ -211,24 +219,44 @@
 
 <div th:replace="~{layouts/footer :: siteFooter}"></div>
 
+<!-- Modal xác nhận -->
+<div class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50" id="cancelModal">
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">Xác nhận hủy đơn</h3>
+    <p class="text-gray-600 mb-4">Bạn có chắc muốn hủy đơn hàng này?</p>
+    <div class="flex gap-3 justify-end">
+      <button class="px-4 py-2 rounded-lg border hover:bg-gray-50" id="cancelClose">Đóng</button>
+      <button class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700" id="cancelConfirm">Hủy đơn</button>
+    </div>
+  </div>
+</div>
+
 <script>
   anime({targets:'.bg-white',opacity:[0,1],translateY:[20,0],delay:anime.stagger(100),easing:'easeOutQuad'});
 
   const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
   const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
 
-  document.querySelector('.cancel-btn')?.addEventListener('click', function() {
-    if (!confirm('Bạn có chắc muốn hủy đơn hàng này?')) return;
-    const code = this.dataset.orderCode;
-    fetch(`/customer/orders/${code}/cancel`, {
+  const modal = document.getElementById('cancelModal');
+  const btnClose = document.getElementById('cancelClose');
+  const btnConfirm = document.getElementById('cancelConfirm');
+  let pendingCode = null;
+
+  function openModal(code){ pendingCode = code; modal.classList.remove('hidden'); modal.classList.add('flex'); }
+  function closeModal(){ modal.classList.add('hidden'); modal.classList.remove('flex'); pendingCode = null; }
+
+  document.querySelectorAll('.cancel-open').forEach(b=>{
+    b.addEventListener('click', ()=> openModal(b.dataset.orderCode));
+  });
+  btnClose.addEventListener('click', closeModal);
+  modal.addEventListener('click', e=>{ if(e.target===modal) closeModal(); });
+
+  btnConfirm.addEventListener('click', ()=>{
+    if(!pendingCode) return;
+    fetch(`/customer/orders/${pendingCode}/cancel`, {
       method: 'POST',
       headers: csrfHeader && csrfToken ? { [csrfHeader]: csrfToken } : {}
-    }).then(() => location.reload());
-  });
-
-  document.querySelector('.review-btn')?.addEventListener('click', function() {
-    const orderId = this.dataset.orderId;
-    window.location.href = `/customer/orders/${orderId}/review`;
+    }).then(()=> location.reload());
   });
 </script>
 </body>

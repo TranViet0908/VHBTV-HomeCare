@@ -1,4 +1,4 @@
-<!-- SAU: resources/templates/customer/services/detail-vendor-service.html -->
+<!-- resources/templates/customer/services/detail-vendor-service.html -->
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
@@ -10,6 +10,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <meta name="_csrf" th:content="${_csrf?.token}">
     <meta name="_csrf_header" th:content="${_csrf?.headerName}">
+    <!-- tránh 404 favicon -->
+    <link rel="icon" href="data:,">
     <style>
         * { font-family: 'Inter', sans-serif; }
         .card { background: linear-gradient(145deg,#ffffff,#f8fafc); border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,.06); }
@@ -17,6 +19,9 @@
         .ratio-16x9 { position: relative; width: 100%; }
         .ratio-16x9::before { content:""; display:block; padding-top:56.25%; }
         .ratio-16x9 > .fit { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+        /* modal */
+        .modal-show { opacity: 1; pointer-events: auto; }
+        .modal-hide { opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -98,13 +103,13 @@
 
                 <div class="flex items-center">
                     <a class="w-12 h-12 rounded-full bg-gray-200 mr-3 overflow-hidden block"
-                       th:href="@{/vendors/{name}(name=${vendorDisplayName})}">
+                       th:href="@{/vendor/{name}(name=${vendorDisplayName})}">
                         <img th:if="${vendorAvatarUrl}" th:src="${vendorAvatarUrl}" alt="avatar" class="w-12 h-12 object-cover">
                     </a>
 
                     <div>
                         <div class="font-semibold">
-                            <a th:href="@{/vendors/{name}(name=${vendorDisplayName})}"
+                            <a th:href="@{/vendor/{name}(name=${vendorDisplayName})}"
                                th:text="${vendorDisplayName}">Vendor</a>
                             <i th:if="${vendorVerified}" class="fa fa-badge-check text-blue-600 ml-1"></i>
                         </div>
@@ -123,11 +128,11 @@
                     <p class="text-gray-600 text-sm">Bạn cần đăng nhập để thêm vào giỏ hàng.</p>
                     <a class="login-next block w-full text-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded"
                        sec:authorize="isAnonymous()"
-                       th:href="@{/auth/login}">
+                       th:href="@{/login}">
                         <i class="fa fa-sign-in-alt mr-1"></i>Đăng nhập
                     </a>
                 </div>
-                <!-- SỬA action: /customer/cart/items -->
+
                 <form sec:authorize="isAuthenticated()" method="post" th:action="@{/customer/cart/items}">
                     <input type="hidden" name="vendorServiceId" th:value="${vendorService.id}">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
@@ -148,7 +153,7 @@
                         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-2 rounded">
                             <i class="fa fa-cart-plus mr-1"></i>Thêm vào giỏ
                         </button>
-                        <a th:href="@{'/orders/preview?vendorServiceId=' + ${vendorService.id}}"
+                        <a th:href="@{|/customer/checkout/details?vendorServiceId=${vendorService.id}&quantity=1|}"
                            class="text-center bg-green-600 hover:bg-green-700 text-white py-2 rounded">Đặt ngay</a>
                     </div>
                 </form>
@@ -191,6 +196,23 @@
 
 <th:block th:replace="layouts/footer :: siteFooter"></th:block>
 
+<!-- MODAL THÔNG BÁO ĐƠN GIẢN -->
+<div id="notifyModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 modal-hide transition-opacity duration-200">
+    <div class="bg-white rounded-2xl shadow-xl w-[90%] max-w-md p-6">
+        <div class="flex items-center gap-3 mb-3">
+            <div id="notifyIcon" class="w-9 h-9 rounded-full flex items-center justify-center bg-green-100 text-green-600">
+                <i class="fas fa-check"></i>
+            </div>
+            <h3 id="notifyTitle" class="text-lg font-semibold">Thành công</h3>
+        </div>
+        <p id="notifyMessage" class="text-gray-700 mb-5">Đã thêm vào giỏ hàng.</p>
+        <div class="flex justify-end gap-2">
+            <a href="/customer/cart" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Xem giỏ hàng</a>
+            <button id="notifyOk" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg">Đóng</button>
+        </div>
+    </div>
+</div>
+
 <script>
     (function(){
       var qty=document.getElementById('qty'), pv=document.getElementById('pricePreview');
@@ -220,13 +242,34 @@
       hi(0); reset();
     })();
 
+    // cập nhật link đăng nhập: /login?next=
     document.addEventListener('DOMContentLoaded', function(){
       var next=location.pathname+location.search;
       document.querySelectorAll('a.login-next').forEach(function(a){
-        a.setAttribute('href','/auth/login?next='+encodeURIComponent(next));
+        a.setAttribute('href','/login?next='+encodeURIComponent(next));
       });
     });
 
+    // modal helpers
+    (function(){
+      var $m = document.getElementById('notifyModal');
+      var $ok = document.getElementById('notifyOk');
+      window.showModal = function(title, msg, type){
+        document.getElementById('notifyTitle').textContent = title || 'Thông báo';
+        document.getElementById('notifyMessage').textContent = msg || '';
+        var $icon = document.getElementById('notifyIcon');
+        $icon.className = 'w-9 h-9 rounded-full flex items-center justify-center';
+        if(type==='success'){ $icon.classList.add('bg-green-100','text-green-600'); $icon.innerHTML='<i class="fas fa-check"></i>'; }
+        else if(type==='error'){ $icon.classList.add('bg-red-100','text-red-600'); $icon.innerHTML='<i class="fas fa-times"></i>'; }
+        else { $icon.classList.add('bg-blue-100','text-blue-600'); $icon.innerHTML='<i class="fas fa-info"></i>'; }
+        $m.classList.remove('modal-hide'); $m.classList.add('modal-show');
+      };
+      window.hideModal = function(){ $m.classList.remove('modal-show'); $m.classList.add('modal-hide'); };
+      $ok.addEventListener('click', hideModal);
+      $m.addEventListener('click', function(e){ if(e.target===$m) hideModal(); });
+    })();
+
+    // submit form: hiển thị modal "thêm vào giỏ hàng thành công"
     (function(){
       function csrfHeaders(){
         var h=document.querySelector('meta[name="_csrf_header"]')?.content;
@@ -234,29 +277,23 @@
         var o={'Content-Type':'application/x-www-form-urlencoded'}; if(h&&t) o[h]=t; return o;
       }
       document.addEventListener('DOMContentLoaded', function(){
-        // Gửi đúng endpoint /customer/cart/items
         var form=document.querySelector('form[action$="/customer/cart/items"]');
         if(!form) return;
         form.addEventListener('submit', function(e){
           e.preventDefault();
           var fd=new FormData(form);
-          fd.delete('scheduleAt');
           var q=fd.get('quantity'); if(!q||+q<1) fd.set('quantity','1');
-
           var body=new URLSearchParams(); fd.forEach(function(v,k){ body.append(k,v); });
           fetch('/customer/cart/items', {
             method:'POST',
             headers: csrfHeaders(),
-            body: body,
+            body: body.toString(),
             credentials: 'same-origin'
           })
           .then(function(r){ if(!r.ok) throw r; return r.json(); })
-          .then(function(j){
-            if(window.updateCartCount) updateCartCount(j.count||0);
-            if(window.toast) toast('Đã thêm vào giỏ hàng');
-          })
-          .catch(function(){ if(window.toast) toast('Lỗi thêm vào giỏ'); });
-        }, {once:false});
+          .then(function(){ showModal('Thành công', 'Đã thêm vào giỏ hàng.', 'success'); })
+          .catch(function(){ showModal('Lỗi', 'Không thể thêm vào giỏ hàng.', 'error'); });
+        });
       });
     })();
 </script>

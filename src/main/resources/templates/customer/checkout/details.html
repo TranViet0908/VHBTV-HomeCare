@@ -1,3 +1,4 @@
+<!-- resources/templates/checkout/details.html -->
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -8,14 +9,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <style>
-    .gradient-text {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    .step-active { @apply bg-blue-600 text-white; }
-    .step-completed { @apply bg-green-500 text-white; }
-    .step-inactive { @apply bg-gray-200 text-gray-500; }
+    .step-active { background:#2563eb;color:#fff; }
+    .step-completed { background:#22c55e;color:#fff; }
+    .step-inactive { background:#e5e7eb;color:#6b7280; }
   </style>
 </head>
 <body class="bg-gray-50">
@@ -23,7 +19,7 @@
 
 <main class="pt-24 pb-16">
   <div class="container mx-auto px-4 lg:px-8 max-w-6xl">
-    <!-- Progress Steps -->
+    <!-- Steps -->
     <div class="mb-12">
       <div class="flex items-center justify-center">
         <div class="flex items-center">
@@ -48,63 +44,57 @@
     </div>
 
     <form action="/customer/checkout/confirm" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
       <div class="grid lg:grid-cols-3 gap-8">
-        <!-- Contact & Address Form -->
+        <!-- Contact -->
         <div class="lg:col-span-2 space-y-6">
-          <!-- Contact Information -->
           <div class="bg-white rounded-xl shadow-sm p-6">
             <h2 class="text-xl font-bold text-gray-900 mb-6">
-              <i class="fas fa-user mr-2 text-blue-600"></i>
-              Thông tin liên hệ
+              <i class="fas fa-user mr-2 text-blue-600"></i>Thông tin liên hệ
             </h2>
             <div class="grid md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Họ và tên *</label>
-                <input type="text" name="contactName" required
-                       th:value="${customer.fullName}"
+                <input type="text" name="contactName" required th:value="${contactNameDefault}"
                        class="w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Số điện thoại *</label>
-                <input type="tel" name="contactPhone" required
-                       th:value="${customer.phone}"
+                <input type="tel" name="contactPhone" required th:value="${contactPhoneDefault}"
                        class="w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
               </div>
             </div>
           </div>
 
-          <!-- Service Items with Schedule -->
+          <!-- Items -->
           <div class="bg-white rounded-xl shadow-sm p-6">
             <h2 class="text-xl font-bold text-gray-900 mb-6">
-              <i class="fas fa-calendar-check mr-2 text-blue-600"></i>
-              Xác nhận lịch hẹn
+              <i class="fas fa-calendar-check mr-2 text-blue-600"></i>Xác nhận lịch hẹn
             </h2>
 
             <div th:each="item, iterStat : ${cartItems}" class="mb-6 last:mb-0 pb-6 last:pb-0 border-b last:border-b-0">
               <div class="flex gap-4">
-                <img th:src="${item.vendorService.coverUrl ?: '/placeholder.svg?height=80&width=80'}"
+                <img th:src="${item.vendorService?.coverUrl ?: '/placeholder.svg?height=80&width=80'}"
                      alt="Service" class="w-20 h-20 rounded-lg object-cover">
                 <div class="flex-1">
-                  <h3 class="font-semibold text-gray-900 mb-1" th:text="${item.vendorService.title}">Service</h3>
-                  <p class="text-sm text-gray-600 mb-2" th:text="${item.vendor.displayName}">Vendor</p>
+                  <h3 class="font-semibold text-gray-900 mb-1" th:text="${item.vendorService?.title}">Service</h3>
+                  <p class="text-sm text-gray-600 mb-2" th:text="${item.vendor != null ? item.vendor.displayName : 'Nhà cung cấp'}">Vendor</p>
 
                   <div class="grid md:grid-cols-2 gap-3">
                     <div>
                       <label class="block text-xs font-medium text-gray-700 mb-1">Thời gian thực hiện *</label>
                       <input type="datetime-local"
                              th:name="'items[' + ${iterStat.index} + '].scheduleAt'"
-                             th:value="${#temporals.format(item.scheduleAt, 'yyyy-MM-dd\'T\'HH:mm')}"
-                             required
-                             class="w-full border rounded px-3 py-2 text-sm">
+                             th:value="${#temporals.format(item.scheduledAt, 'yyyy-MM-dd''T''HH:mm')}"
+                             th:attr="min=${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd''T''HH:mm')}"
+                             required class="w-full border rounded px-3 py-2 text-sm">
                     </div>
                     <div>
                       <label class="block text-xs font-medium text-gray-700 mb-1">Địa chỉ thực hiện *</label>
                       <input type="text"
-                             th:name="'items[' + ${iterStat.index} + '].address'"
-                             th:value="${item.addressSnapshot}"
-                             required
-                             placeholder="Nhập địa chỉ"
-                             class="w-full border rounded px-3 py-2 text-sm">
+                             th:name="'items[' + ${iterStat.index} + '].addressLine'"
+                             th:value="${item.addressLine != null && !#strings.isEmpty(item.addressLine) ? item.addressLine : addressDefault}"
+                             required class="w-full border rounded px-3 py-2 text-sm">
                     </div>
                   </div>
 
@@ -117,39 +107,54 @@
                               rows="2"></textarea>
                   </div>
 
-                  <input type="hidden" th:name="'items[' + ${iterStat.index} + '].itemId'" th:value="${item.id}">
+                  <input type="hidden" th:name="'items[' + ${iterStat.index} + '].itemId'" th:value="${item.itemId}">
                 </div>
                 <div class="text-right">
                   <div class="text-sm text-gray-600">SL: <span th:text="${item.quantity}">1</span></div>
-                  <div class="font-bold text-blue-600" th:text="${#numbers.formatDecimal(item.subtotal, 0, 'COMMA', 0, 'POINT')} + 'đ'">350,000đ</div>
+                  <div class="font-bold text-blue-600" th:text="${#numbers.formatDecimal(item.subtotal, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Order Summary -->
+        <!-- Summary -->
         <div class="lg:col-span-1">
           <div class="bg-white rounded-xl shadow-sm p-6 sticky top-24">
             <h2 class="text-xl font-bold text-gray-900 mb-6">Tóm tắt đơn hàng</h2>
 
+            <label class="text-sm text-gray-600 mb-1 block">Mã giảm giá</label>
+            <div class="flex gap-2 mb-2">
+              <select id="myCoupons" name="couponCode"
+                      class="border rounded px-3 py-2 min-w-[220px]" th:attr="data-selected=${couponCode}">
+                <option value="__NONE__">Không dùng mã</option>
+              </select>
+              <button type="button" id="btnApplyCoupon"
+                      class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">Áp dụng</button>
+            </div>
+            <p id="couponMsg" class="text-xs text-gray-500 mb-4"></p>
+
             <div class="space-y-3 mb-6 pb-6 border-b">
               <div class="flex justify-between text-gray-600">
                 <span>Tạm tính</span>
-                <span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 0, 'POINT')} + 'đ'">1,000,000đ</span>
+                <span id="subtotalText"
+                      th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</span>
               </div>
-              <div th:if="${discountAmount > 0}" class="flex justify-between text-green-600">
+              <div id="discountRow" class="flex justify-between text-green-600" th:classappend="${discountAmount <= 0} ? ' hidden'">
                 <span>Giảm giá</span>
-                <span th:text="'-' + ${#numbers.formatDecimal(discountAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'">-100,000đ</span>
+                <span id="discountText"
+                      th:text="'-' + ${#numbers.formatDecimal(discountAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'">-0đ</span>
               </div>
             </div>
 
             <div class="flex justify-between items-center mb-6">
               <span class="text-lg font-semibold text-gray-900">Tổng cộng</span>
-              <span class="text-2xl font-bold text-blue-600" th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')} + 'đ'">900,000đ</span>
+              <span id="totalText" class="text-2xl font-bold text-blue-600"
+                    th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</span>
             </div>
 
-            <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition">
+            <button type="submit"
+                    class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition">
               <i class="fas fa-arrow-right mr-2"></i>Tiếp tục
             </button>
 
@@ -166,13 +171,147 @@
 <div th:replace="~{layouts/footer :: siteFooter}"></div>
 
 <script>
-  anime({
-      targets: '.bg-white',
-      opacity: [0, 1],
-      translateY: [20, 0],
-      delay: anime.stagger(100),
-      easing: 'easeOutQuad'
+  anime({targets:'.bg-white',opacity:[0,1],translateY:[20,0],delay:anime.stagger(100),easing:'easeOutQuad'});
+  (function(){
+    const input = document.getElementById('couponInput');
+    const btn   = document.getElementById('btnApplyCoupon');
+    const msg   = document.getElementById('couponMsg');
+    const subtotalText = document.getElementById('subtotalText');
+    const discountRow  = document.getElementById('discountRow');
+    const discountText = document.getElementById('discountText');
+    const totalText    = document.getElementById('totalText');
+
+    function fmt(n){ try { return new Intl.NumberFormat('vi-VN').format(n) + 'đ'; } catch(e){ return n + 'đ'; } }
+
+    function getCsrf(){
+      const metaT = document.querySelector('meta[name="_csrf"]')?.content;
+      const metaH = document.querySelector('meta[name="_csrf_header"]')?.content;
+      const inputToken = document.querySelector('input[name="_csrf"]')?.value;
+      return { header: metaH || 'X-CSRF-TOKEN', token: metaT || inputToken || '' };
+    }
+
+    btn?.addEventListener('click', async function(){
+      const code = input.value.trim();
+      const {header, token} = getCsrf();
+      try{
+        const resp = await fetch('/customer/checkout/apply-coupon-ajax', {
+          method: 'POST',
+          headers: {
+            'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',
+            [header]: token
+          },
+          body: 'couponCode=' + encodeURIComponent(code)
+        });
+        const data = await resp.json();
+
+        // cập nhật UI
+        msg.textContent = data.message || '';
+        msg.className = 'text-xs mb-4 ' + (data.ok ? 'text-green-600' : 'text-red-600');
+
+        if (typeof data.subtotal !== 'undefined') subtotalText.textContent = fmt(data.subtotal);
+        if (typeof data.discount !== 'undefined') {
+          if (Number(data.discount) > 0) {
+            discountRow.classList.remove('hidden');
+            discountText.textContent = '-' + fmt(data.discount);
+          } else {
+            discountRow.classList.add('hidden');
+            discountText.textContent = '-' + fmt(0);
+          }
+        }
+        if (typeof data.total !== 'undefined') totalText.textContent = fmt(data.total);
+      }catch(e){
+        msg.textContent = 'Không áp dụng được mã. Thử lại.';
+        msg.className = 'text-xs mb-4 text-red-600';
+      }
+    });
+  })();
+    (function(){
+  const select  = document.getElementById('myCoupons');
+  const btn     = document.getElementById('btnApplyCoupon');
+  const msg     = document.getElementById('couponMsg');
+  const selectedOnServer = select.getAttribute('data-selected') || '';
+  const subtotalText = document.getElementById('subtotalText');
+  const discountRow  = document.getElementById('discountRow');
+  const discountText = document.getElementById('discountText');
+  const totalText    = document.getElementById('totalText');
+
+  function fmt(n){ try { return new Intl.NumberFormat('vi-VN').format(n) + 'đ'; } catch(e){ return n + 'đ'; } }
+  function getCsrf(){
+    const metaT=document.querySelector('meta[name="_csrf"]')?.content;
+    const metaH=document.querySelector('meta[name="_csrf_header"]')?.content;
+    const inputToken=document.querySelector('input[name="_csrf"]')?.value;
+    return { header: metaH || 'X-CSRF-TOKEN', token: metaT || inputToken || '' };
+  }
+
+  // load danh sách ngay khi focus/click lần đầu
+  let loaded=false;
+  async function loadCoupons(){
+    if (loaded) return;
+    const {header, token} = getCsrf();
+    try{
+      const r = await fetch('/customer/checkout/eligible-coupons', { headers: { [header]: token }});
+      const arr = await r.json();
+      if (Array.isArray(arr) && arr.length){
+        arr.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.code;
+          opt.textContent = `${c.code} • giảm ~ ${fmt(c.discount)}`;
+          if (String(c.selected) === 'true' || c.code === selectedOnServer) opt.selected = true;
+          select.appendChild(opt);
+        });
+      }
+      // nếu server đang có mã nhưng không nằm trong danh sách, thêm thủ công để không mất context
+      if (selectedOnServer && ![...select.options].some(o=>o.value===selectedOnServer)) {
+        const opt = document.createElement('option');
+        opt.value = selectedOnServer; opt.selected = true;
+        opt.textContent = selectedOnServer + ' • (đang áp)';
+        select.appendChild(opt);
+      }
+      loaded=true;
+    }catch(_){ /* im lặng */ }
+  }
+  select.addEventListener('focus', loadCoupons);
+  select.addEventListener('click', loadCoupons);
+
+  // áp dụng/gỡ mã
+  btn.addEventListener('click', async function(){
+    const code = (select.value === '__NONE__') ? '' : (select.value || '');
+    const {header, token} = getCsrf();
+    try{
+      const resp = await fetch('/customer/checkout/apply-coupon-ajax', {
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',[header]:token},
+        body:'couponCode=' + encodeURIComponent(code)
+      });
+      const data = await resp.json();
+      msg.textContent = data.message || (code ? 'Đã áp dụng mã.' : 'Đã gỡ mã.');
+      msg.className = 'text-xs mb-4 ' + (data.ok ? 'text-green-600' : 'text-red-600');
+
+      if (typeof data.subtotal !== 'undefined') subtotalText.textContent = fmt(data.subtotal);
+      if (typeof data.discount !== 'undefined') {
+        if (Number(data.discount) > 0) { discountRow.classList.remove('hidden'); discountText.textContent = '-' + fmt(data.discount); }
+        else { discountRow.classList.add('hidden'); discountText.textContent = '-0đ'; }
+      }
+      if (typeof data.total !== 'undefined') totalText.textContent = fmt(data.total);
+    }catch(_){
+      msg.textContent = 'Không áp dụng được mã.'; msg.className = 'text-xs mb-4 text-red-600';
+    }
   });
+})();
+  (function(){
+    function fmtLocal(dt){
+      const p = n => String(n).padStart(2,'0');
+      return dt.getFullYear() + '-' + p(dt.getMonth()+1) + '-' + p(dt.getDate()) +
+             'T' + p(dt.getHours()) + ':' + p(dt.getMinutes());
+    }
+    const nowStr = fmtLocal(new Date());
+    document.querySelectorAll('input[type="datetime-local"]').forEach(inp=>{
+      if (!inp.min || inp.min < nowStr) inp.min = nowStr;
+      inp.addEventListener('change', ()=>{
+        if (inp.value && inp.value < inp.min) inp.value = inp.min;
+      });
+    });
+  })();
 </script>
 </body>
 </html>

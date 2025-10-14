@@ -89,7 +89,8 @@
                             <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center" href="/user/profile">
                                 <i class="fas fa-user mr-2 w-4"></i>Hồ sơ người dùng
                             </a>
-                            <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center" href="/user/orders">
+                            <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center"
+                               th:href="@{/customer/orders}">
                                 <i class="fas fa-shopping-cart mr-2 w-4"></i>Đơn hàng của tôi
                             </a>
                             <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center" href="/user/notifications">
@@ -201,7 +202,8 @@
                     <a class="block py-2 text-gray-700 hover:text-blue-600 flex items-center" href="/user/profile">
                         <i class="fas fa-user mr-2 w-4"></i>Hồ sơ người dùng
                     </a>
-                    <a class="block py-2 text-gray-700 hover:text-blue-600 flex items-center" href="/user/orders">
+                    <a class="block py-2 text-gray-700 hover:text-blue-600 flex items-center"
+                       th:href="@{/customer/orders}">
                         <i class="fas a-shopping-cart mr-2 w-4"></i>Đơn hàng
                     </a>
                     <form method="post" th:action="@{/logout}" class="mt-2">
@@ -335,6 +337,31 @@
             if(b1) b1.textContent=n;
             if(b2) b2.textContent=n;
         };
+
+        async function fetchCartCount(){
+            try{
+                const res = await fetch('/customer/cart/json', {
+                    method:'GET',
+                    headers:{ 'Accept':'application/json','X-Requested-With':'XMLHttpRequest' },
+                    credentials:'same-origin',
+                    cache:'no-store'
+                });
+                if(!res.ok) return;
+                const data = await res.json();
+                const n = (data && typeof data.count!=='undefined') ? data.count
+                          : (Array.isArray(data?.items) ? data.items.length : 0);
+                updateCartCount(n||0);
+            }catch(e){}
+        }
+        // gọi lúc tải trang
+        document.addEventListener('DOMContentLoaded', fetchCartCount);
+        // gọi khi tab quay lại
+        document.addEventListener('visibilitychange', function(){ if(!document.hidden) fetchCartCount(); });
+        // nhận tín hiệu từ các trang khác
+        window.addEventListener('storage', function(e){ if(e.key==='cartUpdated'){ fetchCartCount(); }});
+        // hàm phát tín hiệu sau khi thêm/xóa giỏ ở bất kỳ trang nào
+        window.announceCartUpdated = function(){ try{ localStorage.setItem('cartUpdated', String(Date.now())); }catch(e){} };
+
         // Favicon inline
         (function(){
           if (!document.querySelector('link[rel*="icon"]')) {

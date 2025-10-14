@@ -15,7 +15,7 @@ public interface VendorProfileRepository extends JpaRepository<VendorProfile, Lo
     // đúng cú pháp property traversal
     Optional<VendorProfile> findByUser_Username(String username);
     Optional<VendorProfile> findByUser_Id(Long userId);
-
+    Optional<VendorProfile> findFirstByUserId(Long userId);
     @Query("select vp.id from VendorProfile vp where vp.user.id = :userId")
     Optional<Long> findVendorIdByUserId(@Param("userId") Long userId);
 

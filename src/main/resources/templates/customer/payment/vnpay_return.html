@@ -1,3 +1,4 @@
+<!-- src/main/resources/templates/customer/payment/vnpay_return.html -->
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -8,128 +9,120 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <style>
-        .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        .gradient-text {background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;}
     </style>
 </head>
 <body class="bg-gray-50">
 <div th:replace="~{layouts/header :: siteHeader}"></div>
 
+<!-- data cho JS -->
+<div id="ret-data" class="hidden"
+     th:data-status="${paymentStatus}"
+     th:data-message="${message}"
+     th:data-code="${responseCode}"></div>
+
 <main class="pt-24 pb-16 min-h-screen">
     <div class="container mx-auto px-4 lg:px-8 max-w-2xl">
-        <!-- Success State -->
+        <!-- SUCCESS -->
         <div th:if="${paymentStatus == 'SUCCESS'}" class="text-center">
             <div class="inline-block p-8 bg-green-100 rounded-full mb-6">
                 <i class="fas fa-check-circle text-6xl text-green-600"></i>
             </div>
-            <h1 class="text-3xl font-bold text-gray-900 mb-4">Thanh toán thành công!</h1>
-            <p class="text-gray-600 mb-8">
-                Cảm ơn bạn đã sử dụng dịch vụ của VHBTV HomeCare. Đơn hàng của bạn đã được xác nhận.
-            </p>
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">Thanh toán thành công</h1>
+            <p class="text-gray-600 mb-8">Cảm ơn bạn đã sử dụng dịch vụ của VHBTV HomeCare.</p>
 
             <div class="bg-white rounded-xl shadow-sm p-6 mb-8 text-left">
                 <h2 class="font-semibold text-gray-900 mb-4">Thông tin giao dịch</h2>
                 <div class="space-y-3 text-sm">
                     <div class="flex justify-between">
                         <span class="text-gray-600">Mã giao dịch:</span>
-                        <span class="font-mono font-semibold" th:text="${transactionRef}">VNPAY-20250921-0001</span>
+                        <span class="font-mono font-semibold" th:text="${transactionRef}">--</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Số tiền:</span>
-                        <span class="font-semibold text-green-600" th:text="${#numbers.formatDecimal(amount, 0, 'COMMA', 0, 'POINT')} + 'đ'">585,000đ</span>
+                        <span class="font-semibold text-green-600"
+                              th:text="${amountDisplay != null ? amountDisplay + 'đ' : '0đ'}">0đ</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Thời gian:</span>
-                        <span th:text="${#temporals.format(paidAt, 'dd/MM/yyyy HH:mm:ss')}">21/09/2025 08:20:00</span>
+                        <span th:text="${paidAt != null ? #temporals.format(paidAt, 'dd/MM/yyyy HH:mm:ss')
+                                : #temporals.format(T(java.time.LocalDateTime).now(), 'dd/MM/yyyy HH:mm:ss')}">--/--/---- --:--:--</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Phương thức:</span>
-                        <span class="font-semibold">VNPAY</span>
+                    <div class="flex justify-between" th:if="${bankCode}">
+                        <span class="text-gray-600">Ngân hàng:</span>
+                        <span class="font-mono" th:text="${bankCode}">--</span>
+                    </div>
+                    <div class="flex justify-between" th:if="${bankTransNo}">
+                        <span class="text-gray-600">Mã GD Ngân hàng:</span>
+                        <span class="font-mono" th:text="${bankTransNo}">--</span>
+                    </div>
+                    <div class="flex justify-between" th:if="${responseCode}">
+                        <span class="text-gray-600">Mã phản hồi:</span>
+                        <span class="font-mono" th:text="${responseCode}">00</span>
                     </div>
                 </div>
             </div>
 
             <div class="flex gap-4 justify-center">
-                <a href="/customer/orders/success" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition">
-                    <i class="fas fa-receipt mr-2"></i>Xem đơn hàng
+                <a href="/customer/orders" class="bg-gray-900 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition">
+                    <i class="fas fa-receipt mr-2"></i>Đơn của tôi
                 </a>
-                <a href="/" class="border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
-                    <i class="fas fa-home mr-2"></i>Về trang chủ
+                <a href="/" class="border-2 border-gray-300 text-gray-800 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
+                    <i class="fas fa-home mr-2"></i>Trang chủ
                 </a>
             </div>
         </div>
 
-        <!-- Failed State -->
+        <!-- FAILED -->
         <div th:if="${paymentStatus == 'FAILED'}" class="text-center">
             <div class="inline-block p-8 bg-red-100 rounded-full mb-6">
                 <i class="fas fa-times-circle text-6xl text-red-600"></i>
             </div>
             <h1 class="text-3xl font-bold text-gray-900 mb-4">Thanh toán thất bại</h1>
-            <p class="text-gray-600 mb-8">
-                Rất tiếc, giao dịch của bạn không thành công. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.
-            </p>
+            <p class="text-gray-600 mb-8">Vui lòng thử lại hoặc chọn phương thức khác.</p>
 
             <div class="bg-white rounded-xl shadow-sm p-6 mb-8 text-left">
                 <h2 class="font-semibold text-gray-900 mb-4">Thông tin giao dịch</h2>
                 <div class="space-y-3 text-sm">
                     <div class="flex justify-between">
                         <span class="text-gray-600">Mã giao dịch:</span>
-                        <span class="font-mono font-semibold" th:text="${transactionRef}">VNPAY-20250921-0001</span>
+                        <span class="font-mono font-semibold" th:text="${transactionRef}">--</span>
                     </div>
-                    <div class="flex justify-between">
+                    <div class="flex justify-between" th:if="${message}">
                         <span class="text-gray-600">Lý do:</span>
-                        <span class="text-red-600" th:text="${failureReason}">Giao dịch bị hủy</span>
+                        <span class="text-red-600" th:text="${message}">--</span>
+                    </div>
+                    <div class="flex justify-between" th:if="${responseCode}">
+                        <span class="text-gray-600">Mã phản hồi:</span>
+                        <span class="font-mono text-red-600" th:text="${responseCode}">--</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Thời gian:</span>
-                        <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm:ss')}">21/09/2025 08:20:00</span>
+                        <span th:text="${#temporals.format(T(java.time.LocalDateTime).now(), 'dd/MM/yyyy HH:mm:ss')}">--/--/---- --:--:--</span>
                     </div>
                 </div>
             </div>
 
             <div class="flex gap-4 justify-center">
-                <a href="/customer/checkout/confirm" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition">
-                    <i class="fas fa-redo mr-2"></i>Thử lại
-                </a>
-                <a href="/customer/cart" class="border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
+                <a href="/customer/cart" class="bg-gray-900 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition">
                     <i class="fas fa-shopping-cart mr-2"></i>Về giỏ hàng
+                </a>
+                <a href="/" class="border-2 border-gray-300 text-gray-800 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
+                    <i class="fas fa-home mr-2"></i>Trang chủ
                 </a>
             </div>
         </div>
 
-        <!-- Pending State -->
+        <!-- PENDING (tùy dùng) -->
         <div th:if="${paymentStatus == 'PENDING'}" class="text-center">
             <div class="inline-block p-8 bg-yellow-100 rounded-full mb-6">
                 <i class="fas fa-clock text-6xl text-yellow-600"></i>
             </div>
             <h1 class="text-3xl font-bold text-gray-900 mb-4">Đang xử lý thanh toán</h1>
-            <p class="text-gray-600 mb-8">
-                Giao dịch của bạn đang được xử lý. Chúng tôi sẽ thông báo kết quả sớm nhất.
-            </p>
-
-            <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
-                <div class="flex items-center gap-4 text-left">
-                    <i class="fas fa-info-circle text-3xl text-blue-600"></i>
-                    <div class="text-sm text-gray-700">
-                        <p class="font-semibold mb-1">Vui lòng kiểm tra:</p>
-                        <ul class="list-disc list-inside space-y-1">
-                            <li>Email xác nhận từ VHBTV HomeCare</li>
-                            <li>Thông báo trên ứng dụng</li>
-                            <li>Lịch sử đơn hàng trong tài khoản</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex gap-4 justify-center">
-                <a href="/customer/orders/history" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition">
-                    <i class="fas fa-history mr-2"></i>Lịch sử đơn hàng
-                </a>
-                <a href="/" class="border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
-                    <i class="fas fa-home mr-2"></i>Về trang chủ
+            <p class="text-gray-600 mb-8">Chúng tôi sẽ cập nhật kết quả sớm.</p>
+            <div class="flex justify-center">
+                <a href="/" class="bg-gray-900 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition">
+                    <i class="fas fa-home mr-2"></i>Trang chủ
                 </a>
             </div>
         </div>
@@ -138,14 +131,46 @@
 
 <div th:replace="~{layouts/footer :: siteFooter}"></div>
 
+<!-- Modal lỗi -->
+<div id="errorModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center px-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-6">
+        <div class="flex items-center mb-4">
+            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-3">
+                <i class="fas fa-exclamation-triangle text-red-600"></i>
+            </div>
+            <h3 class="text-lg font-semibold">Lỗi thanh toán</h3>
+        </div>
+        <div class="space-y-2 text-sm">
+            <div class="flex justify-between" th:if="${transactionRef}">
+                <span class="text-gray-600">Mã giao dịch:</span>
+                <span class="font-mono" th:text="${transactionRef}">--</span>
+            </div>
+            <div class="flex justify-between" th:if="${message}">
+                <span class="text-gray-600">Lý do:</span>
+                <span class="text-red-600" th:text="${message}">--</span>
+            </div>
+            <div class="flex justify-between" th:if="${responseCode}">
+                <span class="text-gray-600">Mã phản hồi:</span>
+                <span class="font-mono" th:text="${responseCode}">--</span>
+            </div>
+        </div>
+        <div class="mt-6 text-right">
+            <button type="button" class="px-5 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-900" onclick="closeErrorModal()">Đóng</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    anime({
-        targets: '.text-center > *',
-        opacity: [0, 1],
-        scale: [0.9, 1],
-        delay: anime.stagger(100),
-        easing: 'easeOutElastic(1, .8)'
-    });
+    anime({targets: '.text-center > *', opacity: [0,1], scale: [0.95,1], delay: anime.stagger(80), easing: 'easeOutQuad'});
+
+    function openErrorModal(){ var m=document.getElementById('errorModal'); m.classList.remove('hidden'); m.classList.add('flex'); }
+    function closeErrorModal(){ var m=document.getElementById('errorModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
+
+    (function(){
+        var ret = document.getElementById('ret-data'); if(!ret) return;
+        var status = ret.dataset.status||''; var code = ret.dataset.code||'';
+        if(status === 'FAILED' || (code && code !== '00')) openErrorModal();
+    })();
 </script>
 </body>
 </html>

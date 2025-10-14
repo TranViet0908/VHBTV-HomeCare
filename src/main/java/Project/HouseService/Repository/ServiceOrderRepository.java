@@ -17,7 +17,9 @@ public interface ServiceOrderRepository extends JpaRepository<ServiceOrder, Long
 
     Optional<ServiceOrder> findByIdAndVendorId(Long id, Long vendorId);
     Optional<ServiceOrder> findById(Long id);
-
+    Page<ServiceOrder> findAllByCustomerId(Long customerId, Pageable pageable);
+    Optional<ServiceOrder> findByOrderCodeAndCustomerId(String orderCode, Long customerId);
+    Optional<ServiceOrder> findByIdAndCustomerId(Long id, Long customerId);
     @Query("""
            SELECT o FROM ServiceOrder o
            WHERE o.vendorId = :vendorId

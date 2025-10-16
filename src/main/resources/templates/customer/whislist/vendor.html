@@ -9,10 +9,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-50">
-Header
+
+<!-- Header -->
 <div th:replace="~{layouts/header :: header}"></div>
 
-Breadcrumb
+<!-- Breadcrumb -->
 <section class="bg-white border-b">
   <div class="container mx-auto px-4 py-4">
     <nav class="flex items-center space-x-2 text-sm">
@@ -27,7 +28,7 @@ Breadcrumb
   </div>
 </section>
 
-Page Header
+<!-- Page Header -->
 <section class="bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12">
   <div class="container mx-auto px-4">
     <div class="max-w-6xl mx-auto">
@@ -53,94 +54,91 @@ Page Header
   </div>
 </section>
 
-Vendors Grid
+<!-- Vendors Grid -->
 <section class="py-12">
   <div class="container mx-auto px-4">
     <div class="max-w-6xl mx-auto">
 
-      Vendors Grid
+      <!-- Vendors Grid -->
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="vendorsGrid">
         <div th:each="vendor : ${favoriteVendors}"
              class="vendor-card bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
 
-          Cover Image
+          <!-- Cover Image -->
           <div class="relative h-32 bg-gradient-to-br from-blue-500 to-purple-600">
             <div class="absolute inset-0 bg-black/20"></div>
 
-            Remove Button
-            <button th:onclick="'removeVendorFromFavorites(' + ${vendor.userId} + ')'"
+            <!-- Remove Button -->
+            <button th:onclick="'removeVendorFromFavorites(' + ${vendor['userId']} + ')'"
                     class="absolute top-3 right-3 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-all hover:scale-110 z-10">
               <i class="fas fa-heart text-red-500"></i>
             </button>
 
-            Verified Badge
-            <div th:if="${vendor.verified}" class="absolute top-3 left-3">
-                                <span class="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center space-x-1">
-                                    <i class="fas fa-certificate"></i>
-                                    <span>Đã xác minh</span>
-                                </span>
+            <!-- Verified Badge -->
+            <div th:if="${vendor['verified']}" class="absolute top-3 left-3">
+              <span class="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center space-x-1">
+                <i class="fas fa-certificate"></i>
+                <span>Đã xác minh</span>
+              </span>
             </div>
           </div>
 
-          Avatar
+          <!-- Avatar -->
           <div class="relative px-6 -mt-12">
             <div class="w-24 h-24 rounded-full border-4 border-white bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
-              <span th:text="${#strings.substring(vendor.displayName, 0, 1)}">V</span>
+              <span th:text="${#strings.substring(vendor['displayName'], 0, 1)}">V</span>
             </div>
           </div>
 
-          Card Content
+          <!-- Card Content -->
           <div class="p-6 pt-4">
-            Vendor Name
-            <h3 class="text-xl font-bold text-gray-900 mb-2" th:text="${vendor.displayName}">
-              Vệ Sinh A
-            </h3>
+            <!-- Vendor Name -->
+            <h3 class="text-xl font-bold text-gray-900 mb-2" th:text="${vendor['displayName']}">Vendor</h3>
 
-            Bio
-            <p class="text-sm text-gray-600 mb-4 line-clamp-2" th:text="${vendor.bio ?: 'Nhà cung cấp dịch vụ chuyên nghiệp'}">
-              Chuyên vệ sinh nhà cửa, văn phòng
-            </p>
+            <!-- Bio -->
+            <p class="text-sm text-gray-600 mb-4 line-clamp-2"
+               th:text="${vendor['bio'] ?: 'Nhà cung cấp dịch vụ chuyên nghiệp'}">Mô tả</p>
 
-            Stats
+            <!-- Stats -->
             <div class="grid grid-cols-3 gap-4 mb-4 pb-4 border-b">
               <div class="text-center">
                 <div class="flex items-center justify-center space-x-1 mb-1">
                   <i class="fas fa-star text-yellow-400 text-sm"></i>
-                  <span class="font-bold text-gray-900" th:text="${vendor.ratingAvg}">4.8</span>
+                  <span class="font-bold text-gray-900" th:text="${vendor['ratingAvg'] ?: 0}">0</span>
                 </div>
                 <div class="text-xs text-gray-500">Đánh giá</div>
               </div>
               <div class="text-center">
-                <div class="text-lg font-bold text-gray-900" th:text="${vendor.ratingCount}">120</div>
+                <div class="text-lg font-bold text-gray-900" th:text="${vendor['ratingCount'] ?: 0}">0</div>
                 <div class="text-xs text-gray-500">Reviews</div>
               </div>
               <div class="text-center">
-                <div class="text-lg font-bold text-gray-900" th:text="${vendor.yearsExperience ?: 0}">5</div>
+                <div class="text-lg font-bold text-gray-900" th:text="${vendor['yearsExperience'] ?: 0}">0</div>
                 <div class="text-xs text-gray-500">Năm KN</div>
               </div>
             </div>
 
-            Address
+            <!-- Address -->
             <div class="flex items-start space-x-2 text-sm text-gray-600 mb-4">
               <i class="fas fa-map-marker-alt mt-1 text-gray-400"></i>
-              <span class="line-clamp-1" th:text="${vendor.addressLine ?: 'Hà Nội'}">Hà Nội</span>
+              <span class="line-clamp-1" th:text="${vendor['addressLine'] ?: 'Đang cập nhật'}">Đang cập nhật</span>
             </div>
 
-            Services Count
+            <!-- Services Count -->
             <div class="flex items-center justify-between text-sm text-gray-600 mb-4">
-                                <span>
-                                    <i class="fas fa-concierge-bell mr-1"></i>
-                                    <span th:text="${vendor.servicesCount ?: 0}">10</span> dịch vụ
-                                </span>
+              <span>
+                <i class="fas fa-concierge-bell mr-1"></i>
+                <span th:text="${vendor['servicesCount'] ?: 0}">0</span> dịch vụ
+              </span>
             </div>
 
-            Actions
+            <!-- Actions -->
             <div class="flex space-x-2">
-              <a th:href="@{/services/vendor-detail/{id}(id=${vendor.userId})}"
+              <a th:href="@{/services/vendor-detail/{id}(id=${vendor['userId']})}"
                  class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-center rounded-lg font-medium transition">
                 Xem chi tiết
               </a>
-              <a th:href="@{/services/vendors?vendorId={id}(id=${vendor.userId})}"
+              <a th:href="@{/services/vendors?vendorId={id}(id=${vendor['userId']})}"
                  class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-center rounded-lg font-medium hover:shadow-lg transition">
                 Dịch vụ
               </a>
@@ -149,7 +147,7 @@ Vendors Grid
         </div>
       </div>
 
-      Empty State
+      <!-- Empty State -->
       <div th:if="${#lists.isEmpty(favoriteVendors)}" class="text-center py-20">
         <i class="fas fa-store-slash text-8xl text-gray-300 mb-6"></i>
         <h2 class="text-2xl font-bold text-gray-900 mb-4">Chưa có nhà cung cấp yêu thích</h2>
@@ -163,58 +161,51 @@ Vendors Grid
   </div>
 </section>
 
-Footer
+<!-- Footer -->
 <div th:replace="~{layouts/footer :: footer}"></div>
 
 <script>
-  // Remove vendor from favorites
+  // Remove vendor from favorites (no /api)
   function removeVendorFromFavorites(vendorId) {
-      if (confirm('Bạn có chắc muốn xóa nhà cung cấp này khỏi danh sách yêu thích?')) {
-          fetch(`/api/customer/favorites/vendor/${vendorId}`, {
-              method: 'DELETE',
-              headers: {
-                  'Content-Type': 'application/json'
+    if (confirm('Bạn có chắc muốn xóa nhà cung cấp này khỏi danh sách yêu thích?')) {
+      fetch(`/customer/favorites/vendor/${vendorId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(response => {
+        if (response.ok) {
+          const card = event.target.closest('.vendor-card');
+          anime({
+            targets: card,
+            opacity: [1, 0],
+            scale: [1, 0.8],
+            duration: 400,
+            easing: 'easeInQuad',
+            complete: () => {
+              card.remove();
+              if (document.querySelectorAll('.vendor-card').length === 0) {
+                location.reload();
               }
-          })
-          .then(response => {
-              if (response.ok) {
-                  // Animate removal
-                  const card = event.target.closest('.vendor-card');
-                  anime({
-                      targets: card,
-                      opacity: [1, 0],
-                      scale: [1, 0.8],
-                      duration: 400,
-                      easing: 'easeInQuad',
-                      complete: () => {
-                          card.remove();
-                          // Check if empty
-                          if (document.querySelectorAll('.vendor-card').length === 0) {
-                              location.reload();
-                          }
-                      }
-                  });
-              } else {
-                  alert('Có lỗi xảy ra. Vui lòng thử lại.');
-              }
-          })
-          .catch(error => {
-              console.error('Error:', error);
-              alert('Có lỗi xảy ra. Vui lòng thử lại.');
+            }
           });
-      }
+        } else {
+          alert('Có lỗi xảy ra. Vui lòng thử lại.');
+        }
+      })
+      .catch(() => alert('Có lỗi xảy ra. Vui lòng thử lại.'));
+    }
   }
 
   // Animate on load
   document.addEventListener('DOMContentLoaded', function() {
-      anime({
-          targets: '.vendor-card',
-          translateY: [50, 0],
-          opacity: [0, 1],
-          delay: anime.stagger(100),
-          duration: 800,
-          easing: 'easeOutExpo'
-      });
+    anime({
+      targets: '.vendor-card',
+      translateY: [50, 0],
+      opacity: [0, 1],
+      delay: anime.stagger(100),
+      duration: 800,
+      easing: 'easeOutExpo'
+    });
   });
 </script>
 </body>

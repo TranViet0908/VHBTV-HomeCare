@@ -16,32 +16,33 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `coupon_service`
+-- Table structure for table `customer_wishlist_vendor`
 --
 
-DROP TABLE IF EXISTS `coupon_service`;
+DROP TABLE IF EXISTS `customer_wishlist_vendor`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `coupon_service` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `coupon_id` bigint NOT NULL,
-  `vendor_service_id` bigint NOT NULL,
+CREATE TABLE `customer_wishlist_vendor` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `customer_id` bigint NOT NULL,
+  `vendor_id` bigint NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_coupon_service` (`coupon_id`,`vendor_service_id`),
-  KEY `fk_csvc_vs` (`vendor_service_id`),
-  CONSTRAINT `fk_csvc_coupon` FOREIGN KEY (`coupon_id`) REFERENCES `coupon` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_csvc_vs` FOREIGN KEY (`vendor_service_id`) REFERENCES `vendor_service` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  UNIQUE KEY `uk_cwv_customer_vendor` (`customer_id`,`vendor_id`),
+  KEY `idx_cwv_customer_created` (`customer_id`,`created_at`),
+  KEY `idx_cwv_vendor` (`vendor_id`),
+  CONSTRAINT `fk_cwv_customer` FOREIGN KEY (`customer_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_cwv_vendor` FOREIGN KEY (`vendor_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `coupon_service`
+-- Dumping data for table `customer_wishlist_vendor`
 --
 
-LOCK TABLES `coupon_service` WRITE;
-/*!40000 ALTER TABLE `coupon_service` DISABLE KEYS */;
-INSERT INTO `coupon_service` VALUES (1,6,1),(2,6,2),(3,6,9),(4,7,3),(5,7,8),(6,8,4),(7,8,7),(8,9,5),(9,10,6),(10,10,10),(11,11,11),(12,11,12),(13,12,14),(14,13,5);
-/*!40000 ALTER TABLE `coupon_service` ENABLE KEYS */;
+LOCK TABLES `customer_wishlist_vendor` WRITE;
+/*!40000 ALTER TABLE `customer_wishlist_vendor` DISABLE KEYS */;
+/*!40000 ALTER TABLE `customer_wishlist_vendor` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

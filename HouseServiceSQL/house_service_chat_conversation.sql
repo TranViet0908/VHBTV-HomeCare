@@ -33,7 +33,7 @@ CREATE TABLE `chat_conversation` (
   PRIMARY KEY (`id`),
   KEY `idx_cc_user` (`user_id`),
   CONSTRAINT `fk_cc_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -42,7 +42,7 @@ CREATE TABLE `chat_conversation` (
 
 LOCK TABLES `chat_conversation` WRITE;
 /*!40000 ALTER TABLE `chat_conversation` DISABLE KEYS */;
-INSERT INTO `chat_conversation` VALUES (1,'/chat/1','2025-09-20 09:00:00.000001','c1','Tư vấn vệ sinh','2025-09-20 09:10:00.000001',1),(2,'/chat/2','2025-09-20 09:05:00.000001','c2','Điều hòa','2025-09-20 09:15:00.000001',2),(3,'/chat/3','2025-09-20 09:10:00.000001','c3','Ống nước','2025-09-20 09:20:00.000001',3),(4,'/chat/4','2025-09-20 09:15:00.000001','c4','Sơn nhà','2025-09-20 09:25:00.000001',4),(5,'/chat/5','2025-09-20 09:20:00.000001','c5','Chống thấm','2025-09-20 09:30:00.000001',5),(6,'/chat/6','2025-09-20 09:25:00.000001','c6','Giặt sofa','2025-09-20 09:35:00.000001',6),(7,'/chat/7','2025-09-20 09:30:00.000001','c7','Điện','2025-09-20 09:40:00.000001',7),(8,'/chat/8','2025-09-20 09:35:00.000001','c8','Lắp đèn','2025-09-20 09:45:00.000001',8),(9,'/chat/9','2025-09-20 09:40:00.000001','c9','Bảo trì','2025-09-20 09:50:00.000001',9),(10,'/chat/10','2025-09-20 09:45:00.000001','c10','Vệ sinh CN','2025-09-20 09:55:00.000001',10),(11,'/chat/so-v15-0001','2025-09-22 22:49:15.000000','CONV-SO1','Trao đổi SO-V15-0001','2025-09-22 22:49:15.000000',19);
+INSERT INTO `chat_conversation` VALUES (1,'/chat/1','2025-09-20 09:00:00.000001','c1','Tư vấn vệ sinh','2025-09-20 09:10:00.000001',1),(2,'/chat/2','2025-09-20 09:05:00.000001','c2','Điều hòa','2025-09-20 09:15:00.000001',2),(3,'/chat/3','2025-09-20 09:10:00.000001','c3','Ống nước','2025-09-20 09:20:00.000001',3),(4,'/chat/4','2025-09-20 09:15:00.000001','c4','Sơn nhà','2025-09-20 09:25:00.000001',4),(5,'/chat/5','2025-09-20 09:20:00.000001','c5','Chống thấm','2025-09-20 09:30:00.000001',5),(6,'/chat/6','2025-09-20 09:25:00.000001','c6','Giặt sofa','2025-09-20 09:35:00.000001',6),(7,'/chat/7','2025-09-20 09:30:00.000001','c7','Điện','2025-09-20 09:40:00.000001',7),(8,'/chat/8','2025-09-20 09:35:00.000001','c8','Lắp đèn','2025-09-20 09:45:00.000001',8),(9,'/chat/9','2025-09-20 09:40:00.000001','c9','Bảo trì','2025-09-20 09:50:00.000001',9),(10,'/chat/10','2025-09-20 09:45:00.000001','c10','Vệ sinh CN','2025-09-20 09:55:00.000001',10),(11,'/chat/so-v15-0001','2025-09-22 22:49:15.000000','CONV-SO1','Trao đổi SO-V15-0001','2025-09-22 22:49:15.000000',19),(12,NULL,NULL,NULL,'Trao đổi với Sana',NULL,14);
 /*!40000 ALTER TABLE `chat_conversation` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -55,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-02  1:18:15
+-- Dump completed on 2025-10-16 10:56:21

@@ -86,7 +86,8 @@
                         </button>
                         <!-- Dropdown menu -->
                         <div class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 hidden border" id="userDropdown">
-                            <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center" href="/user/profile">
+                            <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center"
+                               th:href="@{/customer/profile}">
                                 <i class="fas fa-user mr-2 w-4"></i>Hồ sơ người dùng
                             </a>
                             <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center"
@@ -199,7 +200,8 @@
                     <div class="text-sm text-gray-500 px-2 mb-2">
                         Xin chào, <span th:text="${#authentication?.name}">User</span>
                     </div>
-                    <a class="block py-2 text-gray-700 hover:text-blue-600 flex items-center" href="/user/profile">
+                    <a class="block py-2 text-gray-700 hover:text-blue-600 flex items-center"
+                       th:href="@{/customer/profile}">
                         <i class="fas fa-user mr-2 w-4"></i>Hồ sơ người dùng
                     </a>
                     <a class="block py-2 text-gray-700 hover:text-blue-600 flex items-center"

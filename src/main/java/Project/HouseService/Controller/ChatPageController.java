@@ -5,10 +5,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/chat")
+@RequestMapping("/customer/chat")
 public class ChatPageController {
-    @GetMapping
-    public String redirect() {
-        return "redirect:/customer/chatbot";
+
+    // Hỗ trợ /customer/chat, /customer/chat/, /customer/chat/index
+    @GetMapping({"", "/", "/index"})
+    public String index() {
+        return "customer/chatbot/index"; // templates/customer/chatbot/index.html
     }
 }

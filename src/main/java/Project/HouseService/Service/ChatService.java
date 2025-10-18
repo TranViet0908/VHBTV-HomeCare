@@ -1,97 +1,57 @@
 package Project.HouseService.Service;
 
 import Project.HouseService.Gateway.AiGateway;
-import Project.HouseService.Entity.ChatConversation;
-import Project.HouseService.Entity.ChatMessage;
-import Project.HouseService.Repository.ChatConversationRepository;
-import Project.HouseService.Repository.ChatMessageRepository;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
+import java.util.*;
 
 @Service
 public class ChatService {
 
-    private final ChatConversationRepository convRepo;
-    private final ChatMessageRepository msgRepo;
-    private final AiGateway ai;
-
-    @Value("${chat.guest-user-id}")
-    private Long guestUserId;
-
-    public ChatService(ChatConversationRepository convRepo, ChatMessageRepository msgRepo, AiGateway ai) {
-        this.convRepo = convRepo;
-        this.msgRepo = msgRepo;
-        this.ai = ai;
+    public static class Reply {
+        private final String text;
+        private final Map<String, Object> meta;
+        public Reply(String text, Map<String, Object> meta) {
+            this.text = text;
+            this.meta = meta == null ? Collections.emptyMap() : meta;
+        }
+        public String getText() { return text; }
+        public Map<String, Object> getMeta() { return meta; }
     }
 
-    private static final Pattern SENSITIVE = Pattern.compile(
-            "(?i)(password|m[aă]t\\s*k[h]?a[uù]|otp|api\\s*key|token|bypass|hack|dump|database|c[ơo] s[ởo]\\s*d[ữu] li[ệe]u|schema|b[aả]ng\\s*user|email\\s*danh s[aá]ch|s[ốo]\\s*\\d{9,}|th[ẻe]\\s*visa|ccv|cvv)"
-    );
+    private final AiGateway ai;
 
-    public record ChatResult(Long conversationId, String answer) { }
+    public ChatService(AiGateway ai) { this.ai = ai; }
 
-    public String greeting() { return ai.greeting(); }
-
-    @Transactional
-    public ChatResult chat(Long userId, Long conversationId, String question) {
-        if (question == null || question.isBlank()) {
-            return new ChatResult(conversationId, "Bạn vui lòng nhập câu hỏi cụ thể.");
-        }
-        if (SENSITIVE.matcher(question).find()) {
-            return new ChatResult(conversationId,
-                    "Xin lỗi, Sana không hỗ trợ yêu cầu liên quan đến thông tin nhạy cảm hoặc nội bộ. "
-                            + "Mình có thể hướng dẫn về dịch vụ, giá tham khảo, hoặc cách tự tra cứu đơn trên website.");
+    public Reply handleMessage(Long userId, String content) {
+        if (!StringUtils.hasText(content)) {
+            return new Reply("", Map.of("error","EMPTY_MESSAGE"));
         }
 
-        boolean isGuest = userId == null || userId.equals(guestUserId);
-
-        List<String[]> pairs = new ArrayList<>();
         String answer;
         try {
-            answer = ai.generate(question, pairs);
-        } catch (Exception e) {
-            // Phòng khi gateway có lỗi bất thường
-            answer = "Xin lỗi, hiện chưa thể phản hồi. Bạn thử lại sau hoặc vào mục Đơn hàng của tôi để tự tra cứu.";
+            // có thể kèm historyPairs nếu cần
+            answer = ai.generate(content, Collections.emptyList());
+        } catch (Exception ex) {
+            return new Reply("Xin lỗi, hiện chưa thể phản hồi. Vui lòng thử lại.",
+                    Map.of("error","AI_UPSTREAM_ERROR"));
+        }
+        if (!StringUtils.hasText(answer)) {
+            answer = "Xin lỗi, tôi chưa có câu trả lời phù hợp.";
         }
 
-        if (isGuest) {
-            return new ChatResult(null, answer); // không lưu
+        // Không lưu khi khách vãng lai
+        boolean guest = Objects.equals(userId, 999L);
+        if (!guest) {
+            // TODO: lưu ChatConversation/ChatMessage vào DB nếu bạn muốn
         }
+        return new Reply(answer, Map.of("guest", guest));
+    }
 
-        ChatConversation conv;
-        if (conversationId == null) {
-            conv = new ChatConversation();
-            conv.setUserId(userId);
-            conv.setTitle("Trao đổi với Sana");
-            // KHÔNG gọi setConversationId(...) vì entity không có field này
-            conv.setCreatedAt(Instant.now());
-            conv.setUpdatedAt(Instant.now());
-            conv = convRepo.save(conv);
-            conversationId = conv.getId();
-        } else {
-            conv = convRepo.findById(conversationId).orElseThrow();
-            conv.setUpdatedAt(Instant.now());
-            convRepo.save(conv);
-        }
-
-        ChatMessage m = new ChatMessage();
-        m.setUserId(userId);
-        // Nếu ChatMessage dùng @ManyToOne ChatConversation conversation:
-        m.setConversation(conv);
-        // Nếu ChatMessage dùng Long conversationId thì thay dòng trên bằng:
-        // m.setConversationId(conv.getId());
-
-        m.setQuestion(question);
-        m.setAnswer(answer);
-        m.setCreatedAt(Instant.now());
-        msgRepo.save(m);
-
-        return new ChatResult(conversationId, answer);
+    public Object loadHistory(Long userId, int limit, int offset) {
+        if (Objects.equals(userId, 999L)) return Collections.emptyList();
+        // TODO: truy vấn DB theo userId
+        return Collections.emptyList();
     }
 }

@@ -192,9 +192,6 @@
                 <i class="fas fa-fire"></i><span>Phổ biến</span>
               </span>
                     </div>
-                    <button class="absolute top-3 right-3 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-all hover:scale-110">
-                        <i class="far fa-heart text-gray-700 hover:text-red-500"></i>
-                    </button>
                 </div>
 
                 <div class="p-5">
@@ -331,6 +328,39 @@
         if (e.target.closest('.add-to-cart-form')) e.stopPropagation();
       }, true);
     })();
+    (function(){
+  function csrf(){ const h=document.querySelector('meta[name="_csrf_header"]')?.content;
+                   const t=document.querySelector('meta[name="_csrf"]')?.content;
+                   const o={'Accept':'application/json'}; if(h&&t) o[h]=t; return o; }
+  function setLiked(btn, liked){
+    btn.setAttribute('aria-pressed', liked?'true':'false');
+    const i=btn.querySelector('i');
+    i.className = liked ? 'fas fa-heart text-red-500' : 'far fa-heart text-gray-700';
+  }
+  async function status(id){ const r=await fetch(`/customer/wishlist/services/${id}/status`,{credentials:'same-origin'}); if(!r.ok) return false; const j=await r.json(); return !!j.liked; }
+  async function add(id){ const r=await fetch(`/customer/wishlist/services/${id}`,{method:'POST',headers:csrf(),credentials:'same-origin'}); if(r.status===401||r.status===403){location.href='/login?next='+encodeURIComponent(location.pathname+location.search); return false;} return r.ok; }
+  async function del(id){ const r=await fetch(`/customer/wishlist/services/${id}`,{method:'DELETE',headers:csrf(),credentials:'same-origin'}); if(r.status===401||r.status===403){location.href='/login?next='+encodeURIComponent(location.pathname+location.search); return false;} return r.ok; }
+
+  // init trạng thái cho mọi card
+  document.addEventListener('DOMContentLoaded', async function(){
+    const btns=[...document.querySelectorAll('.js-like-svc')];
+    // chặn click lan lên thẻ card
+    document.addEventListener('click', function(e){ if(e.target.closest('.js-like-svc')) e.stopPropagation(); }, true);
+
+    // load trạng thái từng nút
+    btns.forEach(async (b)=>{ try { setLiked(b, await status(b.dataset.svcId)); } catch(e){} });
+
+    // toggle
+    document.addEventListener('click', async function(e){
+      const btn = e.target.closest('.js-like-svc'); if(!btn) return;
+      e.preventDefault(); e.stopPropagation();
+      const id = btn.dataset.svcId;
+      const liked = btn.getAttribute('aria-pressed')==='true';
+      const ok = liked ? await del(id) : await add(id);
+      if(ok){ setLiked(btn, !liked); if(window.anime) anime({targets:btn, scale:[1,1.15,1], duration:350, easing:'easeOutElastic(1,.6)'}); }
+    });
+  });
+})();
 </script>
 </body>
 </html>

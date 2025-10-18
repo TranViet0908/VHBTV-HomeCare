@@ -2,7 +2,9 @@
 <th:block th:fragment="siteHeader"
           xmlns:th="http://www.thymeleaf.org"
           xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-
+    <!-- CSRF meta for fetch -->
+    <meta name="_csrf" th:content="${_csrf?.token}">
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}">
     <!-- Navigation -->
     <nav class="bg-white shadow-lg fixed w-full top-0 z-50 transition-all duration-300" id="navbar">
         <div class="container mx-auto px-4 lg:px-8">
@@ -373,6 +375,75 @@
             link.href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs/><rect width="64" height="64" rx="12" fill="%232563eb"/><path d="M12 30 32 14 52 30v20a4 4 0 0 1-4 4H16a4 4 0 0 1-4-4V30z" fill="white"/><rect x="28" y="36" width="8" height="18" rx="1.5" fill="%232563eb"/></svg>';
             document.head.appendChild(link);
           }
+        })();
+    </script>
+    <script id="wishlist-core">
+        (function(){
+          function csrfHeaders(ct){
+            var h=document.querySelector('meta[name="_csrf_header"]')?.content;
+            var t=document.querySelector('meta[name="_csrf"]')?.content;
+            var o={'Accept':'application/json'};
+            if(ct) o['Content-Type']=ct;
+            if(h&&t) o[h]=t;
+            return o;
+          }
+          async function confirmModal(msg){
+            var m=document.getElementById('appModal'),
+                t=document.getElementById('appModalMsg'),
+                ok=document.getElementById('appModalOk'),
+                ca=document.getElementById('appModalCancel');
+            if(!m||!t||!ok||!ca) return window.confirm(msg||'Xác nhận?');
+            t.textContent=msg||'Xác nhận?';
+            ca.classList.remove('hidden');
+            m.classList.remove('hidden'); m.classList.add('flex');
+            return await new Promise(res=>{
+              const okH = ()=>{cleanup();res(true)};
+              const caH = ()=>{cleanup();res(false)};
+              function cleanup(){
+                m.classList.add('hidden'); m.classList.remove('flex');
+                ok.removeEventListener('click',okH); ca.removeEventListener('click',caH);
+              }
+              ok.addEventListener('click',okH,{once:true});
+              ca.addEventListener('click',caH,{once:true});
+            });
+          }
+          function showModal(msg){
+            var m=document.getElementById('appModal'),
+                t=document.getElementById('appModalMsg'),
+                ok=document.getElementById('appModalOk'),
+                ca=document.getElementById('appModalCancel');
+            if(!m||!t||!ok) { window.alert(msg||'Thông báo'); return; }
+            t.textContent=msg||'Thông báo'; ca?.classList.add('hidden');
+            m.classList.remove('hidden'); m.classList.add('flex');
+            ok.onclick=function(){ m.classList.add('hidden'); m.classList.remove('flex'); };
+          }
+
+          window.WL = {
+            async remove(btn, wishlistId){
+              if(!(await confirmModal('Xóa dịch vụ khỏi danh sách yêu thích?'))) return;
+              const card = btn && btn.closest('.wishlist-card');
+              const r = await fetch(`/customer/wishlist/${wishlistId}`, {
+                method:'DELETE', headers: csrfHeaders(), credentials:'same-origin'
+              });
+              if(!r.ok){ showModal('Có lỗi xảy ra. Vui lòng thử lại.'); return; }
+              if(card && window.anime){
+                anime({targets:card, opacity:[1,0], scale:[1,0.92], duration:320, easing:'easeInQuad',
+                       complete:()=>card.remove()});
+              } else if(card){ card.remove(); }
+            },
+            async removeVendor(btn, vendorId){
+              if(!(await confirmModal('Bỏ theo dõi nhà cung cấp này?'))) return;
+              const card = btn && btn.closest('.vendor-card');
+              const r = await fetch(`/customer/favorites/vendor/${vendorId}`, {
+                method:'DELETE', headers: csrfHeaders(), credentials:'same-origin'
+              });
+              if(!r.ok){ showModal('Có lỗi xảy ra. Vui lòng thử lại.'); return; }
+              if(card && window.anime){
+                anime({targets:card, opacity:[1,0], scale:[1,0.92], duration:320, easing:'easeInQuad',
+                       complete:()=>card.remove()});
+              } else if(card){ card.remove(); }
+            }
+          };
         })();
     </script>
 </th:block>

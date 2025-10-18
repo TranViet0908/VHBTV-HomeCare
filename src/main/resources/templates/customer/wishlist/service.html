@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dịch vụ yêu thích - VHBTV HomeCare</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+
+<!-- Header chuẩn -->
+<div th:replace="~{layouts/header :: siteHeader}"></div>
+
+<section class="bg-white border-b">
+  <div class="container mx-auto px-4 py-4">
+    <nav class="flex items-center space-x-2 text-sm">
+      <a href="/" class="text-gray-500 hover:text-blue-600 transition-colors"><i class="fas fa-home"></i></a>
+      <span class="text-gray-400">/</span>
+      <a href="/customer/profile" class="text-gray-500 hover:text-blue-600 transition-colors">Hồ sơ</a>
+      <span class="text-gray-400">/</span>
+      <span class="text-gray-900 font-medium">Dịch vụ yêu thích</span>
+    </nav>
+  </div>
+</section>
+
+<section class="bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12">
+  <div class="container mx-auto px-4">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <div>
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">
+          <i class="fas fa-heart text-red-500 mr-3"></i>Dịch vụ yêu thích
+        </h1>
+        <p class="text-gray-600"><span th:text="${wishlistServices.size()}">0</span> dịch vụ đã lưu</p>
+      </div>
+      <div class="flex space-x-3">
+        <a href="/customer/wishlist/vendor" class="px-6 py-3 bg-white border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition">
+          <i class="fas fa-store mr-2"></i>Nhà cung cấp
+        </a>
+        <a href="/services" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition">
+          <i class="fas fa-plus mr-2"></i>Thêm dịch vụ
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-12">
+  <div class="container mx-auto px-4">
+    <div class="max-w-6xl mx-auto">
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="wishlistGrid">
+        <!-- chỉ dùng fragment -->
+        <div th:replace="~{customer/wishlist/fragments :: serviceGrid(wishlistServices=${wishlistServices})}"></div>
+      </div>
+
+      <div th:if="${#lists.isEmpty(wishlistServices)}" class="text-center py-20">
+        <i class="fas fa-heart-broken text-8xl text-gray-300 mb-6"></i>
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Chưa có dịch vụ yêu thích</h2>
+        <p class="text-gray-600 mb-8">Khám phá và lưu các dịch vụ bạn quan tâm</p>
+        <a href="/services" class="inline-block px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition">
+          <i class="fas fa-search mr-2"></i>Khám phá dịch vụ
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div th:replace="~{layouts/footer :: footer}"></div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.anime) {
+      anime({ targets: '.wishlist-card', translateY:[50,0], opacity:[0,1], delay: anime.stagger(100), duration:800, easing:'easeOutExpo' });
+    }
+  });
+</script>
+</body>
+</html>

@@ -3,6 +3,7 @@ package Project.HouseService.Controller.Customer;
 
 import Project.HouseService.Entity.CustomerProfile;
 import Project.HouseService.Entity.User;
+import Project.HouseService.Service.Customer.CustomerWishlistService;
 import Project.HouseService.Service.Customer.ProfileService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
@@ -28,9 +29,12 @@ import java.util.Objects;
 public class ProfileController {
 
     private final ProfileService profileService;
+    private final CustomerWishlistService wishlistService; // <-- thêm
 
-    public ProfileController(ProfileService profileService) {
+    public ProfileController(ProfileService profileService
+                            ,CustomerWishlistService wishlistService) {
         this.profileService = profileService;
+        this.wishlistService = wishlistService;
     }
 
     /** Trang tổng quan hồ sơ + 5 đơn gần nhất. */
@@ -41,6 +45,7 @@ public class ProfileController {
         User user = profileService.requireUserByUsername(username);
         CustomerProfile cp = profileService.findProfileByUserId(user.getId());
         if (cp == null) cp = new CustomerProfile();
+        Long userId = user.getId();
 
         // 5 đơn gần nhất
         List<Map<String, Object>> orders = profileService.recentOrderViews(user.getId(), 5);
@@ -48,7 +53,7 @@ public class ProfileController {
         // Thống kê
         long totalOrders = profileService.countOrders(user.getId());
         long completedOrders = profileService.countOrdersByStatus(user.getId(), "COMPLETED");
-        long wishlistCount = profileService.countWishlist(user.getId());
+        long wishlistCount = wishlistService.countService(userId) + wishlistService.countVendor(userId);
 
         Map<String, Long> orderStats = new LinkedHashMap<>();
         orderStats.put("totalOrders", totalOrders);
@@ -77,6 +82,8 @@ public class ProfileController {
         model.addAttribute("wishlistCount", wishlistCount);
         model.addAttribute("initials", initials);
         model.addAttribute("avatarUrl", avatarUrl);
+        model.addAttribute("wishlistServices", wishlistService.listServicePageModels(userId, 10, 0));
+        model.addAttribute("favoriteVendors", wishlistService.listVendorPageModels(userId, 10, 0));
         return "customer/profile/index";
     }
 

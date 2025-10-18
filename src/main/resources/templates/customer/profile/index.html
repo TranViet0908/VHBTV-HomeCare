@@ -188,43 +188,75 @@
         <div class="bg-white rounded-2xl shadow-lg p-8">
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-bold text-gray-900">Đơn hàng của tôi</h2>
-            <a href="/customer/orders/history" class="text-blue-600 hover:text-blue-700 font-medium">
-              Xem tất cả <i class="fas fa-arrow-right ml-1"></i>
-            </a>
           </div>
 
           <div class="space-y-4">
             <!-- giữ nguyên để sau làm -->
-            <div class="text-center py-12" th:if="${true}">
-              <i class="fas fa-shopping-bag text-6xl text-gray-300 mb-4"></i>
-              <p class="text-gray-500 text-lg">Tính năng đơn hàng sẽ cập nhật sau</p>
+            <div class="text-center py-12">
+              <a href="/customer/orders/history"
+                 class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                <span>Xem tất cả đơn hàng</span>
+                <i class="fas fa-arrow-right"></i>
+              </a>
+              <p class="text-gray-500 mt-3 text-sm">Xem lịch sử đơn hàng của bạn</p>
             </div>
           </div>
         </div>
       </div>
 
       <!-- TAB: Yêu thích (giữ nguyên, chưa chỉnh) -->
+      <!-- TAB: Yêu thích -->
       <div id="wishlist" class="tab-content">
         <div class="bg-white rounded-2xl shadow-lg p-8">
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-bold text-gray-900">Danh sách yêu thích</h2>
             <div class="flex space-x-2">
-              <a href="/customer/wishlist/service" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg font-medium hover:bg-blue-200 transition">
-                Dịch vụ
-              </a>
-              <a href="/customer/wishlist/vendor" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition">
-                Nhà cung cấp
-              </a>
+              <a href="/customer/wishlist/service" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg font-medium hover:bg-blue-200 transition">Dịch vụ</a>
+              <a href="/customer/wishlist/vendor" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition">Nhà cung cấp</a>
             </div>
           </div>
 
-          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="col-span-full text-center py-12">
-              <i class="fas fa-heart text-6xl text-gray-300 mb-4"></i>
-              <p class="text-gray-500 text-lg">Tính năng yêu thích sẽ cập nhật sau</p>
+          <!-- Section dịch vụ đã lưu -->
+          <div class="mb-10">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-xl font-semibold text-gray-900">
+                <i class="fas fa-heart text-red-500 mr-2"></i>Dịch vụ đã lưu
+                <span class="text-gray-500 text-base">(<span th:text="${wishlistServices.size()}">0</span>)</span>
+              </h3>
+              <a href="/customer/wishlist/service" class="text-sm text-blue-600 hover:underline">Xem tất cả</a>
             </div>
+            <div th:replace="~{customer/wishlist/fragments :: serviceGrid(wishlistServices=${wishlistServices})}"></div>
+          </div>
+
+          <!-- Section vendor đã lưu -->
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-xl font-semibold text-gray-900">
+                <i class="fas fa-store text-blue-600 mr-2"></i>Nhà cung cấp đã lưu
+                <span class="text-gray-500 text-base">(<span th:text="${favoriteVendors.size()}">0</span>)</span>
+              </h3>
+              <a href="/customer/wishlist/vendor" class="text-sm text-blue-600 hover:underline">Xem tất cả</a>
+            </div>
+            <div th:replace="~{customer/wishlist/fragments :: vendorGrid(favoriteVendors=${favoriteVendors})}"></div>
           </div>
         </div>
+
+        <!-- JS thao tác xóa + hiệu ứng -->
+        <script>
+          window.removeFromWishlist = function(id, btn){ return window.WL.remove(btn || (event?.target?.closest('button')), id); };
+
+          window.removeVendorFromFavorites = function(id, btn){ return window.WL.removeVendor(btn || (event?.target?.closest('button')), id); };
+
+        function addToCart(vendorServiceId) {
+          fetch('/customer/cart/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ vendorServiceId, quantity: 1 }) })
+            .then(r => { if (!r.ok) throw new Error(); return r; })
+            .then(() => { const btn = event.target.closest('button'); const html = btn.innerHTML; btn.innerHTML = '<i class="fas fa-check"></i>'; btn.classList.add('bg-green-500'); setTimeout(()=>{btn.innerHTML=html;btn.classList.remove('bg-green-500');}, 2000); })
+            .catch(() => alert('Có lỗi xảy ra. Vui lòng thử lại.'));
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+          anime({ targets: '.wishlist-card,.vendor-card', translateY: [50,0], opacity: [0,1], delay: anime.stagger(80), duration: 700, easing: 'easeOutExpo' });
+        });
+        </script>
       </div>
 
       <!-- TAB: Bảo mật -->
@@ -293,7 +325,36 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    // Tab switching
+
+    // ===== Modal helpers (global) =====
+    const modal = document.getElementById('appModal');
+    const modalMsg = document.getElementById('appModalMsg');
+    const modalOk = document.getElementById('appModalOk');
+    const modalCancel = document.getElementById('appModalCancel');
+
+    function openModal({msg, showCancel}) {
+      modalMsg.textContent = msg || '';
+      if (showCancel) modalCancel.classList.remove('hidden'); else modalCancel.classList.add('hidden');
+      modal.classList.remove('hidden'); modal.classList.add('flex');
+
+      return new Promise(resolve => {
+        const onOk = () => { cleanup(); resolve(true); };
+        const onCancel = () => { cleanup(); resolve(false); };
+        function cleanup() {
+          modal.classList.add('hidden'); modal.classList.remove('flex');
+          modalOk.removeEventListener('click', onOk);
+          modalCancel.removeEventListener('click', onCancel);
+        }
+        modalOk.addEventListener('click', onOk, {once:true});
+        modalCancel.addEventListener('click', onCancel, {once:true});
+      });
+    }
+    // Dùng thay alert(...)
+    window.showModal = (msg) => openModal({msg, showCancel:false});
+    // Dùng thay confirm(...)
+    window.confirmModal = (msg) => openModal({msg, showCancel:true});
+
+    // ===== Tabs =====
     document.querySelectorAll('.tab-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var tabId = this.dataset.tab;
@@ -334,8 +395,6 @@
         imgEl.classList.add('hidden');
         if (fbEl) fbEl.classList.remove('hidden');
       });
-
-      // Nếu không có src thì bật fallback ngay
       if (!imgEl.getAttribute('src') || imgEl.getAttribute('src') === '') {
         imgEl.classList.add('hidden');
         if (fbEl) fbEl.classList.remove('hidden');
@@ -357,5 +416,15 @@
   });
 </script>
 
+<!-- Modal chung -->
+<div id="appModal" class="fixed inset-0 hidden items-center justify-center bg-black/50 z-50">
+  <div class="bg-white rounded-2xl p-6 w-80 shadow-xl">
+    <div id="appModalMsg" class="text-gray-800 mb-6">Thông báo</div>
+    <div class="flex justify-end space-x-3">
+      <button id="appModalCancel" class="hidden px-4 py-2 rounded-lg border border-gray-300">Hủy</button>
+      <button id="appModalOk" class="px-4 py-2 rounded-lg bg-blue-600 text-white">OK</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

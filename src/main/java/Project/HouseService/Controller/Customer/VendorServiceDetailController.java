@@ -5,12 +5,18 @@ import Project.HouseService.Entity.VendorProfile;
 import Project.HouseService.Entity.VendorService;
 import Project.HouseService.Repository.VendorProfileRepository;
 import Project.HouseService.Repository.VendorServiceRepository;
+import Project.HouseService.Service.Customer.CustomerReviewService;
 import Project.HouseService.Service.Customer.VendorServiceDetailService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriUtils;
 
+import java.nio.charset.StandardCharsets;
+import java.text.Normalizer;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -22,13 +28,16 @@ public class VendorServiceDetailController {
     private final VendorServiceDetailService detailService;
     private final VendorProfileRepository vendorProfileRepository;
     private final VendorServiceRepository vendorServiceRepository;
+    private final CustomerReviewService reviewService;            // +++
 
     public VendorServiceDetailController(VendorServiceDetailService detailService,
                                          VendorProfileRepository vendorProfileRepository,
-                                         VendorServiceRepository vendorServiceRepository) {
+                                         VendorServiceRepository vendorServiceRepository,
+                                         CustomerReviewService reviewService) { // +++
         this.detailService = detailService;
         this.vendorProfileRepository = vendorProfileRepository;
         this.vendorServiceRepository = vendorServiceRepository;
+        this.reviewService = reviewService;                        // +++
     }
 
     // Trang chi tiết theo ID
@@ -36,6 +45,7 @@ public class VendorServiceDetailController {
     public String detailPage(@PathVariable Long id,
                              @RequestParam(required = false) Integer page,
                              @RequestParam(required = false) Integer size,
+                             Authentication auth,
                              Model model) {
 
         // Nếu gói PAUSED thì chuyển sang trang thông báo tạm dừng
@@ -83,6 +93,13 @@ public class VendorServiceDetailController {
                 }
             }
         }
+        // >>> THÊM: cấp danh sách ServiceOrderItem đủ điều kiện để hiển thị form đánh giá
+        if (auth != null) {
+            long uid = reviewService.requireUserIdByUsername(auth.getName());
+            List<?> eligibleItems = reviewService.listEligibleItems(uid, id);
+            model.addAttribute("eligibleItems", eligibleItems);
+        }
+        // <<< HẾT PHẦN THÊM
 
         return "customer/services/detail-vendor-service";
     }
@@ -116,9 +133,17 @@ public class VendorServiceDetailController {
     @ResponseBody
     public ResponseEntity<?> detailApi(@PathVariable Long id,
                                        @RequestParam(required = false) Integer page,
-                                       @RequestParam(required = false) Integer size) {
+                                       @RequestParam(required = false) Integer size,
+                                       Authentication auth) {
         try {
             Map<String, Object> data = detailService.loadDetail(id, page, size);
+            // >>> THÊM eligibleItems vào JSON nếu đăng nhập
+            Object eligible = null;
+            if (auth != null) {
+                long uid = reviewService.requireUserIdByUsername(auth.getName());
+                eligible = reviewService.listEligibleItems(uid, id);
+            }
+            // <<<
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "data", Map.of(
@@ -138,5 +163,45 @@ public class VendorServiceDetailController {
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("success", false, "error", "Internal error"));
         }
+    }
+    // ===== Legacy → Pretty URL =====
+    @GetMapping("/customer/vendor-services/{id}")
+    public String legacyToPretty(@PathVariable Long id) {
+        var vs = vendorServiceRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Vendor service not found"));
+
+        // vendorKey ưu tiên display_name slug, fallback username
+        String vendorKey = "vendor";
+        VendorProfile vp = vendorProfileRepository.findByUserId(vs.getVendorId());
+        if (vp != null) {
+            if (vp.getDisplayName() != null && !vp.getDisplayName().isBlank()) {
+                vendorKey = slugify(vp.getDisplayName()); // <== không đụng entity
+            } else if (vp.getUser() != null && vp.getUser().getUsername() != null) {
+                vendorKey = vp.getUser().getUsername();
+            }
+        }
+
+        // service slug: ưu tiên field slug nếu có getter, không thì slug từ title
+        String serviceSlug;
+        try {
+            var m = VendorService.class.getMethod("getSlug");
+            Object val = m.invoke(vs);
+            serviceSlug = val != null ? String.valueOf(val) : slugify(vs.getTitle());
+        } catch (ReflectiveOperationException e) {
+            serviceSlug = slugify(vs.getTitle());
+        }
+
+        String v = UriUtils.encodePathSegment(vendorKey, StandardCharsets.UTF_8);
+        String s = UriUtils.encodePathSegment(serviceSlug, StandardCharsets.UTF_8);
+        return "forward:/vendor-services/" + vs.getId();
+    }
+
+    // ===== Utils
+    private static String slugify(String s) {
+        if (s == null) return "item";
+        String ascii = Normalizer.normalize(s, Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        ascii = ascii.replaceAll("[^\\p{Alnum}\\s-]", " ").trim().replaceAll("\\s+", "-");
+        return ascii.toLowerCase();
     }
 }

@@ -81,5 +81,9 @@
     function genSlugFromName(v){const el=document.querySelector('[name="slug"]'); if(el && !el.dataset.touched) el.value=toSlug(v);}
     document.addEventListener('DOMContentLoaded',()=>{const el=document.querySelector('[name="slug"]'); if(el) el.addEventListener('input',()=>el.dataset.touched='1');});
 </script>
+
+<!-- Validation Scripts -->
+<script th:src="@{/js/validate/core.js}"></script>
+<script th:src="@{/js/validate/admin-service-form-validator.js}"></script>
 </body>
 </html>

@@ -1,15 +1,22 @@
 ﻿
 class FormValidator {
     /**
-     * Khá»Ÿi táº¡o FormValidator.
-     * @param {string} formSelector - Bá»™ chá»n CSS hoáº·c ID cá»§a form.
+     * Khởi tạo FormValidator.
+     * @param {string|HTMLElement} formOrSelector - Bộ chọn CSS, ID của form, hoặc phần tử form.
      */
-    constructor(formSelector) {
-        this.form = document.querySelector(formSelector) || document.getElementById(formSelector);
+    constructor(formOrSelector) {
+        if (typeof formOrSelector === 'string') {
+            this.form = document.querySelector(formOrSelector) || document.getElementById(formOrSelector);
+        } else if (formOrSelector instanceof HTMLElement) {
+            this.form = formOrSelector;
+        } else {
+            this.form = null;
+        }
+
         this.fields = {}; // { fieldName: { rules: [], element: null, errorElement: null } }
 
         if (!this.form) {
-            console.error(`Form with selector "${formSelector}" not found.`);
+            console.error('Form not found. Please provide a valid selector or HTMLFormElement.');
             return;
         }
 
@@ -30,7 +37,7 @@ class FormValidator {
 
     /**
      * Adds a validation rule for a specific field.
-     * ThÃªm má»™t quy táº¯c xÃ¡c thá»±c cho má»™t trÆ°á»ng cá»¥ thá»ƒ.
+     * Thêm một quy tắc xác thực cho một trường cụ thể.
      * @param {string} fieldName - The name attribute of the input field.
      * @param {string} rule - The validation rule (e.g., 'required').
      * @param {string} message - The error message to display.
@@ -58,7 +65,7 @@ class FormValidator {
 
     /**
      * Validates a single field.
-     * XÃ¡c thá»±c má»™t trÆ°á»ng duy nháº¥t.
+     * Xác thực một trường duy nhất.
      * @param {string} fieldName - The name of the field to validate.
      */
     validateField(fieldName) {
@@ -67,7 +74,7 @@ class FormValidator {
 
     /**
      * Validates all fields in the form.
-     * XÃ¡c thá»±c táº¥t cáº£ cÃ¡c trÆ°á»ng trong form.
+     * Xác thực tất cả các trường trong form.
      * @returns {boolean} - True if all fields are valid, false otherwise.
      */
     validate() {
@@ -92,7 +99,7 @@ class FormValidator {
 
     /**
      * Checks a single validation rule for an element.
-     * Kiá»ƒm tra má»™t quy táº¯c xÃ¡c thá»±c cho má»™t pháº§n tá»­.
+     * Kiểm tra một quy tắc xác thực cho một phần tử.
      * @param {HTMLElement} element - The input element.
      * @param {string} rule - The validation rule to check.
      * @returns {boolean} - True if the rule passes, false otherwise.
@@ -172,12 +179,44 @@ class FormValidator {
             return age >= 18;
         }
 
+        // Pattern validation (custom regex)
+        if (rule.startsWith('pattern:')) {
+            const pattern = rule.substring(8); // Get regex pattern after 'pattern:'
+            try {
+                const regex = new RegExp(pattern);
+                return regex.test(value);
+            } catch (e) {
+                console.error(`Invalid regex pattern: ${pattern}`, e);
+                return false;
+            }
+        }
+
+        // Integer validation (non-negative integer)
+        if (rule === 'integer') {
+            const num = Number(value);
+            return Number.isInteger(num) && num >= 0;
+        }
+
+        // Minimum value validation
+        if (rule.startsWith('minValue:')) {
+            const minVal = parseFloat(rule.split(':')[1]);
+            const num = parseFloat(value);
+            return !isNaN(num) && num >= minVal;
+        }
+
+        // Maximum value validation
+        if (rule.startsWith('maxValue:')) {
+            const maxVal = parseFloat(rule.split(':')[1]);
+            const num = parseFloat(value);
+            return !isNaN(num) && num <= maxVal;
+        }
+
         return true;
     }
 
     /**
      * Displays an error message for a specific field.
-     * Hiá»ƒn thá»‹ thÃ´ng bÃ¡o lá»—i cho má»™t trÆ°á»ng cá»¥ thá»ƒ.
+     * Hiển thị thông báo lỗi cho một trường cụ thể.
      * @param {HTMLElement} element - The input element.
      * @param {string} message - The error message.
      */
@@ -194,7 +233,7 @@ class FormValidator {
 
     /**
      * Clears an error message for a specific field.
-     * XÃ³a thÃ´ng bÃ¡o lá»—i cho má»™t trÆ°á»ng cá»¥ thá»ƒ.
+     * Xóa thông báo lỗi cho một trường cụ thể.
      * @param {HTMLElement} element - The input element.
      */
     clearError(element) {
@@ -207,7 +246,7 @@ class FormValidator {
 
     /**
      * Clears all validation errors from the form.
-     * XÃ³a táº¥t cáº£ cÃ¡c lá»—i xÃ¡c thá»±c khá»i form.
+     * Xóa tất cả các lỗi xác thực khỏi form.
      */
     clearAllErrors() {
         for (const fieldName in this.fields) {
@@ -215,5 +254,4 @@ class FormValidator {
             this.clearError(field.element);
         }
     }
-}a
-
+}

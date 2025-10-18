@@ -1,13 +1,5 @@
+<!-- SAU KHI SỬA: templates/customer/orders/detail.html -->
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
-</html><!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
@@ -16,32 +8,18 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <meta th:name="_csrf" th:content="${_csrf.token}"/>
+  <meta th:name="_csrf_header" th:content="${_csrf.headerName}"/>
   <style>
-    .gradient-text {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    .status-badge {
-        @apply inline-block px-4 py-2 text-sm font-semibold rounded-full;
-    }
-    .status-PENDING { @apply bg-yellow-100 text-yellow-800; }
-    .status-CONFIRMED { @apply bg-blue-100 text-blue-800; }
-    .status-IN_PROGRESS { @apply bg-purple-100 text-purple-800; }
-    .status-COMPLETED { @apply bg-green-100 text-green-800; }
-    .status-CANCELLED { @apply bg-red-100 text-red-800; }
-    .timeline-item::before {
-        content: '';
-        position: absolute;
-        left: 19px;
-        top: 40px;
-        bottom: -20px;
-        width: 2px;
-        background: #e5e7eb;
-    }
-    .timeline-item:last-child::before {
-        display: none;
-    }
+    .gradient-text{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .status-badge{display:inline-block;padding:.5rem 1rem;font-size:.875rem;font-weight:700;border-radius:9999px}
+    .status-PENDING{background:#FEF3C7;color:#92400E}
+    .status-CONFIRMED{background:#DBEAFE;color:#1E40AF}
+    .status-IN_PROGRESS{background:#EDE9FE;color:#5B21B6}
+    .status-COMPLETED{background:#D1FAE5;color:#065F46}
+    .status-CANCELLED{background:#FEE2E2;color:#991B1B}
+    .timeline-item::before{content:'';position:absolute;left:19px;top:40px;bottom:-20px;width:2px;background:#e5e7eb}
+    .timeline-item:last-child::before{display:none}
   </style>
 </head>
 <body class="bg-gray-50">
@@ -52,156 +30,131 @@
     <!-- Breadcrumb -->
     <nav class="mb-8 text-sm">
       <ol class="flex items-center space-x-2 text-gray-600">
-        <li><a href="/" class="hover:text-blue-600"><i class="fas fa-home"></i></a></li>
+        <li><a th:href="@{/}" class="hover:text-blue-600"><i class="fas fa-home"></i></a></li>
         <li><i class="fas fa-chevron-right text-xs"></i></li>
-        <li><a href="/customer/orders/history" class="hover:text-blue-600">Đơn hàng</a></li>
+        <li><a th:href="@{/customer/orders/history}" class="hover:text-blue-600">Đơn hàng</a></li>
         <li><i class="fas fa-chevron-right text-xs"></i></li>
-        <li class="text-gray-900 font-medium" th:text="${order.orderCode}">SO-V15-0001</li>
+        <li class="text-gray-900 font-medium" th:text="${order.orderCode}">SO-0001</li>
       </ol>
     </nav>
 
     <div class="grid lg:grid-cols-3 gap-8">
-      <!-- Main Content -->
+      <!-- Main -->
       <div class="lg:col-span-2 space-y-6">
-        <!-- Order Header -->
         <div class="bg-white rounded-xl shadow-sm p-6">
           <div class="flex items-center justify-between mb-6">
             <div>
               <h1 class="text-2xl font-bold text-gray-900 mb-2">
-                Đơn hàng <span th:text="${order.orderCode}">SO-V15-0001</span>
+                Đơn hàng <span th:text="${order.orderCode}">SO-0001</span>
               </h1>
               <p class="text-sm text-gray-600">
-                Đặt ngày <span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">21/09/2025 08:15</span>
+                Đặt ngày <span th:text="${#temporals.format(order.createdAt,'dd/MM/yyyy HH:mm')}">--</span>
               </p>
             </div>
-            <span class="status-badge" th:classappend="'status-' + ${order.status}" th:text="${order.statusDisplay}">Chờ xác nhận</span>
+            <span class="status-badge" th:classappend="' status-' + ${order.status}" th:text="${order.statusDisplay}">Chờ xác nhận</span>
           </div>
 
-          <!-- Vendor Info -->
+          <!-- Vendor -->
           <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-            <img th:src="${order.vendor.avatarUrl ?: '/placeholder.svg?height=64&width=64'}"
+            <img th:src="${order.vendor.avatarUrl != null ? order.vendor.avatarUrl : '/placeholder.svg?height=64&width=64'}"
                  alt="Vendor" class="w-16 h-16 rounded-full object-cover">
             <div class="flex-1">
-              <h3 class="font-semibold text-gray-900 mb-1" th:text="${order.vendor.displayName}">Vendor Name</h3>
+              <!-- Click mở trang vendor -->
+              <a class="font-semibold text-gray-900 mb-1 hover:text-blue-600"
+                 th:href="${order.vendor.slug != null} ? @{'/vendors/' + ${order.vendor.slug}} : @{'/vendors/' + ${order.vendor.id}}"
+                 th:text="${order.vendor.displayName}">Vendor</a>
+              <!-- Sao chuẩn -->
               <div class="flex items-center gap-3 text-sm text-gray-600">
-                <div class="flex items-center gap-1">
-                  <i class="fas fa-star text-yellow-400"></i>
-                  <span th:text="${order.vendor.ratingAvg}">4.8</span>
-                  <span>(<span th:text="${order.vendor.ratingCount}">120</span> đánh giá)</span>
+                <div class="relative text-gray-300">
+                  <div class="flex">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                          class="fas fa-star"></i><i class="fas fa-star"></i>
+                  </div>
+                  <div class="absolute inset-0 overflow-hidden"
+                       th:style="'width:' + (${order.vendor.ratingAvg} * 20) + '%'">
+                    <div class="flex text-yellow-400">
+                      <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                  </div>
                 </div>
+                <span th:text="${#numbers.formatDecimal(order.vendor.ratingAvg,1,'COMMA',1,'POINT')}">0.0</span>
+                <span>(<span th:text="${order.vendor.ratingCount}">0</span> đánh giá)</span>
                 <span th:if="${order.vendor.verified}" class="text-blue-600">
-                                        <i class="fas fa-check-circle"></i> Đã xác minh
-                                    </span>
-              </div>
-              <div class="text-sm text-gray-600 mt-1">
-                <i class="fas fa-phone mr-1"></i>
-                <span th:text="${order.vendor.phone}">0900000001</span>
+                  <i class="fas fa-check-circle"></i> Đã xác minh
+                </span>
               </div>
             </div>
-            <a th:href="@{/customer/chat/order/{code}(code=${order.orderCode})}"
-               class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-              <i class="fas fa-comments mr-2"></i>Nhắn tin
-            </a>
+            <!-- Bỏ nhắn tin -->
           </div>
         </div>
 
-        <!-- Contact Info -->
+        <!-- Contact -->
         <div class="bg-white rounded-xl shadow-sm p-6">
-          <h2 class="text-xl font-bold text-gray-900 mb-4">
-            <i class="fas fa-user mr-2 text-blue-600"></i>
-            Thông tin liên hệ
-          </h2>
+          <h2 class="text-xl font-bold text-gray-900 mb-4"><i class="fas fa-user mr-2 text-blue-600"></i>Thông tin liên
+            hệ Customer</h2>
           <div class="grid md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <span class="text-gray-600">Họ tên:</span>
-              <span class="font-medium ml-2" th:text="${order.contactName}">Nguyễn Văn A</span>
-            </div>
-            <div>
-              <span class="text-gray-600">Điện thoại:</span>
-              <span class="font-medium ml-2" th:text="${order.contactPhone}">0900000001</span>
-            </div>
-            <div class="md:col-span-2">
-              <span class="text-gray-600">Địa chỉ:</span>
-              <span class="font-medium ml-2" th:text="${order.addressLine}">12 Lê Lợi, Hà Nội</span>
-            </div>
-            <div th:if="${order.notes}" class="md:col-span-2">
-              <span class="text-gray-600">Ghi chú:</span>
-              <span class="font-medium ml-2" th:text="${order.notes}">Dọn trước 9h</span>
-            </div>
+            <div><span class="text-gray-600">Họ tên:</span><span class="font-medium ml-2" th:text="${order.contactName}">--</span></div>
+            <div><span class="text-gray-600">Điện thoại:</span><span class="font-medium ml-2" th:text="${order.contactPhone}">--</span></div>
+            <div th:if="${order.notes}" class="md:col-span-2"><span class="text-gray-600">Ghi chú:</span><span class="font-medium ml-2" th:text="${order.notes}">--</span></div>
           </div>
         </div>
 
-        <!-- Order Items -->
+        <!-- Items -->
         <div class="bg-white rounded-xl shadow-sm p-6">
-          <h2 class="text-xl font-bold text-gray-900 mb-6">
-            <i class="fas fa-list mr-2 text-blue-600"></i>
-            Chi tiết dịch vụ
-          </h2>
+          <h2 class="text-xl font-bold text-gray-900 mb-6"><i class="fas fa-list mr-2 text-blue-600"></i>Chi tiết dịch vụ</h2>
 
           <div th:each="item : ${order.items}" class="mb-6 last:mb-0 pb-6 last:pb-0 border-b last:border-b-0">
             <div class="flex gap-4">
-              <img th:src="${item.vendorService.coverUrl ?: '/placeholder.svg?height=100&width=100'}"
+              <img th:src="${item.vendorService != null && item.vendorService.coverUrl != null ? item.vendorService.coverUrl : '/placeholder.svg?height=100&width=100'}"
                    alt="Service" class="w-24 h-24 rounded-lg object-cover">
               <div class="flex-1">
-                <h3 class="font-semibold text-gray-900 mb-2" th:text="${item.vendorService.title}">Service Title</h3>
+                <h3 class="font-semibold text-gray-900 mb-2" th:text="${item.vendorService != null ? item.vendorService.title : 'Dịch vụ'}">Dịch vụ</h3>
                 <div class="space-y-2 text-sm text-gray-600">
-                  <div>
-                    <i class="fas fa-calendar mr-2 text-blue-600"></i>
+                  <div><i class="fas fa-calendar mr-2 text-blue-600"></i>
                     <span class="font-medium">Thời gian:</span>
-                    <span th:text="${#temporals.format(item.scheduleAt, 'dd/MM/yyyy HH:mm')}">21/09/2025 09:00</span>
+                    <span th:text="${#temporals.format(item.scheduleAt,'dd/MM/yyyy HH:mm')}">--</span>
                   </div>
-                  <div>
-                    <i class="fas fa-clock mr-2 text-blue-600"></i>
+                  <div><i class="fas fa-clock mr-2 text-blue-600"></i>
                     <span class="font-medium">Thời lượng:</span>
-                    <span th:text="${item.vendorService.durationMinutes} + ' phút'">120 phút</span>
+                    <span th:text="${item.vendorService != null ? item.vendorService.durationMinutes + ' phút' : '—'}">—</span>
                   </div>
-                  <div>
-                    <i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>
+                  <div><i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>
                     <span class="font-medium">Địa chỉ:</span>
-                    <span th:text="${item.address}">12 Lê Lợi, Hà Nội</span>
+                    <!-- CHỈ lấy địa chỉ khách nhập trong đơn -->
+                    <span th:text="${order.addressLine != null and !#strings.isEmpty(order.addressLine) ? order.addressLine : '—'}">--</span>
                   </div>
                   <div th:if="${item.notes}">
                     <i class="fas fa-note-sticky mr-2 text-blue-600"></i>
                     <span class="font-medium">Ghi chú:</span>
-                    <span th:text="${item.notes}">Ghi chú</span>
+                    <span th:text="${item.notes}">--</span>
                   </div>
                 </div>
               </div>
               <div class="text-right">
-                <div class="text-sm text-gray-600 mb-2">
-                  Số lượng: <span class="font-semibold" th:text="${item.quantity}">1</span>
-                </div>
-                <div class="text-sm text-gray-600 mb-1">
-                  <span th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'COMMA', 0, 'POINT')} + 'đ'">350,000đ</span>
-                </div>
-                <div class="text-lg font-bold text-blue-600">
-                  <span th:text="${#numbers.formatDecimal(item.subtotal, 0, 'COMMA', 0, 'POINT')} + 'đ'">350,000đ</span>
-                </div>
+                <div class="text-sm text-gray-600 mb-2">Số lượng: <span class="font-semibold" th:text="${item.quantity}">1</span></div>
+                <div class="text-sm text-gray-600 mb-1" th:text="${#numbers.formatDecimal(item.unitPrice,0,'COMMA',0,'POINT')} + 'đ'">0đ</div>
+                <div class="text-lg font-bold text-blue-600" th:text="${#numbers.formatDecimal(item.subtotal,0,'COMMA',0,'POINT')} + 'đ'">0đ</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Order Timeline -->
-        <div class="bg-white rounded-xl shadow-sm p-6">
-          <h2 class="text-xl font-bold text-gray-900 mb-6">
-            <i class="fas fa-clock-rotate-left mr-2 text-blue-600"></i>
-            Lịch sử đơn hàng
-          </h2>
-
+        <!-- Timeline (optional) -->
+        <div th:if="${orderTimeline != null}" class="bg-white rounded-xl shadow-sm p-6">
+          <h2 class="text-xl font-bold text-gray-900 mb-6"><i class="fas fa-clock-rotate-left mr-2 text-blue-600"></i>Lịch sử đơn hàng</h2>
           <div class="space-y-6">
             <div th:each="event : ${orderTimeline}" class="timeline-item relative pl-12">
               <div class="absolute left-0 top-0 w-10 h-10 rounded-full flex items-center justify-center"
                    th:classappend="${event.type == 'success' ? 'bg-green-100 text-green-600' :
-                                                      event.type == 'warning' ? 'bg-yellow-100 text-yellow-600' :
-                                                      event.type == 'danger' ? 'bg-red-100 text-red-600' :
-                                                      'bg-blue-100 text-blue-600'}">
+                                   event.type == 'warning' ? 'bg-yellow-100 text-yellow-600' :
+                                   event.type == 'danger' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}">
                 <i th:class="${event.icon}"></i>
               </div>
               <div>
-                <h4 class="font-semibold text-gray-900" th:text="${event.title}">Đơn hàng đã được tạo</h4>
-                <p class="text-sm text-gray-600 mt-1" th:text="${event.description}">Đơn hàng đang chờ vendor xác nhận</p>
-                <p class="text-xs text-gray-500 mt-1" th:text="${#temporals.format(event.timestamp, 'dd/MM/yyyy HH:mm:ss')}">21/09/2025 08:15:30</p>
+                <h4 class="font-semibold text-gray-900" th:text="${event.title}">Sự kiện</h4>
+                <p class="text-sm text-gray-600 mt-1" th:text="${event.description}">Mô tả</p>
+                <p class="text-xs text-gray-500 mt-1" th:text="${#temporals.format(event.timestamp,'dd/MM/yyyy HH:mm:ss')}">--</p>
               </div>
             </div>
           </div>
@@ -211,115 +164,99 @@
       <!-- Sidebar -->
       <div class="lg:col-span-1">
         <div class="bg-white rounded-xl shadow-sm p-6 sticky top-24 space-y-6">
-          <!-- Payment Summary -->
           <div>
             <h2 class="text-xl font-bold text-gray-900 mb-4">Thanh toán</h2>
             <div class="space-y-3 text-sm">
-              <div class="flex justify-between">
-                <span class="text-gray-600">Tạm tính</span>
-                <span th:text="${#numbers.formatDecimal(order.subtotal, 0, 'COMMA', 0, 'POINT')} + 'đ'">650,000đ</span>
-              </div>
+              <div class="flex justify-between"><span class="text-gray-600">Tạm tính</span><span th:text="${#numbers.formatDecimal(order.subtotal,0,'COMMA',0,'POINT')} + 'đ'">0đ</span></div>
               <div th:if="${order.discountAmount > 0}" class="flex justify-between text-green-600">
-                <span>Giảm giá</span>
-                <span th:text="'-' + ${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'">-65,000đ</span>
+                <span>Giảm giá</span><span th:text="'-' + ${#numbers.formatDecimal(order.discountAmount,0,'COMMA',0,'POINT')} + 'đ'">-0đ</span>
               </div>
               <div class="pt-3 border-t flex justify-between items-center">
                 <span class="font-semibold text-gray-900">Tổng cộng</span>
-                <span class="text-2xl font-bold text-blue-600" th:text="${#numbers.formatDecimal(order.total, 0, 'COMMA', 0, 'POINT')} + 'đ'">585,000đ</span>
+                <span class="text-2xl font-bold text-blue-600" th:text="${#numbers.formatDecimal(order.total,0,'COMMA',0,'POINT')} + 'đ'">0đ</span>
               </div>
               <div class="pt-3 border-t">
-                <div class="flex justify-between mb-2">
-                  <span class="text-gray-600">Phương thức</span>
-                  <span class="font-medium" th:text="${order.paymentMethod}">VNPAY</span>
-                </div>
+                <div class="flex justify-between mb-2"><span class="text-gray-600">Phương thức</span><span class="font-medium" th:text="${order.paymentMethod}">—</span></div>
                 <div class="flex justify-between">
                   <span class="text-gray-600">Trạng thái</span>
-                  <span class="font-medium"
-                        th:classappend="${order.paymentStatus == 'PAID' ? 'text-green-600' : 'text-yellow-600'}"
-                        th:text="${order.paymentStatusDisplay}">Đã thanh toán</span>
+                  <span class="font-medium" th:classappend="${order.paymentStatus == 'PAID' ? 'text-green-600' : 'text-yellow-600'}" th:text="${order.paymentStatusDisplay}">—</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Actions -->
           <div class="space-y-3">
-            <a th:if="${order.status == 'PENDING' or order.status == 'CONFIRMED'}"
-               th:href="@{/customer/chat/order/{code}(code=${order.orderCode})}"
-               class="block w-full text-center bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
-              <i class="fas fa-comments mr-2"></i>Nhắn tin với vendor
-            </a>
-
-            <button th:if="${order.status == 'COMPLETED' and !order.reviewed}"
-                    th:attr="data-order-id=${order.id}"
-                    class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition review-btn">
-              <i class="fas fa-star mr-2"></i>Đánh giá dịch vụ
-            </button>
-
+            <!-- Bỏ nhắn tin -->
             <button th:if="${order.status == 'PENDING'}"
-                    th:attr="data-order-id=${order.id}"
-                    class="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition cancel-btn">
+                    th:attr="data-order-code=${order.orderCode}"
+                    class="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition cancel-open">
               <i class="fas fa-times mr-2"></i>Hủy đơn hàng
             </button>
 
-            <a href="/customer/orders/history"
+            <a th:href="@{/customer/orders/history}"
                class="block w-full text-center border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
               <i class="fas fa-arrow-left mr-2"></i>Quay lại
             </a>
           </div>
 
-          <!-- Support -->
           <div class="pt-6 border-t">
             <h3 class="font-semibold text-gray-900 mb-3">Cần hỗ trợ?</h3>
             <div class="space-y-2 text-sm">
-              <a href="/customer/chat" class="flex items-center gap-2 text-blue-600 hover:underline">
-                <i class="fas fa-headset"></i>
-                <span>Chat với CSKH</span>
+              <a th:href="@{/customer/chat}" class="flex items-center gap-2 text-blue-600 hover:underline">
+                <i class="fas fa-headset"></i><span>Chat với CSKH</span>
               </a>
               <a href="tel:0909123456" class="flex items-center gap-2 text-blue-600 hover:underline">
-                <i class="fas fa-phone"></i>
-                <span>Hotline: 0909 123 456</span>
+                <i class="fas fa-phone"></i><span>Hotline: 0909 123 456</span>
               </a>
             </div>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </main>
 
 <div th:replace="~{layouts/footer :: siteFooter}"></div>
 
+<!-- Modal xác nhận -->
+<div class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50" id="cancelModal">
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">Xác nhận hủy đơn</h3>
+    <p class="text-gray-600 mb-4">Bạn có chắc muốn hủy đơn hàng này?</p>
+    <div class="flex gap-3 justify-end">
+      <button class="px-4 py-2 rounded-lg border hover:bg-gray-50" id="cancelClose">Đóng</button>
+      <button class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700" id="cancelConfirm">Hủy đơn</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  anime({
-      targets: '.bg-white',
-      opacity: [0, 1],
-      translateY: [20, 0],
-      delay: anime.stagger(100),
-      easing: 'easeOutQuad'
-  });
+  anime({targets:'.bg-white',opacity:[0,1],translateY:[20,0],delay:anime.stagger(100),easing:'easeOutQuad'});
 
-  // Cancel order
-  document.querySelector('.cancel-btn')?.addEventListener('click', function() {
-      if (confirm('Bạn có chắc muốn hủy đơn hàng này?\n\nLưu ý: Đơn hàng đã thanh toán sẽ được hoàn tiền trong 3-5 ngày làm việc.')) {
-          const orderId = this.dataset.orderId;
-          fetch(`/api/orders/${orderId}/cancel`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' }
-          }).then(response => {
-              if (response.ok) {
-                  location.reload();
-              } else {
-                  alert('Không thể hủy đơn hàng. Vui lòng liên hệ CSKH.');
-              }
-          });
-      }
-  });
+  const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+  const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
 
-  // Review order
-  document.querySelector('.review-btn')?.addEventListener('click', function() {
-      const orderId = this.dataset.orderId;
-      window.location.href = `/customer/orders/${orderId}/review`;
+  const modal = document.getElementById('cancelModal');
+  const btnClose = document.getElementById('cancelClose');
+  const btnConfirm = document.getElementById('cancelConfirm');
+  let pendingCode = null;
+
+  function openModal(code){ pendingCode = code; modal.classList.remove('hidden'); modal.classList.add('flex'); }
+  function closeModal(){ modal.classList.add('hidden'); modal.classList.remove('flex'); pendingCode = null; }
+
+  document.querySelectorAll('.cancel-open').forEach(b=>{
+    b.addEventListener('click', ()=> openModal(b.dataset.orderCode));
+  });
+  btnClose.addEventListener('click', closeModal);
+  modal.addEventListener('click', e=>{ if(e.target===modal) closeModal(); });
+
+  btnConfirm.addEventListener('click', ()=>{
+    if(!pendingCode) return;
+    fetch(`/customer/orders/${pendingCode}/cancel`, {
+      method: 'POST',
+      headers: csrfHeader && csrfToken ? { [csrfHeader]: csrfToken } : {}
+    }).then(()=> location.reload());
   });
 </script>
 </body>

@@ -34,7 +34,7 @@ CREATE TABLE `chat_message` (
   KEY `idx_cm_user` (`user_id`),
   CONSTRAINT `fk_cm_conversation` FOREIGN KEY (`conversation_id`) REFERENCES `chat_conversation` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_cm_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -43,7 +43,7 @@ CREATE TABLE `chat_message` (
 
 LOCK TABLES `chat_message` WRITE;
 /*!40000 ALTER TABLE `chat_message` DISABLE KEYS */;
-INSERT INTO `chat_message` VALUES (1,'Chào bạn, bạn cần vệ sinh khu vực nào?','2025-09-20 09:01:00.000001','Giá vệ sinh?',1,1),(2,'Bảo dưỡng gồm vệ sinh dàn lạnh.','2025-09-20 09:06:00.000001','Bảo dưỡng DH bao lâu?',2,2),(3,'Có thể qua trong ngày.','2025-09-20 09:11:00.000001','Ống nước rò bao lâu xong?',3,3),(4,'Sơn 2 lớp trong 5 giờ.','2025-09-20 09:16:00.000001','Mất bao lâu?',4,4),(5,'Bảo hành 6 tháng.','2025-09-20 09:21:00.000001','Chống thấm bảo hành?',5,5),(6,'Sofa 3 chỗ ~90 phút.','2025-09-20 09:26:00.000001','Giặt sofa lâu không?',6,6),(7,'Thay công tắc 30 phút.','2025-09-20 09:31:00.000001','Sửa ổ cắm?',7,7),(8,'Lắp 5 đèn trong 2 giờ.','2025-09-20 09:36:00.000001','Lắp đèn downlight?',8,8),(9,'Gói tháng gồm 2 lượt kiểm tra.','2025-09-20 09:41:00.000001','Bảo trì tòa nhà?',9,9),(10,'Vệ sinh xưởng tính theo m².','2025-09-20 09:46:00.000001','Giá tính sao?',10,10),(11,NULL,'2025-09-21 08:30:00.000000','Bên mình có thể đến sớm hơn 15 phút không?',19,11),(12,'Được, kỹ thuật sẽ có mặt 8:45.','2025-09-21 08:35:00.000000',NULL,15,11);
+INSERT INTO `chat_message` VALUES (1,'Chào bạn, bạn cần vệ sinh khu vực nào?','2025-09-20 09:01:00.000001','Giá vệ sinh?',1,1),(2,'Bảo dưỡng gồm vệ sinh dàn lạnh.','2025-09-20 09:06:00.000001','Bảo dưỡng DH bao lâu?',2,2),(3,'Có thể qua trong ngày.','2025-09-20 09:11:00.000001','Ống nước rò bao lâu xong?',3,3),(4,'Sơn 2 lớp trong 5 giờ.','2025-09-20 09:16:00.000001','Mất bao lâu?',4,4),(5,'Bảo hành 6 tháng.','2025-09-20 09:21:00.000001','Chống thấm bảo hành?',5,5),(6,'Sofa 3 chỗ ~90 phút.','2025-09-20 09:26:00.000001','Giặt sofa lâu không?',6,6),(7,'Thay công tắc 30 phút.','2025-09-20 09:31:00.000001','Sửa ổ cắm?',7,7),(8,'Lắp 5 đèn trong 2 giờ.','2025-09-20 09:36:00.000001','Lắp đèn downlight?',8,8),(9,'Gói tháng gồm 2 lượt kiểm tra.','2025-09-20 09:41:00.000001','Bảo trì tòa nhà?',9,9),(10,'Vệ sinh xưởng tính theo m².','2025-09-20 09:46:00.000001','Giá tính sao?',10,10),(11,NULL,'2025-09-21 08:30:00.000000','Bên mình có thể đến sớm hơn 15 phút không?',19,11),(12,'Được, kỹ thuật sẽ có mặt 8:45.','2025-09-21 08:35:00.000000',NULL,15,11),(13,'Chào bạn, dịch vụ giặt sofa thường có giá dao động từ khoảng **250.000 VND đến 500.000 VND** trở lên, tùy thuộc vào kích thước, chất liệu và độ bẩn của sofa.\n\nĐây là mức giá ước tính từ các nhà cung cấp của chúng tôi và có thể thay đổi. Bạn có thể tham khảo giá chính xác hơn khi chọn dịch vụ trên website của VHBTV Homecare.',NULL,'Giặt sofa giá khoảng?',14,12);
 /*!40000 ALTER TABLE `chat_message` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -56,4 +56,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-02  1:18:15
+-- Dump completed on 2025-10-16 10:56:21

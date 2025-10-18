@@ -50,8 +50,8 @@ public interface VendorReviewRepository extends JpaRepository<VendorReview, Long
     @Query(value = "SELECT COUNT(*) FROM vendor_review WHERE vendor_id = :vendorId", nativeQuery = true)
     Long countByVendorIdNative(@Param("vendorId") Long vendorId);
 
-    @Query(value = "SELECT COALESCE(AVG(rating),0) FROM vendor_review WHERE vendor_id = :vendorId", nativeQuery = true)
-    Double avgRatingByVendorId(@Param("vendorId") Long vendorId);
+//    @Query(value = "SELECT COALESCE(AVG(rating),0) FROM vendor_review WHERE vendor_id = :vendorId", nativeQuery = true)
+//    Double avgRatingByVendorId(@Param("vendorId") Long vendorId);
 
     @org.springframework.data.jpa.repository.Query(value = """
     SELECT vr.vendor_id       AS vendor_id,
@@ -63,4 +63,21 @@ public interface VendorReviewRepository extends JpaRepository<VendorReview, Long
 """, nativeQuery = true)
     java.util.List<Object[]> aggRatingByVendorIds(
             @org.springframework.data.repository.query.Param("ids") java.util.Collection<Long> ids);
+    // thêm trong interface VendorReviewRepository
+    @Query("select coalesce(avg(vr.rating),0) from VendorReview vr where vr.vendorId = :vendorId")
+    java.math.BigDecimal avgRatingByVendorId(@org.springframework.data.repository.query.Param("vendorId") Long vendorId);
+
+    // Lấy điểm trung bình theo vendor_user_id
+    @org.springframework.data.jpa.repository.Query(
+            value = "select coalesce(avg(vr.rating),0) " +
+                    "from vendor_review vr " +
+                    "where vr.vendor_id = :vendorUserId",
+            nativeQuery = true)
+    java.math.BigDecimal avgRatingByVendorUserId(
+            @org.springframework.data.repository.query.Param("vendorUserId") Long vendorUserId);
+
+    // Đếm số review theo vendor_user_id
+    @Query("select count(vr.id) from VendorReview vr where vr.vendorId = :vendorUserId")
+    long countByVendorUserId(@org.springframework.data.repository.query.Param("vendorUserId") Long vendorUserId);
+
 }

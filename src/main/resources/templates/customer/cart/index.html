@@ -169,14 +169,7 @@
               +'<div class="font-medium">'+(it.serviceTitle||('Dịch vụ #'+(it.vendorServiceId||'')))+'</div>'
               +'<div class="text-xs text-gray-500">'+(it.durationMinutes||60)+' phút • '+(it.unit||'lần')+'</div>'
               +'<div class="mt-2 flex items-center gap-2 text-sm text-gray-600">'
-                +'<span>Lịch:</span>'
-                +'<input type="datetime-local" class="schedule-input border rounded px-2 py-1 text-sm"'
-                +' data-item-id="'+it.id+'" value="'+schedule+'">'
               +'</div>'
-              +'<input class="address-input w-full border rounded px-3 py-1.5 text-sm mt-2"'
-              +' data-item-id="'+it.id+'" placeholder="Địa chỉ" value="'+(it.address||'')+'">'
-              +'<textarea class="notes-input w-full border rounded px-3 py-1.5 text-sm mt-2" rows="2"'
-              +' data-item-id="'+it.id+'" placeholder="Ghi chú">'+(it.notes||'')+'</textarea>'
             +'</div>'
             +'<div class="flex flex-col items-end gap-3">'
               +'<div class="text-right">'
@@ -192,7 +185,6 @@
             +'</div>'
           +'</div>';
         });
-
         leftHtml += '</div>';
       });
 
@@ -200,19 +192,11 @@
       var rightHtml = ''
         +'<div class="bg-white rounded-xl shadow-sm p-6 sticky top-24">'
           +'<h2 class="text-xl font-bold text-gray-900 mb-4">Tóm tắt đơn hàng</h2>'
-          +'<label class="text-sm text-gray-600 mb-1 block">Mã giảm giá</label>'
-          +'<div class="flex gap-2 mb-3">'
-            +'<input id="couponCode" class="flex-1 border rounded px-3 py-2" placeholder="Nhập mã giảm giá" value="'+couponCode+'">'
-            +'<button id="applyCoupon" class="px-4 py-2 bg-blue-600 text-white rounded">Áp dụng</button>'
-            +(couponCode ? '<button id="removeCoupon" class="px-3 py-2 bg-gray-200 text-gray-800 rounded" title="Bỏ mã">Bỏ</button>' : '')
-          +'</div>'
-          +(couponCode ? '<div class="text-xs text-gray-600 mb-2">Đang áp dụng: <span class="font-medium">'+couponCode+'</span></div>' : '')
           +'<div class="flex justify-between text-sm text-gray-600"><span>Tạm tính</span><span>'+vnd(j.total||0)+'</span></div>'
-          +'<div class="flex justify-between text-sm '+((j.discount||0)>0?'text-green-600':'text-gray-400')+'"><span>Giảm giá</span><span>-'+vnd(j.discount||0)+'</span></div>'
           +'<div class="border-t my-3"></div>'
           +'<div class="flex justify-between items-center mb-4"><span class="text-lg font-semibold">Tổng cộng</span>'
             +'<span class="text-2xl font-bold text-blue-600">'+vnd((j.grandTotal!=null)?j.grandTotal:(j.total||0))+'</span></div>'
-          +'<a href="/customer/checkout/details" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white text-center py-3 rounded-lg font-semibold hover:shadow-lg transition">Tiến hành thanh toán</a>'
+          +'<a href="/customer/checkout/details" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white text-center py-3 rounded-lg font-semibold hover:shadow-lg transition">Tiến hành đặt hàng</a>'
           +'<a href="/services" class="block w-full text-center text-blue-600 py-3 mt-3 hover:underline">Tiếp tục mua sắm</a>'
         +'</div>';
 

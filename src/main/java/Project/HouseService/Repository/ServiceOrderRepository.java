@@ -17,7 +17,9 @@ public interface ServiceOrderRepository extends JpaRepository<ServiceOrder, Long
 
     Optional<ServiceOrder> findByIdAndVendorId(Long id, Long vendorId);
     Optional<ServiceOrder> findById(Long id);
-
+    Page<ServiceOrder> findAllByCustomerId(Long customerId, Pageable pageable);
+    Optional<ServiceOrder> findByOrderCodeAndCustomerId(String orderCode, Long customerId);
+    Optional<ServiceOrder> findByIdAndCustomerId(Long id, Long customerId);
     @Query("""
            SELECT o FROM ServiceOrder o
            WHERE o.vendorId = :vendorId
@@ -99,4 +101,18 @@ public interface ServiceOrderRepository extends JpaRepository<ServiceOrder, Long
     List<Object[]> countByOrderStatus(@Param("vendorId") Long vendorId,
                                       @Param("from") LocalDateTime from,
                                       @Param("to") LocalDateTime to);
+
+    @org.springframework.data.jpa.repository.Query(
+            value = "select count(distinct so.id) " +
+                    "from service_order so " +
+                    "where so.vendor_id = :vendorId and so.status in (:statuses)",
+            nativeQuery = true)
+    long countByVendorAndStatuses(
+            @org.springframework.data.repository.query.Param("vendorId") Long vendorUserId,
+            @org.springframework.data.repository.query.Param("statuses") java.util.Collection<String> statuses);
+
+    long countDistinctByVendorIdAndStatusIn(
+            Long vendorId,
+            java.util.Collection<String> statuses
+    );
 }

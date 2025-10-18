@@ -11,11 +11,16 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     List<Payment> findByPayTargetTypeAndPayTargetId(PayTargetType type, Long id);
+    List<Payment> findByPayTargetTypeAndPayTargetIdOrderByPaidAtDesc(PayTargetType payTargetType,
+                                                                     Long payTargetId);
 
+    Optional<Payment> findFirstByPayTargetTypeAndPayTargetIdOrderByPaidAtDesc(PayTargetType payTargetType,
+                                                                              Long payTargetId);
     @Query("""
         select coalesce(sum(p.amount), 0) 
         from Payment p 
@@ -99,4 +104,18 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
                                       @Param("to") LocalDateTime to,
                                       @Param("provider") Provider provider,
                                       @Param("status") PaymentStatus status);
+    Optional<Payment> findByTransactionRef(String transactionRef);
+
+    @Query("""
+        select p from Payment p
+        where p.payTargetType = :payTargetType
+          and p.payTargetId   = :payTargetId
+          and p.provider      = :provider
+          and p.status        = :status
+        order by p.id desc
+    """)
+    List<Payment> findLatestByTargetAndStatus(@Param("payTargetType") PayTargetType payTargetType,
+                                              @Param("payTargetId") Long payTargetId,
+                                              @Param("provider") Provider provider,
+                                              @Param("status") PaymentStatus status);
 }

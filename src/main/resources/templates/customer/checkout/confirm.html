@@ -1,13 +1,5 @@
+<!-- resources/templates/checkout/confirm.html -->
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Title</title>
-</head>
-<body>
-
-</body>
-</html><!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
@@ -17,16 +9,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <style>
-    .gradient-text {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    .step-active { @apply bg-blue-600 text-white; }
-    .step-completed { @apply bg-green-500 text-white; }
-    .payment-method { @apply border-2 rounded-lg p-4 cursor-pointer transition; }
-    .payment-method:hover { @apply border-blue-400 bg-blue-50; }
-    .payment-method.selected { @apply border-blue-600 bg-blue-50; }
+    .step-active { background:#2563eb;color:#fff; }
+    .step-completed { background:#22c55e;color:#fff; }
+    .payment-method { border:2px solid #e5e7eb; border-radius:.5rem; padding:1rem; cursor:pointer; transition:.15s; }
+    .payment-method:hover { border-color:#93c5fd; background:#eff6ff; }
+    .payment-method.selected { border-color:#2563eb; background:#eff6ff; }
   </style>
 </head>
 <body class="bg-gray-50">
@@ -34,7 +21,7 @@
 
 <main class="pt-24 pb-16">
   <div class="container mx-auto px-4 lg:px-8 max-w-6xl">
-    <!-- Progress Steps -->
+    <!-- Steps -->
     <div class="mb-12">
       <div class="flex items-center justify-center">
         <div class="flex items-center">
@@ -61,102 +48,100 @@
     </div>
 
     <form action="/customer/checkout/process" method="post" id="checkoutForm">
+      <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+      <input type="hidden" name="couponCode" th:value="${couponCode}">
+      <input type="hidden" name="addressLine"
+             th:value="${#lists.isEmpty(ordersByVendor) ? '' :
+                  (#lists.isEmpty(ordersByVendor.get(0).items) ? '' :
+                   ordersByVendor.get(0).items.get(0).addressLine)}">
+      <input type="hidden" name="notes"
+             th:value="${#lists.isEmpty(ordersByVendor) ? '' :
+                  (#lists.isEmpty(ordersByVendor.get(0).items) ? '' :
+                   ordersByVendor.get(0).items.get(0).notes)}">
       <div class="grid lg:grid-cols-3 gap-8">
-        <!-- Orders by Vendor -->
+        <!-- Left -->
         <div class="lg:col-span-2 space-y-6">
-          <!-- Contact Info Summary -->
+          <!-- Contact -->
           <div class="bg-white rounded-xl shadow-sm p-6">
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-xl font-bold text-gray-900">
-                <i class="fas fa-user mr-2 text-blue-600"></i>
-                Thông tin liên hệ
+                <i class="fas fa-user mr-2 text-blue-600"></i>Thông tin liên hệ
               </h2>
               <a href="/customer/checkout/details" class="text-blue-600 hover:underline text-sm">
                 <i class="fas fa-edit mr-1"></i>Chỉnh sửa
               </a>
             </div>
             <div class="grid md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <span class="text-gray-600">Họ tên:</span>
-                <span class="font-medium ml-2" th:text="${contactName}">Nguyễn Văn A</span>
-              </div>
-              <div>
-                <span class="text-gray-600">Điện thoại:</span>
-                <span class="font-medium ml-2" th:text="${contactPhone}">0900000001</span>
-              </div>
+              <div><span class="text-gray-600">Họ tên:</span>
+                <span class="font-medium ml-2" th:text="${contactName}">...</span></div>
+              <div><span class="text-gray-600">Điện thoại:</span>
+                <span class="font-medium ml-2" th:text="${contactPhone}">...</span></div>
             </div>
           </div>
 
-          <!-- Orders Split by Vendor -->
+          <!-- Orders grouped by vendor -->
           <div class="bg-white rounded-xl shadow-sm p-6">
             <h2 class="text-xl font-bold text-gray-900 mb-6">
-              <i class="fas fa-receipt mr-2 text-blue-600"></i>
-              Đơn hàng của bạn
-              <span class="text-sm text-gray-500 font-normal">(<span th:text="${#lists.size(ordersByVendor)}">2</span> đơn hàng)</span>
+              <i class="fas fa-receipt mr-2 text-blue-600"></i>Đơn hàng của bạn
+              <span class="text-sm text-gray-500 font-normal">(<span th:text="${#lists.size(ordersByVendor)}">0</span> đơn hàng)</span>
             </h2>
 
-            <div th:each="order, iterStat : ${ordersByVendor}" class="mb-6 last:mb-0 pb-6 last:pb-0 border-b last:border-b-0">
-              <!-- Vendor Header -->
+            <div class="mb-6 last:mb-0 pb-6 last:pb-0 border-b last:border-b-0" th:each="order : ${ordersByVendor}">
               <div class="flex items-center gap-3 mb-4 bg-gray-50 p-3 rounded-lg">
-                <img th:src="${order.vendor.avatarUrl ?: '/placeholder.svg?height=40&width=40'}"
+                <img th:src="${order.vendorAvatarUrl} ?: @{/images/avatar-default.png}"
                      alt="Vendor" class="w-10 h-10 rounded-full object-cover">
                 <div class="flex-1">
-                  <h3 class="font-semibold text-gray-900" th:text="${order.vendor.displayName}">Vendor Name</h3>
-                  <div class="flex items-center gap-2 text-xs text-gray-600">
-                    <i class="fas fa-star text-yellow-400"></i>
-                    <span th:text="${order.vendor.ratingAvg}">4.8</span>
-                    <span th:if="${order.vendor.verified}" class="text-blue-600">
-                                                <i class="fas fa-check-circle"></i> Đã xác minh
-                                            </span>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <div class="text-xs text-gray-600">Mã đơn</div>
-                  <div class="font-mono font-semibold text-sm" th:text="${order.orderCode}">SO-V15-0001</div>
+                  <h3 class="font-semibold text-gray-900"
+                      th:text="${order.vendor != null ? order.vendor.displayName : 'Nhà cung cấp'}">Vendor</h3>
                 </div>
               </div>
 
-              <!-- Order Items -->
               <div th:each="item : ${order.items}" class="flex gap-3 mb-3 last:mb-0">
-                <img th:src="${item.vendorService.coverUrl ?: '/placeholder.svg?height=60&width=60'}"
+                <img th:src="${item.vendorService?.coverUrl ?: '/placeholder.svg?height=60&width=60'}"
                      alt="Service" class="w-16 h-16 rounded-lg object-cover">
                 <div class="flex-1">
-                  <h4 class="font-medium text-gray-900 text-sm" th:text="${item.vendorService.title}">Service</h4>
+                  <h4 class="font-medium text-gray-900 text-sm" th:text="${item.vendorService?.title}">Service</h4>
                   <div class="text-xs text-gray-600 mt-1 space-y-1">
-                    <div><i class="fas fa-calendar mr-1"></i><span th:text="${#temporals.format(item.scheduleAt, 'dd/MM/yyyy HH:mm')}">21/09/2025 09:00</span></div>
-                    <div><i class="fas fa-map-marker-alt mr-1"></i><span th:text="${item.address}">Hà Nội</span></div>
-                    <div th:if="${item.notes}"><i class="fas fa-note-sticky mr-1"></i><span th:text="${item.notes}">Ghi chú</span></div>
+                    <div><i class="fas fa-calendar mr-1"></i>
+                      <span th:text="${#temporals.format(item.scheduledAt, 'dd/MM/yyyy HH:mm')}">--/--/---- --:--</span>
+                    </div>
+                    <div><i class="fas fa-map-marker-alt mr-1"></i>
+                      <span th:text="${item.addressLine} ?: 'Địa chỉ chưa có'">Địa chỉ</span>
+                    </div>
+                    <div th:if="${item.notes}"><i class="fas fa-note-sticky mr-1"></i>
+                      <span th:text="${item.notes}">Ghi chú</span></div>
                   </div>
                 </div>
                 <div class="text-right">
                   <div class="text-xs text-gray-600">x<span th:text="${item.quantity}">1</span></div>
-                  <div class="font-semibold text-blue-600" th:text="${#numbers.formatDecimal(item.subtotal, 0, 'COMMA', 0, 'POINT')} + 'đ'">350,000đ</div>
+                  <div class="font-semibold text-blue-600"
+                       th:text="${#numbers.formatDecimal(item.subtotal, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ
+                  </div>
                 </div>
               </div>
 
-              <!-- Order Total -->
               <div class="mt-4 pt-4 border-t">
                 <div class="flex justify-between text-sm mb-2">
                   <span class="text-gray-600">Tạm tính</span>
-                  <span th:text="${#numbers.formatDecimal(order.subtotal, 0, 'COMMA', 0, 'POINT')} + 'đ'">650,000đ</span>
+                  <span th:text="${#numbers.formatDecimal(order.subtotal, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</span>
                 </div>
-                <div th:if="${order.discountAmount > 0}" class="flex justify-between text-sm text-green-600 mb-2">
+                <div class="flex justify-between text-sm text-green-600 mb-2" th:if="${order.discount > 0}">
                   <span>Giảm giá</span>
-                  <span th:text="'-' + ${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'">-65,000đ</span>
+                  <span th:text="'-' + ${#numbers.formatDecimal(order.discount, 0, 'COMMA', 0, 'POINT')} + 'đ'">-0đ</span>
                 </div>
                 <div class="flex justify-between font-semibold">
                   <span>Tổng đơn hàng</span>
-                  <span class="text-blue-600" th:text="${#numbers.formatDecimal(order.total, 0, 'COMMA', 0, 'POINT')} + 'đ'">585,000đ</span>
+                  <span class="text-blue-600"
+                        th:text="${#numbers.formatDecimal(order.total, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Payment Method Selection -->
+          <!-- Payment -->
           <div class="bg-white rounded-xl shadow-sm p-6">
             <h2 class="text-xl font-bold text-gray-900 mb-6">
-              <i class="fas fa-credit-card mr-2 text-blue-600"></i>
-              Phương thức thanh toán
+              <i class="fas fa-credit-card mr-2 text-blue-600"></i>Phương thức thanh toán
             </h2>
 
             <div class="space-y-3">
@@ -190,7 +175,7 @@
           </div>
         </div>
 
-        <!-- Final Summary -->
+        <!-- Right summary -->
         <div class="lg:col-span-1">
           <div class="bg-white rounded-xl shadow-sm p-6 sticky top-24">
             <h2 class="text-xl font-bold text-gray-900 mb-6">Tổng thanh toán</h2>
@@ -198,17 +183,18 @@
             <div class="space-y-3 mb-6 pb-6 border-b">
               <div class="flex justify-between text-gray-600">
                 <span>Tổng tạm tính</span>
-                <span th:text="${#numbers.formatDecimal(grandSubtotal, 0, 'COMMA', 0, 'POINT')} + 'đ'">1,000,000đ</span>
+                <span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</span>
               </div>
-              <div th:if="${grandDiscount > 0}" class="flex justify-between text-green-600">
+              <div class="flex justify-between text-green-600" th:if="${discountAmount > 0}">
                 <span>Tổng giảm giá</span>
-                <span th:text="'-' + ${#numbers.formatDecimal(grandDiscount, 0, 'COMMA', 0, 'POINT')} + 'đ'">-100,000đ</span>
+                <span th:text="'-' + ${#numbers.formatDecimal(discountAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'">-0đ</span>
               </div>
             </div>
 
             <div class="flex justify-between items-center mb-6">
               <span class="text-lg font-semibold text-gray-900">Tổng cộng</span>
-              <span class="text-2xl font-bold text-blue-600" th:text="${#numbers.formatDecimal(grandTotal, 0, 'COMMA', 0, 'POINT')} + 'đ'">900,000đ</span>
+              <span class="text-2xl font-bold text-blue-600"
+                    th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</span>
             </div>
 
             <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition">
@@ -220,8 +206,7 @@
             </a>
 
             <div class="mt-6 pt-6 border-t text-xs text-gray-500">
-              <i class="fas fa-shield-alt mr-1 text-green-600"></i>
-              Thông tin của bạn được bảo mật và mã hóa
+              <i class="fas fa-shield-alt mr-1 text-green-600"></i>Thông tin của bạn được bảo mật
             </div>
           </div>
         </div>
@@ -233,24 +218,31 @@
 <div th:replace="~{layouts/footer :: siteFooter}"></div>
 
 <script>
-  anime({
-      targets: '.bg-white',
-      opacity: [0, 1],
-      translateY: [20, 0],
-      delay: anime.stagger(100),
-      easing: 'easeOutQuad'
+  anime({targets:'.bg-white',opacity:[0,1],translateY:[20,0],delay:anime.stagger(100),easing:'easeOutQuad'});
+  document.querySelectorAll('input[name="paymentMethod"]').forEach(function(r){
+    r.addEventListener('change', function(){
+      document.querySelectorAll('.payment-method').forEach(function(el){ el.classList.remove('selected'); });
+      r.closest('.payment-method')?.classList.add('selected');
+    });
   });
-
-  // Payment method selection visual feedback
-  document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
-      radio.addEventListener('change', function() {
-          document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
-          this.closest('.payment-method').classList.add('selected');
-      });
+  // Giữ highlight option đã chọn
+  document.querySelectorAll('input[name="paymentMethod"]').forEach(function(r){
+    r.addEventListener('change', function(){
+      document.querySelectorAll('.payment-method').forEach(function(el){ el.classList.remove('selected'); });
+      r.closest('.payment-method')?.classList.add('selected');
+    });
   });
+  document.querySelector('input[name="paymentMethod"]:checked')
+    ?.closest('.payment-method')?.classList.add('selected');
 
-  // Set initial selected state
-  document.querySelector('input[name="paymentMethod"]:checked')?.closest('.payment-method').classList.add('selected');
+  // Không đổi action. Chỉ kiểm tra đã chọn phương thức
+  document.getElementById('checkoutForm').addEventListener('submit', function(e){
+    var method = document.querySelector('input[name="paymentMethod"]:checked')?.value || '';
+    if(!method){
+      e.preventDefault();
+      alert('Hãy chọn phương thức thanh toán.');
+    }
+  });
 </script>
 </body>
 </html>

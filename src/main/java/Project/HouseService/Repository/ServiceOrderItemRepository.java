@@ -10,9 +10,11 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface ServiceOrderItemRepository extends JpaRepository<ServiceOrderItem, Long> {
     List<ServiceOrderItem> findByServiceOrderId(Long serviceOrderId);
+    Optional<ServiceOrderItem> findByIdAndServiceOrderId(Long id, Long serviceOrderId);
     @Query("""
       SELECT COUNT(i) > 0
       FROM ServiceOrderItem i

@@ -54,35 +54,35 @@
 
   <!-- Auto-redirect form -->
   <form th:action="${paymentUrl}" method="post" id="redirectForm" class="hidden">
-    <input type="hidden" th:each="param : ${paymentParams}"
-           th:name="${param.key}"
-           th:value="${param.value}">
+    <input type="hidden" th:each="pp : ${paymentParams}"
+           th:name="${pp.key}"
+           th:value="${pp.value}">
   </form>
+
 </div>
 
-<script>
-  // Animate entrance
-  anime({
-      targets: '.text-center > *',
-      opacity: [0, 1],
-      translateY: [30, 0],
-      delay: anime.stagger(150),
-      easing: 'easeOutQuad'
+<script th:inline="javascript">
+  document.addEventListener('DOMContentLoaded', function () {
+    // optional: animate nếu có anime.js
+    if (window.anime) {
+      anime({targets: '.text-center > *', opacity:[0,1], translateY:[30,0], delay:anime.stagger(150), easing:'easeOutQuad'});
+    }
+
+    const url = /*[[${paymentGetUrl}]]*/ '';
+    if (url) {
+      window.location.replace(url);     // ưu tiên GET
+      return;
+    }
+
+    const form = document.getElementById('redirectForm');
+    if (!form) return;
+
+    // đếm ngược (nếu có #countdown)
+    let n = 2, el = document.getElementById('countdown');
+    const iv = setInterval(() => { n--; if (el) el.textContent = n; if (n<=0) clearInterval(iv); }, 1000);
+
+    setTimeout(() => form.submit(), 2000); // fallback POST
   });
-
-  // Auto-submit form after 2 seconds
-  setTimeout(() => {
-      document.getElementById('redirectForm').submit();
-  }, 2000);
-
-  // Countdown display
-  let countdown = 2;
-  const countdownInterval = setInterval(() => {
-      countdown--;
-      if (countdown <= 0) {
-          clearInterval(countdownInterval);
-      }
-  }, 1000);
 </script>
 </body>
 </html>

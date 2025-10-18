@@ -1,4 +1,4 @@
-// src/main/java/Project/HouseService/Config/SecurityConfig.java
+// src/main/java/Project/HouseService/Config/SecurityConfig.java  (sau khi sửa)
 package Project.HouseService.Config;
 
 import Project.HouseService.Security.CustomUserDetailsService;
@@ -105,10 +105,14 @@ public class SecurityConfig {
         http.authenticationProvider(appAuthProvider);
         applyCsrf(http);
 
+        // Bỏ CSRF cho IPN VNPAY bằng RegexRequestMatcher (không dùng AntPath/Mvc*)
+        RequestMatcher vnpIpnPost = new RegexRequestMatcher("^/customer/payment/vnpay/ipn$", "POST");
+        RequestMatcher vnpIpnGet  = new RegexRequestMatcher("^/customer/payment/vnpay/ipn$", "GET");
+        http.csrf(csrf -> csrf.ignoringRequestMatchers(vnpIpnPost, vnpIpnGet));
+
         // PUBLIC cho đúng 2 route chi tiết vendor và API tóm tắt
         List<RequestMatcher> publicVendor = List.of(
                 new RegexRequestMatcher("^/vendor/id/\\d+$", "GET"),
-                // /vendor/{username} nhưng loại trừ các trang console của vendor
                 new RegexRequestMatcher("^/vendor/(?!dashboard$|profile$|orders$|services$|coupons$|reviews$|media$|settings$)[^/]+$", "GET"),
                 new RegexRequestMatcher("^/api/vendors/.*$", "GET")
         );
@@ -120,6 +124,15 @@ public class SecurityConfig {
                         "/customer/chatbot", "/customer/chatbot/**",
                         "/api/chat/**"
                 ).permitAll()
+
+                // Callback/return thanh toán VNPAY phải PUBLIC
+                .requestMatchers(HttpMethod.GET,
+                        "/customer/payment/vnpay/return",
+                        "/customer/payment/vnpay-return"
+                ).permitAll()
+                // IPN VNPAY PUBLIC
+                .requestMatchers(HttpMethod.GET,  "/customer/payment/vnpay/ipn").permitAll()
+                .requestMatchers(HttpMethod.POST, "/customer/payment/vnpay/ipn").permitAll()
 
                 // KHÓA console vendor trước
                 .requestMatchers(
@@ -141,7 +154,10 @@ public class SecurityConfig {
                 // Phần còn lại của /vendor/**
                 .requestMatchers("/vendor/**").hasAnyRole("VENDOR","ADMIN")
 
+                // Khu vực customer
                 .requestMatchers("/customer/**").hasAnyRole("CUSTOMER","VENDOR","ADMIN")
+
+                // Còn lại
                 .anyRequest().permitAll()
         );
 

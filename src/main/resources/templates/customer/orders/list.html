@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lịch sử đơn hàng - VHBTV HomeCare</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <meta th:name="_csrf" th:content="${_csrf.token}"/>
+  <meta th:name="_csrf_header" th:content="${_csrf.headerName}"/>
+  <style>
+    .gradient-text{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .status-badge{display:inline-block;padding:.25rem .5rem;font-size:.75rem;font-weight:600;border-radius:9999px}
+    .status-PENDING{background:#FEF3C7;color:#92400E}
+    .status-CONFIRMED{background:#DBEAFE;color:#1E40AF}
+    .status-IN_PROGRESS{background:#EDE9FE;color:#5B21B6}
+    .status-COMPLETED{background:#D1FAE5;color:#065F46}
+    .status-CANCELLED{background:#FEE2E2;color:#991B1B}
+  </style>
+</head>
+<body class="bg-gray-50">
+<div th:replace="~{layouts/header :: siteHeader}"></div>
+
+<main class="pt-24 pb-16">
+  <div class="container mx-auto px-4 lg:px-8 max-w-6xl">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">
+        <i class="fas fa-history mr-2 text-blue-600"></i>Lịch sử đơn hàng
+      </h1>
+      <p class="text-gray-600">Quản lý và theo dõi tất cả đơn hàng của bạn</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-2 mb-6 flex gap-2 overflow-x-auto">
+      <a th:href="@{/customer/orders/history(status='ALL')}"
+         th:classappend="${currentStatus == 'ALL' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}"
+         class="px-4 py-2 rounded-lg font-medium whitespace-nowrap transition">
+        Tất cả <span class="ml-1 text-sm" th:text="'(' + ${counts.all} + ')'">()</span>
+      </a>
+      <a th:href="@{/customer/orders/history(status='PENDING')}"
+         th:classappend="${currentStatus == 'PENDING' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}"
+         class="px-4 py-2 rounded-lg font-medium whitespace-nowrap transition">
+        Chờ xác nhận <span class="ml-1 text-sm" th:text="'(' + ${counts.pending} + ')'">()</span>
+      </a>
+      <a th:href="@{/customer/orders/history(status='CONFIRMED')}"
+         th:classappend="${currentStatus == 'CONFIRMED' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}"
+         class="px-4 py-2 rounded-lg font-medium whitespace-nowrap transition">
+        Đã xác nhận <span class="ml-1 text-sm" th:text="'(' + ${counts.confirmed} + ')'">()</span>
+      </a>
+      <a th:href="@{/customer/orders/history(status='IN_PROGRESS')}"
+         th:classappend="${currentStatus == 'IN_PROGRESS' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}"
+         class="px-4 py-2 rounded-lg font-medium whitespace-nowrap transition">
+        Đang thực hiện <span class="ml-1 text-sm" th:text="'(' + ${counts.inProgress} + ')'">()</span>
+      </a>
+      <a th:href="@{/customer/orders/history(status='COMPLETED')}"
+         th:classappend="${currentStatus == 'COMPLETED' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}"
+         class="px-4 py-2 rounded-lg font-medium whitespace-nowrap transition">
+        Hoàn thành <span class="ml-1 text-sm" th:text="'(' + ${counts.completed} + ')'">()</span>
+      </a>
+      <a th:href="@{/customer/orders/history(status='CANCELLED')}"
+         th:classappend="${currentStatus == 'CANCELLED' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}"
+         class="px-4 py-2 rounded-lg font-medium whitespace-nowrap transition">
+        Đã hủy <span class="ml-1 text-sm" th:text="'(' + ${counts.cancelled} + ')'">()</span>
+      </a>
+    </div>
+
+    <div th:if="${#lists.isEmpty(orders)}" class="text-center py-20">
+      <div class="inline-block p-8 bg-white rounded-full shadow-lg mb-6">
+        <i class="fas fa-inbox text-6xl text-gray-300"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Chưa có đơn hàng nào</h2>
+      <p class="text-gray-600 mb-8">Hãy khám phá và đặt dịch vụ ngay hôm nay</p>
+      <a href="/services" class="inline-block bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-full font-medium hover:shadow-lg transition">
+        <i class="fas fa-search mr-2"></i>Khám phá dịch vụ
+      </a>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(orders)}" class="space-y-4">
+      <div th:each="order : ${orders}" class="bg-white rounded-xl shadow-sm hover:shadow-md transition">
+        <div class="p-6 border-b">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <img th:src="${order.vendor.avatarUrl != null ? order.vendor.avatarUrl : '/placeholder.svg?height=48&width=48'}"
+                   alt="Vendor" class="w-12 h-12 rounded-full object-cover">
+              <div>
+                <a class="font-semibold text-gray-900 hover:text-blue-600"
+                   th:href="${order.vendor.slug != null} ? @{'/vendors/' + ${order.vendor.slug}} : @{'/vendors/' + ${order.vendor.id}}"
+                   th:text="${order.vendor.displayName}">Vendor</a>
+                <!-- Sao: full/half/empty theo rating -->
+                <div class="flex items-center gap-2 text-sm text-gray-600 mt-1"
+                     th:with="r=${order.vendor.ratingAvg != null ? order.vendor.ratingAvg : 0}">
+                  <span>
+                    <i class="mr-0.5"
+                       th:class="${r >= i} ? 'fas fa-star text-yellow-400' :
+                                 (${r >= (i - 0.5)} ? 'fas fa-star-half-stroke text-yellow-400' :
+                                                       'far fa-star text-gray-300')"
+                       th:each="i : ${#numbers.sequence(1,5)}"></i>
+                  </span>
+                  <span th:text="${#numbers.formatDecimal(r,1,'COMMA',1,'POINT')}">0.0</span>
+                  <span>(<span th:text="${order.vendor.ratingCount}">0</span>)</span>
+                  <span th:if="${order.vendor.verified}" class="text-blue-600"><i class="fas fa-check-circle"></i></span>
+                </div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="font-mono font-semibold text-blue-600 mb-1" th:text="${order.orderCode}">SO-0001</div>
+              <span class="status-badge" th:classappend="' status-' + ${order.status}" th:text="${order.statusDisplay}">Chờ xác nhận</span>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-4 text-sm">
+            <div><span class="text-gray-600">Ngày đặt:</span>
+              <span class="font-medium ml-2" th:text="${#temporals.format(order.createdAt,'dd/MM/yyyy HH:mm')}">--</span>
+            </div>
+            <div><span class="text-gray-600">Tổng tiền:</span>
+              <span class="font-bold text-blue-600 ml-2" th:text="${#numbers.formatDecimal(order.total,0,'COMMA',0,'POINT')} + 'đ'">0đ</span>
+            </div>
+            <div><span class="text-gray-600">Thanh toán:</span>
+              <span class="font-medium ml-2" th:text="${order.paymentMethod}">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6">
+          <div th:each="item, i : ${order.items}" th:if="${i.index < 2}" class="flex gap-3 mb-3 last:mb-0">
+            <img th:src="${item.vendorService != null && item.vendorService.coverUrl != null ? item.vendorService.coverUrl : '/placeholder.svg?height=60&width=60'}"
+                 alt="Service" class="w-16 h-16 rounded-lg object-cover">
+            <div class="flex-1">
+              <h4 class="font-medium text-gray-900" th:text="${item.vendorService != null ? item.vendorService.title : 'Dịch vụ'}">Dịch vụ</h4>
+              <div class="text-sm text-gray-600 mt-1"><i class="fas fa-calendar mr-1"></i>
+                <span th:text="${#temporals.format(item.scheduleAt,'dd/MM/yyyy HH:mm')}">--</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-sm text-gray-600">x<span th:text="${item.quantity}">1</span></div>
+              <div class="font-semibold text-blue-600" th:text="${#numbers.formatDecimal(item.subtotal,0,'COMMA',0,'POINT')} + 'đ'">0đ</div>
+            </div>
+          </div>
+          <div th:if="${#lists.size(order.items) > 2}" class="text-sm text-gray-500 text-center mt-2">
+            + <span th:text="${#lists.size(order.items) - 2}">0</span> dịch vụ khác
+          </div>
+        </div>
+
+        <div class="p-6 border-t bg-gray-50 flex gap-3">
+          <a th:href="@{/customer/orders/detail/{id}(id=${order.id})}"
+             class="flex-1 text-center border-2 border-blue-600 text-blue-600 py-2 rounded-lg font-medium hover:bg-blue-50 transition">
+            <i class="fas fa-eye mr-2"></i>Xem chi tiết
+          </a>
+          <button th:if="${order.status == 'PENDING'}"
+                  class="flex-1 bg-red-600 text-white py-2 rounded-lg font-medium hover:bg-red-700 transition cancel-open"
+                  th:attr="data-order-code=${order.orderCode}">
+            <i class="fas fa-times mr-2"></i>Hủy đơn
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div th:if="${totalPages > 1}" class="mt-8 flex justify-center">
+      <nav class="flex gap-2">
+        <a th:if="${currentPage > 0}"
+           th:href="@{/customer/orders/history(page=${currentPage - 1}, status=${currentStatus})}"
+           class="px-4 py-2 border rounded-lg hover:bg-gray-50"><i class="fas fa-chevron-left"></i></a>
+        <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+          <a th:href="@{/customer/orders/history(page=${i}, status=${currentStatus})}"
+             th:classappend="${i == currentPage ? 'bg-blue-600 text-white' : 'border hover:bg-gray-50'}"
+             class="px-4 py-2 rounded-lg" th:text="${i + 1}">1</a>
+        </span>
+        <a th:if="${currentPage < totalPages - 1}"
+           th:href="@{/customer/orders/history(page=${currentPage + 1}, status=${currentStatus})}"
+           class="px-4 py-2 border rounded-lg hover:bg-gray-50"><i class="fas fa-chevron-right"></i></a>
+      </nav>
+    </div>
+  </div>
+</main>
+
+<div th:replace="~{layouts/footer :: siteFooter}"></div>
+
+<div class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50" id="cancelModal">
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">Xác nhận hủy đơn</h3>
+    <p class="text-gray-600 mb-4">Bạn có chắc muốn hủy đơn hàng này?</p>
+    <div class="flex gap-3 justify-end">
+      <button class="px-4 py-2 rounded-lg border hover:bg-gray-50" id="cancelClose">Đóng</button>
+      <button class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700" id="cancelConfirm">Hủy đơn</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  anime({targets:'.bg-white',opacity:[0,1],translateY:[20,0],delay:anime.stagger(100),easing:'easeOutQuad'});
+  const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+  const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+  const modal = document.getElementById('cancelModal');
+  const btnClose = document.getElementById('cancelClose');
+  const btnConfirm = document.getElementById('cancelConfirm');
+  let pendingCode = null;
+  function openModal(code){ pendingCode = code; modal.classList.remove('hidden'); modal.classList.add('flex'); }
+  function closeModal(){ modal.classList.add('hidden'); modal.classList.remove('flex'); pendingCode = null; }
+  document.querySelectorAll('.cancel-open').forEach(b=>{ b.addEventListener('click', ()=> openModal(b.dataset.orderCode)); });
+  btnClose.addEventListener('click', closeModal);
+  modal.addEventListener('click', e=>{ if(e.target===modal) closeModal(); });
+  btnConfirm.addEventListener('click', ()=>{
+    if(!pendingCode) return;
+    fetch(`/customer/orders/${pendingCode}/cancel`, { method: 'POST', headers: csrfHeader && csrfToken ? { [csrfHeader]: csrfToken } : {} })
+      .then(()=> location.reload());
+  });
+</script>
+</body>
+</html>

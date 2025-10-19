@@ -102,66 +102,76 @@ public class CustomerWishlistService {
     @Transactional(readOnly = true)
     public List<Map<String, Object>> listServicePageModels(Long customerId, int limit, int offset) {
         String sql = """
-            SELECT
-              cw.id,
-              cw.created_at,
-              vs.id,
-              vs.name,              -- title
-              vs.description,
-              vs.cover_url,
-              vs.duration_minutes,
-              vs.min_notice_hours,
-              vs.base_price,
-              vs.unit,
-              u.id AS vendor_id,
-              COALESCE(vp.display_name, u.username) AS vendor_name,
-              COALESCE(vp.rating_avg, 0) AS rating_avg
-            FROM customer_wishlist cw
-            JOIN vendor_service vs ON vs.id = cw.vendor_service_id
-            JOIN `user` u ON u.id = vs.vendor_id
-            LEFT JOIN vendor_profile vp ON vp.user_id = u.id
-            WHERE cw.customer_id = :cid
-            ORDER BY cw.created_at DESC
-            LIMIT :limit OFFSET :offset
-            """;
+        SELECT
+          cw.id,
+          cw.created_at,
+          vs.id,
+          vs.title,
+          vs.description,
+          vs.cover_url,
+          vs.duration_minutes,
+          vs.min_notice_hours,
+          vs.base_price,
+          vs.unit,
+          u.id AS vendor_id,
+          COALESCE(vp.display_name, u.username) AS vendor_name,
+          u.avatar_url AS vendor_avatar_url,
+          COALESCE(r.rating_avg, 0)  AS svc_rating_avg,
+          COALESCE(r.rating_cnt, 0)  AS svc_rating_cnt
+        FROM customer_wishlist cw
+        JOIN vendor_service vs ON vs.id = cw.vendor_service_id
+        JOIN `user` u          ON u.id = vs.vendor_id
+        LEFT JOIN vendor_profile vp ON vp.user_id = u.id
+        LEFT JOIN (
+           SELECT vendor_service_id, AVG(rating) AS rating_avg, COUNT(1) AS rating_cnt
+           FROM vendor_service_review
+           GROUP BY vendor_service_id
+        ) r ON r.vendor_service_id = vs.id
+        WHERE cw.customer_id = :cid
+        ORDER BY cw.created_at DESC
+        LIMIT :limit OFFSET :offset
+        """;
         Query q = em.createNativeQuery(sql)
                 .setParameter("cid", customerId)
                 .setParameter("limit", Math.max(1, limit))
                 .setParameter("offset", Math.max(0, offset));
-
         @SuppressWarnings("unchecked")
         List<Object[]> rows = q.getResultList();
         List<Map<String, Object>> out = new ArrayList<>(rows.size());
         for (Object[] r : rows) {
             int i = 0;
-            Long wsId = ((Number) r[i++]).longValue();
-            Object createdAt = r[i++];
-            Long vsId = ((Number) r[i++]).longValue();
-            String title = (String) r[i++];
-            String desc = (String) r[i++];
-            String coverUrl = (String) r[i++];
-            Number durationMinutes = (Number) r[i++];
-            Number minNoticeHours = (Number) r[i++];
-            Number basePrice = (Number) r[i++];
-            String unit = (String) r[i++];
-            Long vendorId = ((Number) r[i++]).longValue();
-            String vendorName = (String) r[i++];
-            Number ratingAvg = (Number) r[i++];
+            Long wsId           = ((Number) r[i++]).longValue();
+            Object createdAt    = r[i++];
+            Long vsId           = ((Number) r[i++]).longValue();
+            String title        = (String) r[i++];
+            String desc         = (String) r[i++];
+            String coverUrl     = (String) r[i++];
+            Number durationMin  = (Number) r[i++];
+            Number minNoticeH   = (Number) r[i++];
+            Number basePrice    = (Number) r[i++];
+            String unit         = (String) r[i++];
+            Long vendorId       = ((Number) r[i++]).longValue();
+            String vendorName   = (String) r[i++];
+            String vendorAvatar = (String) r[i++];
+            Number svcRatingAvg = (Number) r[i++];
+            Number svcRatingCnt = (Number) r[i++];
 
             Map<String, Object> vendor = new LinkedHashMap<>();
             vendor.put("id", vendorId);
             vendor.put("displayName", vendorName);
-            vendor.put("ratingAvg", ratingAvg);
+            vendor.put("avatarUrl", vendorAvatar);
 
             Map<String, Object> vs = new LinkedHashMap<>();
             vs.put("id", vsId);
             vs.put("title", title);
             vs.put("description", desc);
             vs.put("coverUrl", coverUrl);
-            vs.put("durationMinutes", durationMinutes);
-            vs.put("minNoticeHours", minNoticeHours);
+            vs.put("durationMinutes", durationMin);
+            vs.put("minNoticeHours", minNoticeH);
             vs.put("basePrice", basePrice);
             vs.put("unit", unit);
+            vs.put("ratingAvg", svcRatingAvg);
+            vs.put("ratingCount", svcRatingCnt);
             vs.put("vendor", vendor);
 
             Map<String, Object> ws = new LinkedHashMap<>();

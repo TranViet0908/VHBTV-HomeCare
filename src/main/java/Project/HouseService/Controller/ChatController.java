@@ -1,55 +1,134 @@
 package Project.HouseService.Controller;
 
+import Project.HouseService.Entity.User;
+import Project.HouseService.Repository.UserRepository;
 import Project.HouseService.Service.ChatService;
-import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
-@RequestMapping("/customer/chat")
+import java.util.*;
+
+@RestController
+@RequestMapping(path = "/customer/chat", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ChatController {
 
-    private final ChatService chat;
+    private final ChatService chatService;
+    private final UserRepository userRepository;
 
-    public ChatController(ChatService chat) { this.chat = chat; }
-
-    @GetMapping
-    public String page(Model model, Authentication auth) {
-        Long userId = auth == null ? null : extractUserId(auth);
-        model.addAttribute("greeting", chat.greeting());
-        model.addAttribute("conversationId", null);
-        model.addAttribute("userId", userId == null ? 999L : userId);
-        return "customer/chatbot/index";
+    public ChatController(ChatService chatService, UserRepository userRepository) {
+        this.chatService = chatService;
+        this.userRepository = userRepository;
     }
 
-    @PostMapping("/send")
-    @ResponseBody
-    public String send(@RequestParam("q") String q,
-                       @RequestParam(value = "conversationId", required = false) Long conversationId,
-                       Authentication auth,
-                       HttpServletResponse resp) {
+    @PostMapping(
+            value = "/send",
+            consumes = {
+                    MediaType.APPLICATION_JSON_VALUE,
+                    MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+                    MediaType.MULTIPART_FORM_DATA_VALUE,
+                    MediaType.TEXT_PLAIN_VALUE
+            }
+    )
+    public ResponseEntity<?> send(Authentication auth,
+                                  @RequestParam(required = false) MultiValueMap<String,String> form,
+                                  @RequestBody(required = false) Map<String,Object> json,
+                                  @RequestParam(required = false) String message) {
 
-        Long userId = auth == null ? 999L : extractUserId(auth);
-        ChatService.ChatResult r = chat.chat(userId, conversationId, q);
-        if (r.conversationId() != null) {
-            resp.setHeader("X-Conversation-Id", String.valueOf(r.conversationId()));
+        Long userId = resolveUserId(auth);
+
+        String msg = firstNonBlank(
+                message,
+                form == null ? null : form.getFirst("message"),
+                form == null ? null : form.getFirst("q"),
+                form == null ? null : form.getFirst("text"),
+                form == null ? null : form.getFirst("content"),
+                pickFromJson(json)
+        );
+        if (!StringUtils.hasText(msg)) return jsonError(HttpStatus.BAD_REQUEST, "EMPTY_MESSAGE");
+
+        var reply = chatService.handleMessage(userId, msg);
+        if (reply.getMeta().get("error") != null) {
+            return jsonError(HttpStatus.BAD_GATEWAY, String.valueOf(reply.getMeta().get("error")));
         }
-        String safe = escapeHtml(r.answer());
-        return """
-               <div class="flex items-start gap-3 p-3">
-                 <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center">S</div>
-                 <div class="bg-gray-100 rounded-2xl px-4 py-2 max-w-[80%%] whitespace-pre-wrap">%s</div>
-               </div>
-               """.formatted(safe);
+        Map<String,Object> ok = new HashMap<>();
+        ok.put("ok", true);
+        ok.put("reply", reply.getText());
+        ok.put("meta", reply.getMeta());
+        return ResponseEntity.ok(ok);
     }
 
-    private Long extractUserId(Authentication auth) {
-        try { return Long.valueOf(auth.getName()); } catch (Exception e) { return null; }
+    @GetMapping("/history")
+    public ResponseEntity<?> history(Authentication auth,
+                                     @RequestParam(defaultValue = "20") int limit,
+                                     @RequestParam(defaultValue = "0") int offset) {
+        Long userId = resolveUserId(auth);
+        return ResponseEntity.ok(chatService.loadHistory(userId, limit, offset));
     }
-    private String escapeHtml(String s) {
-        if (s == null) return "";
-        return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;");
+
+    // ===== helpers =====
+    private Long resolveUserId(Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) return 999L;
+        Object p = auth.getPrincipal();
+        String username = (p instanceof UserDetails u) ? u.getUsername() : String.valueOf(p);
+        if (!StringUtils.hasText(username) || "anonymousUser".equals(username)) return 999L;
+        return userRepository.findByUsername(username).map(User::getId).orElse(999L);
+    }
+
+    private static String firstNonBlank(String... arr) {
+        if (arr == null) return null;
+        for (String s : arr) if (StringUtils.hasText(s)) return s;
+        return null;
+    }
+
+    private static ResponseEntity<Map<String, Object>> jsonError(HttpStatus code, String err) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("error", err == null ? "UNKNOWN" : err);
+        return ResponseEntity.status(code).body(m);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static String pickFromJson(Map<String,Object> json) {
+        if (json == null) return null;
+        Object v = json.get("message");
+        if (v == null) v = json.get("q");
+        if (v == null) v = json.get("text");
+        if (v == null) v = json.get("content");
+        if (v == null) v = json.get("prompt");
+        if (v != null && StringUtils.hasText(String.valueOf(v))) return String.valueOf(v);
+
+        // Gemini schema
+        Object contents = json.get("contents");
+        if (contents instanceof Iterable<?> it) {
+            for (Object o : it) {
+                if (o instanceof Map<?, ?> m) {
+                    Object parts = m.get("parts");
+                    if (parts instanceof Iterable<?> it2) {
+                        for (Object p : it2) {
+                            if (p instanceof Map<?, ?> pm) {
+                                Object t = pm.get("text");
+                                if (t != null && StringUtils.hasText(String.valueOf(t))) {
+                                    return String.valueOf(t);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // OpenAI-like
+        Object arr = json.get("messages");
+        if (arr instanceof Iterable<?> it3) {
+            for (Object o : it3) {
+                if (o instanceof Map<?,?> m && "user".equals(String.valueOf(m.get("role")))) {
+                    Object t = m.get("content");
+                    if (t != null && StringUtils.hasText(String.valueOf(t))) return String.valueOf(t);
+                }
+            }
+        }
+        return null;
     }
 }

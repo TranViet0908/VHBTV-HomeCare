@@ -1,4 +1,3 @@
-<!-- templates/customer/chatbot/services.html -->
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -11,36 +10,15 @@
     <meta name="_csrf" th:content="${_csrf.token}">
     <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <style>
-        * { font-family: 'Inter', sans-serif; }
-        .hero-pattern {
-          background-image:
-            radial-gradient(circle at 25% 25%, #667eea 0%, transparent 50%),
-            radial-gradient(circle at 75% 75%, #764ba2 0%, transparent 50%);
-        }
-        .gradient-text{
-          background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
-          -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-        }
-        .chat-box { height: calc(100vh - 320px); }
+        * { font-family: Inter, sans-serif }
+        .chat-box { height: calc(100vh - 320px) }
     </style>
 </head>
 <body class="bg-gray-50">
-<!-- Header giữ nguyên từ layouts -->
-<th:block th:replace="layouts/header :: siteHeader"></th:block>
+<th:block th:replace="~{layouts/header :: siteHeader}"></th:block>
 
-<!-- Hero giống trang chủ, rút gọn cho chatbot -->
-<section class="hero-pattern pt-24 pb-10">
-    <div class="container mx-auto px-4 lg:px-8 text-center">
-        <h1 class="text-4xl md:text-5xl font-extrabold text-white">
-            Trợ lý <span class="text-yellow-300">Sana</span> — CSKH VHBTV HomeCare
-        </h1>
-    </div>
-</section>
-
-<!-- Chat card -->
-<main class="container mx-auto px-4 lg:px-8 pb-16">
+<main class="container mx-auto px-4 lg:px-8 pt-24 pb-16">
     <div class="max-w-4xl mx-auto bg-white rounded-2xl border shadow-sm">
-        <!-- Thanh tiêu đề nhỏ -->
         <div class="px-6 py-4 border-b flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">S</div>
@@ -52,12 +30,8 @@
             <div class="text-xs text-gray-500">Không xử lý yêu cầu nội bộ hệ thống</div>
         </div>
 
-        <!-- Khu vực hội thoại -->
-        <div id="chat" class="chat-box overflow-y-auto px-4 py-4 space-y-3 bg-gray-50">
-            <!-- Tin nhắn sẽ được append tại đây -->
-        </div>
+        <div class="chat-box overflow-y-auto px-4 py-4 space-y-3 bg-gray-50" id="chat"></div>
 
-        <!-- Gợi ý nhanh -->
         <div class="px-4 pt-2 pb-0 flex flex-wrap gap-2">
             <button type="button" class="px-3 py-1.5 text-sm bg-gray-100 rounded-full hover:bg-gray-200 suggestion">Giặt sofa giá khoảng?</button>
             <button type="button" class="px-3 py-1.5 text-sm bg-gray-100 rounded-full hover:bg-gray-200 suggestion">Cách tra cứu đơn đã đặt?</button>
@@ -65,85 +39,74 @@
             <button type="button" class="px-3 py-1.5 text-sm bg-gray-100 rounded-full hover:bg-gray-200 suggestion">Nhà có trẻ nhỏ nên chọn gói nào?</button>
         </div>
 
-        <!-- Form nhập -->
         <form id="f" class="p-4 border-t flex items-center gap-3">
-            <input type="hidden" name="conversationId" id="convId" th:value="${conversationId}">
-            <input type="hidden" name="userId" th:value="${userId}">
-            <input id="q" name="q" class="flex-1 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500" placeholder="Nhập câu hỏi về dịch vụ, báo giá tham khảo, cách tự tra cứu đơn...">
+            <input class="flex-1 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500" id="q" name="q"
+                   placeholder="Nhập câu hỏi...">
             <button class="px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700" type="submit">
-                <i class="fas fa-paper-plane"></i>
-                <span class="ml-2">Gửi</span>
+                <i class="fas fa-paper-plane"></i><span class="ml-2">Gửi</span>
             </button>
         </form>
     </div>
 
-    <!-- Lưu ý chính sách -->
     <div class="max-w-4xl mx-auto mt-4 text-xs text-gray-500">
-        Sana không hỏi thông tin nhạy cảm. Khi cần tra cứu đơn: Đăng nhập → Đơn hàng của tôi → Nhập mã/điện thoại.
+        Sana không hỏi thông tin nhạy cảm. Khi cần tra cứu đơn: Đăng nhập → Đơn hàng của tôi.
     </div>
 </main>
 
-<!-- Footer giữ nguyên từ layouts -->
-<th:block th:replace="layouts/footer :: siteFooter"></th:block>
+<th:block th:replace="~{layouts/footer :: siteFooter}"></th:block>
 
-<!-- Script -->
 <script>
     const chat = document.getElementById('chat');
     const form = document.getElementById('f');
     const input = document.getElementById('q');
-    const convIdEl = document.getElementById('convId');
 
-    function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-
+    function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
     function appendUser(text){
-      chat.insertAdjacentHTML('beforeend', `
-        <div class="flex items-start gap-3 p-1 justify-end">
-          <div class="bg-blue-50 rounded-2xl px-4 py-2 max-w-[80%] whitespace-pre-wrap border border-blue-100">${escapeHtml(text)}</div>
-          <div class="w-8 h-8 rounded-full bg-gray-800 text-white flex items-center justify-center">U</div>
-        </div>`);
+      chat.insertAdjacentHTML('beforeend',
+        `<div class="flex items-start gap-3 p-1 justify-end">
+           <div class="bg-blue-50 rounded-2xl px-4 py-2 max-w-[80%] whitespace-pre-wrap border border-blue-100">${esc(text)}</div>
+           <div class="w-8 h-8 rounded-full bg-gray-800 text-white flex items-center justify-center">U</div>
+         </div>`);
       chat.scrollTop = chat.scrollHeight;
     }
-
     function appendBot(html){
       chat.insertAdjacentHTML('beforeend', html);
       chat.scrollTop = chat.scrollHeight;
     }
-
-    // Gợi ý nhanh
-    document.querySelectorAll('.suggestion').forEach(btn=>{
-      btn.addEventListener('click', ()=>{ input.value = btn.textContent.trim(); input.focus(); });
-    });
+    document.querySelectorAll('.suggestion').forEach(b=>b.onclick=()=>{ input.value=b.textContent.trim(); input.focus(); });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const q = input.value.trim();
       if (!q) return;
-
       appendUser(q);
-
-      // Tạo FormData TRƯỚC khi xóa input
-      const fd = new FormData(form);
-      fd.set('q', q); // bảo đảm giá trị đúng
+      input.value = '';
 
       const csrf = document.querySelector('meta[name="_csrf"]')?.content;
       const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
 
       const res = await fetch('/customer/chat/send', {
         method: 'POST',
-        body: fd,
-        headers: csrf && csrfHeader ? { [csrfHeader]: csrf } : {},
-        credentials: 'same-origin'
+        headers: Object.assign({'Content-Type':'application/json'},
+          csrf && csrfHeader ? { [csrfHeader]: csrf } : {}),
+        body: JSON.stringify({ message: q })
       });
 
-      input.value = ''; // xóa sau khi đã gửi
+      let data;
+      try { data = await res.json(); }
+      catch { appendBot(`<div class="text-red-600 text-sm">BAD_RESPONSE</div>`); return; }
 
-      const html = await res.text();
-      const newConv = res.headers.get('X-Conversation-Id');
-      if (newConv && !convIdEl.value) convIdEl.value = newConv;
-
-      appendBot(html);
+      if (!res.ok || data.error) {
+        appendBot(`<div class="text-red-600 text-sm">${esc(data.error || 'ERROR')}</div>`);
+        return;
+      }
+      appendBot(
+        `<div class="flex items-start gap-3 p-1">
+           <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center">S</div>
+           <div class="bg-white rounded-2xl px-4 py-2 max-w-[80%] whitespace-pre-wrap border">${esc(data.reply)}</div>
+         </div>`
+      );
     });
-
 </script>
 </body>
 </html>

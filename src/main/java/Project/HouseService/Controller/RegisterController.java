@@ -46,23 +46,71 @@ public class RegisterController {
 
         if (password == null || !password.equals(passwordConfirm)) {
             model.addAttribute("error", "Mật khẩu xác nhận không khớp");
+            // Giữ lại dữ liệu đã nhập (trừ password)
+            model.addAttribute("username", username);
+            model.addAttribute("email", email);
+            model.addAttribute("phone", phone);
+            model.addAttribute("fullName", fullName);
+            model.addAttribute("dob", dob);
+            model.addAttribute("gender", gender);
+            model.addAttribute("addressLine", addressLine);
             model.addAttribute("user", new User());
             return "auth/register";
         }
 
-        // Đăng ký customer. AuthService sẽ tự lưu avatar về /uploads/avatars và tạo CustomerProfile.
-        auth.registerCustomer(
-                username,
-                password,
-                email,
-                phone,
-                avatar,
-                fullName,
-                dob,
-                gender,
-                addressLine
-        );
-
-        return "redirect:/login";
+        try {
+            // Đăng ký customer. AuthService sẽ tự lưu avatar về /uploads/avatars và tạo CustomerProfile.
+            auth.registerCustomer(
+                    username,
+                    password,
+                    email,
+                    phone,
+                    avatar,
+                    fullName,
+                    dob,
+                    gender,
+                    addressLine
+            );
+            return "redirect:/login";
+        } catch (org.springframework.dao.DuplicateKeyException e) {
+            // Username hoặc email đã tồn tại
+            model.addAttribute("error", e.getMessage());
+            // Giữ lại dữ liệu đã nhập
+            model.addAttribute("username", username);
+            model.addAttribute("email", email);
+            model.addAttribute("phone", phone);
+            model.addAttribute("fullName", fullName);
+            model.addAttribute("dob", dob);
+            model.addAttribute("gender", gender);
+            model.addAttribute("addressLine", addressLine);
+            model.addAttribute("user", new User());
+            return "auth/register";
+        } catch (IllegalArgumentException e) {
+            // Email trống hoặc validation lỗi
+            model.addAttribute("error", e.getMessage());
+            // Giữ lại dữ liệu đã nhập
+            model.addAttribute("username", username);
+            model.addAttribute("email", email);
+            model.addAttribute("phone", phone);
+            model.addAttribute("fullName", fullName);
+            model.addAttribute("dob", dob);
+            model.addAttribute("gender", gender);
+            model.addAttribute("addressLine", addressLine);
+            model.addAttribute("user", new User());
+            return "auth/register";
+        } catch (Exception e) {
+            // Các lỗi khác (lưu avatar thất bại, database error, v.v.)
+            model.addAttribute("error", "Đăng ký thất bại: " + e.getMessage());
+            // Giữ lại dữ liệu đã nhập
+            model.addAttribute("username", username);
+            model.addAttribute("email", email);
+            model.addAttribute("phone", phone);
+            model.addAttribute("fullName", fullName);
+            model.addAttribute("dob", dob);
+            model.addAttribute("gender", gender);
+            model.addAttribute("addressLine", addressLine);
+            model.addAttribute("user", new User());
+            return "auth/register";
+        }
     }
 }

@@ -10,6 +10,8 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.Normalizer;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component("utils")
 public class ThymeleafUtils {
@@ -178,5 +180,90 @@ public class ThymeleafUtils {
                 .toLowerCase(java.util.Locale.ROOT);
         return n;
     }
+    // ====== VIDEO URL HELPERS (YouTube / Google Drive) ======
 
+    // Regex cố định cho YouTube: watch?v=, youtu.be/, shorts/, embed/
+    private static final Pattern YT_WATCH = Pattern.compile("[?&]v=([A-Za-z0-9_-]{6,})");
+    private static final Pattern YT_SHORT = Pattern.compile("youtu\\.be/([A-Za-z0-9_-]{6,})");
+    private static final Pattern YT_SHORTS = Pattern.compile("youtube\\.com/shorts/([A-Za-z0-9_-]{6,})");
+    private static final Pattern YT_EMBED = Pattern.compile("youtube\\.com/embed/([A-Za-z0-9_-]{6,})");
+
+    // Regex cho Google Drive: file/d/{id}, open?id=, uc?id=
+    private static final Pattern GD_FILE_D = Pattern.compile("drive\\.google\\.com/(?:file/)?d/([A-Za-z0-9_-]+)");
+    private static final Pattern GD_OPEN_ID = Pattern.compile("[?&]id=([A-Za-z0-9_-]+)");
+
+    /** true nếu là URL YouTube hợp lệ */
+    public boolean isYoutubeUrl(String url) {
+        if (url == null) return false;
+        String u = url.toLowerCase(Locale.ROOT);
+        if (!(u.contains("youtube.com") || u.contains("youtu.be"))) return false;
+        return extractYoutubeId(url) != null;
+    }
+
+    /** true nếu là URL Google Drive khả năng preview */
+    public boolean isDriveUrl(String url) {
+        if (url == null) return false;
+        String u = url.toLowerCase(Locale.ROOT);
+        if (!u.contains("drive.google.com")) return false;
+        return extractDriveId(url) != null;
+    }
+
+    /** Trả về link embed YouTube: https://www.youtube.com/embed/{id} hoặc chuỗi rỗng nếu không trích xuất được */
+    public String youtubeEmbed(String url) {
+        String id = extractYoutubeId(url);
+        return (id == null) ? "" : ("https://www.youtube.com/embed/" + id);
+    }
+
+    /** Trả về link preview Drive: https://drive.google.com/file/d/{id}/preview hoặc chuỗi rỗng nếu không trích xuất được */
+    public String drivePreview(String url) {
+        String id = extractDriveId(url);
+        return (id == null) ? "" : ("https://drive.google.com/file/d/" + id + "/preview");
+    }
+
+    /**
+     * Chuẩn hóa URL phát video:
+     *  - YouTube  → trả về embed
+     *  - Drive    → trả về preview
+     *  - Khác     → trả nguyên URL
+     */
+    public String normalizeVideoUrl(String url) {
+        if (url == null || url.isBlank()) return "";
+        if (isYoutubeUrl(url)) return youtubeEmbed(url);
+        if (isDriveUrl(url)) return drivePreview(url);
+        return url;
+    }
+
+    /**
+     * true nếu link nên render bằng <iframe> (YouTube/Drive),
+     * false nếu render <video> nguồn trực tiếp (.mp4/.webm/…)
+     */
+    public boolean isIframePreferred(String url) {
+        return isYoutubeUrl(url) || isDriveUrl(url);
+    }
+
+    // ---- Private helpers ----
+
+    private String extractYoutubeId(String url) {
+        if (url == null) return null;
+        Matcher m1 = YT_WATCH.matcher(url);
+        if (m1.find()) return m1.group(1);
+        Matcher m2 = YT_SHORT.matcher(url);
+        if (m2.find()) return m2.group(1);
+        Matcher m3 = YT_SHORTS.matcher(url);
+        if (m3.find()) return m3.group(1);
+        Matcher m4 = YT_EMBED.matcher(url);
+        if (m4.find()) return m4.group(1);
+        return null;
+    }
+
+    private String extractDriveId(String url) {
+        if (url == null) return null;
+        Matcher m1 = GD_FILE_D.matcher(url);
+        if (m1.find()) return m1.group(1);
+        if (url.contains("drive.google.com")) {
+            Matcher m2 = GD_OPEN_ID.matcher(url);
+            if (m2.find()) return m2.group(1);
+        }
+        return null;
+    }
 }

@@ -20,12 +20,10 @@
                 <div class="mb-3 p-3 bg-green-100 text-green-800 rounded" th:if="${success}" th:text="${success}"></div>
                 <div class="mb-3 p-3 bg-red-100 text-red-800 rounded" th:if="${error}" th:text="${error}"></div>
 
-                <!-- Bộ lọc: KHÔNG khóa chọn service -->
+                <!-- Bộ lọc -->
                 <form class="bg-white p-4 rounded border mb-4 grid grid-cols-1 md:grid-cols-6 gap-3" id="filterForm"
                       method="get">
                     <input name="page" type="hidden" value="0">
-
-                    <!-- Chọn theo TÊN vendor -->
                     <div>
                         <label class="text-sm text-gray-600">Vendor</label>
                         <select class="w-full border rounded p-2" id="vendorSelect" name="vendorId">
@@ -37,8 +35,6 @@
                             </option>
                         </select>
                     </div>
-
-                    <!-- Chọn dịch vụ: luôn cho phép bấm. Chỉ ẩn bớt option khi đã chọn vendor -->
                     <div>
                         <label class="text-sm text-gray-600">Dịch vụ của vendor</label>
                         <select class="w-full border rounded p-2" id="vsSelect" name="serviceId">
@@ -51,7 +47,6 @@
                             </option>
                         </select>
                     </div>
-
                     <div>
                         <label class="text-sm text-gray-600">Loại</label>
                         <select class="w-full border rounded p-2" name="mediaType">
@@ -60,7 +55,6 @@
                             <option th:selected="${mediaType?.name() == 'VIDEO'}" value="VIDEO">VIDEO</option>
                         </select>
                     </div>
-
                     <div>
                         <label class="text-sm text-gray-600">Cover?</label>
                         <select class="w-full border rounded p-2" name="isCover">
@@ -69,13 +63,11 @@
                             <option th:selected="${isCover == false}" value="false">Không</option>
                         </select>
                     </div>
-
                     <div class="md:col-span-2">
                         <label class="text-sm text-gray-600">Từ khóa</label>
                         <input class="w-full border rounded p-2" name="kw" placeholder="URL hoặc mô tả" th:value="${kw}"
                                type="text">
                     </div>
-
                     <div class="md:col-span-6">
                         <button class="px-4 py-2 bg-gray-900 text-white rounded">Lọc</button>
                         <a class="ml-2 px-4 py-2 border rounded" th:href="@{/admin/vendor-service-media/upload}">Tải ảnh
@@ -87,11 +79,21 @@
                 <div class="bg-white p-4 rounded border">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="border rounded overflow-hidden bg-gray-50" th:each="m : ${page.content}">
-                            <div class="w-full h-40 bg-black flex items-center justify-center">
+                            <div class="w-full h-40 bg-black flex items-center justify-center overflow-hidden">
+                                <!-- IMAGE -->
                                 <img alt="" class="w-full h-40 object-cover"
                                      th:if="${m.mediaType.name() == 'IMAGE'}" th:src="${m.url}">
-                                <video class="w-full h-40 object-cover" controls preload="none"
-                                       th:if="${m.mediaType.name() == 'VIDEO'}" th:src="${m.url}"></video>
+                                <!-- VIDEO -->
+                                <div class="w-full h-40" th:if="${m.mediaType.name() == 'VIDEO'}">
+                                    <iframe allowfullscreen
+                                            class="w-full h-40"
+                                            frameborder="0"
+                                            loading="lazy" th:if="${@utils.isIframePreferred(m.url)}" th:src="${@utils.normalizeVideoUrl(m.url)}">
+                                    </iframe>
+                                    <video class="w-full h-40 object-cover"
+                                           controls preload="metadata" th:if="${!@utils.isIframePreferred(m.url)}"
+                                           th:src="${m.url}"></video>
+                                </div>
                             </div>
 
                             <div class="p-2 text-sm">
@@ -183,20 +185,18 @@
 
 <div th:replace="~{admin/fragments/footer :: footer}"></div>
 
-<!-- JS: chỉ ẨN option service theo vendor, KHÔNG disable; chọn service có thể tự set vendor nếu vendor đang trống -->
+<!-- JS bộ lọc -->
 <script>
     const vendorSelect = document.getElementById('vendorSelect');
     const vsSelect = document.getElementById('vsSelect');
 
     function applyServiceOptionFilter() {
-      const vid = vendorSelect.value; // có thể rỗng
+      const vid = vendorSelect.value;
       [...vsSelect.options].forEach(opt => {
         if (opt.value === '') { opt.hidden = false; return; }
         const belongs = opt.getAttribute('data-vendor-id') === vid;
-        // nếu chưa chọn vendor thì hiện tất cả
         opt.hidden = (vid !== '' && !belongs);
       });
-      // nếu đã chọn vendor và service hiện không thuộc vendor đó thì reset service
       if (vid !== '') {
         const sel = vsSelect.selectedOptions[0];
         if (sel && sel.value !== '' && sel.getAttribute('data-vendor-id') !== vid) {
@@ -206,8 +206,6 @@
     }
 
     vendorSelect?.addEventListener('change', applyServiceOptionFilter);
-
-    // Nếu chọn service trước và vendor đang trống, tự set vendor để tiện lọc
     vsSelect?.addEventListener('change', () => {
       const sel = vsSelect.selectedOptions[0];
       if (!sel || sel.value === '') return;
@@ -216,7 +214,6 @@
         applyServiceOptionFilter();
       }
     });
-
     window.addEventListener('DOMContentLoaded', applyServiceOptionFilter);
 </script>
 </body>

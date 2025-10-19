@@ -4,6 +4,7 @@ package Project.HouseService.Controller;
 import Project.HouseService.Entity.CustomerProfile;
 import Project.HouseService.Entity.User;
 import Project.HouseService.Service.AuthService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -23,13 +24,17 @@ public class RegisterController {
         this.auth = auth;
     }
 
+    // Hiển thị form
     @GetMapping
     public String form(Model model) {
-        model.addAttribute("user", new User()); // cho form bind username/email/pass
+        // nếu có flashAttr/error thì Thymeleaf tự đọc, còn không thì khởi tạo trống
+        if (!model.containsAttribute("user")) {
+            model.addAttribute("user", new User());
+        }
         return "auth/register";
     }
 
-    // Nhận avatar từ máy + xác nhận mật khẩu ở view. Gọi service để đồng bộ lưu ảnh.
+    // Submit form
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public String submit(@RequestParam("username") String username,
                          @RequestParam("password") String password,
@@ -44,25 +49,54 @@ public class RegisterController {
                          @RequestParam(value = "addressLine", required = false) String addressLine,
                          Model model) {
 
+        // 1) Kiểm tra xác nhận mật khẩu
         if (password == null || !password.equals(passwordConfirm)) {
+            fillBack(model, username, email, phone, fullName, dob, gender, addressLine);
             model.addAttribute("error", "Mật khẩu xác nhận không khớp");
-            model.addAttribute("user", new User());
             return "auth/register";
         }
 
-        // Đăng ký customer. AuthService sẽ tự lưu avatar về /uploads/avatars và tạo CustomerProfile.
-        auth.registerCustomer(
-                username,
-                password,
-                email,
-                phone,
-                avatar,
-                fullName,
-                dob,
-                gender,
-                addressLine
-        );
+        try {
+            // 2) Thực hiện đăng ký
+            auth.registerCustomer(
+                    username,
+                    password,
+                    email,
+                    phone,
+                    avatar,
+                    fullName,
+                    dob,
+                    gender,
+                    addressLine
+            );
+        } catch (IllegalArgumentException | IllegalStateException | DataIntegrityViolationException ex) {
+            // 3) Bắt lỗi nghiệp vụ/DB và trả về trang đăng ký kèm thông báo
+            fillBack(model, username, email, phone, fullName, dob, gender, addressLine);
+            String msg = (ex.getMessage() == null || ex.getMessage().isBlank())
+                    ? "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin."
+                    : ex.getMessage();
+            model.addAttribute("error", msg);
+            return "auth/register";
+        }
 
-        return "redirect:/login";
+        // 4) Thành công -> chuyển sang trang đăng nhập
+        return "redirect:/login?success";
+    }
+
+    private void fillBack(Model model,
+                          String username,
+                          String email,
+                          String phone,
+                          String fullName,
+                          LocalDate dob,
+                          CustomerProfile.Gender gender,
+                          String addressLine) {
+        model.addAttribute("username", username);
+        model.addAttribute("email", email);
+        model.addAttribute("phone", phone);
+        model.addAttribute("fullName", fullName);
+        model.addAttribute("dob", dob);
+        model.addAttribute("gender", gender);
+        model.addAttribute("addressLine", addressLine);
     }
 }

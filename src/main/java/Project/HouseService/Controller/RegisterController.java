@@ -23,9 +23,13 @@ public class RegisterController {
         this.auth = auth;
     }
 
+    // Hiển thị form
     @GetMapping
     public String form(Model model) {
-        model.addAttribute("user", new User()); // cho form bind username/email/pass
+        // nếu có flashAttr/error thì Thymeleaf tự đọc, còn không thì khởi tạo trống
+        if (!model.containsAttribute("user")) {
+            model.addAttribute("user", new User());
+        }
         return "auth/register";
     }
 
@@ -44,6 +48,7 @@ public class RegisterController {
                          @RequestParam(value = "addressLine", required = false) String addressLine,
                          Model model) {
 
+        // 1) Kiểm tra xác nhận mật khẩu
         if (password == null || !password.equals(passwordConfirm)) {
             model.addAttribute("error", "Mật khẩu xác nhận không khớp");
             // Giữ lại dữ liệu đã nhập (trừ password)

@@ -14,6 +14,7 @@
   <main class="flex-1 p-6">
     <h1 class="text-2xl font-semibold mb-4">Tải ảnh / Thêm video</h1>
 
+    <!-- Ảnh -->
     <form th:action="@{|/vendor/media/upload/images?sid=${serviceId}|}" method="post" enctype="multipart/form-data"
           class="bg-white p-4 rounded border mb-6">
       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
@@ -30,12 +31,14 @@
       </div>
     </form>
 
+    <!-- Video bằng URL -->
     <form th:action="@{|/vendor/media/upload/video-url?sid=${serviceId}|}" method="post"
           class="bg-white p-4 rounded border mb-6">
       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
       <h2 class="font-medium mb-3">Thêm video bằng URL</h2>
       <div class="grid gap-3">
-        <input type="url" name="videoUrl" placeholder="https://..." class="border rounded p-2" required>
+        <input type="url" name="videoUrl" placeholder="YouTube, Google Drive hoặc .mp4/.webm" class="border rounded p-2" required>
+        <p class="text-xs text-gray-500 -mt-2">Ví dụ: <code>https://youtu.be/...</code>, <code>https://www.youtube.com/watch?v=...</code>, <code>https://drive.google.com/file/d/{id}/view</code>.</p>
         <input type="text" name="altText" placeholder="Mô tả alt text (không bắt buộc)" class="border rounded p-2">
         <button class="px-4 py-2 bg-gray-900 text-white rounded hover:bg-black">
           <i class="fa fa-plus mr-2"></i> Thêm video URL
@@ -43,12 +46,13 @@
       </div>
     </form>
 
+    <!-- Video upload file -->
     <form th:action="@{|/vendor/media/upload/video-file?sid=${serviceId}|}" method="post" enctype="multipart/form-data"
           class="bg-white p-4 rounded border">
       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-      <h2 class="font-medium mb-3">Upload video (mp4)</h2>
+      <h2 class="font-medium mb-3">Upload video (mp4/webm)</h2>
       <div class="grid gap-3">
-        <input type="file" name="file" accept="video/mp4" class="border rounded p-2" required>
+        <input type="file" name="file" accept="video/mp4,video/webm" class="border rounded p-2" required>
         <input type="text" name="altText" placeholder="Mô tả alt text (không bắt buộc)" class="border rounded p-2">
         <button class="px-4 py-2 bg-gray-900 text-white rounded hover:bg-black">
           <i class="fa fa-upload mr-2"></i> Tải video

@@ -87,7 +87,11 @@
             </div>
             <div>
               <label class="text-sm text-gray-600">URL video</label>
-              <input type="url" id="urlInput" name="url" class="w-full border rounded p-2" placeholder="https://... .mp4/.webm" required>
+              <input type="url" id="urlInput" name="url" class="w-full border rounded p-2"
+                     placeholder="YouTube, Google Drive hoặc .mp4/.webm" required>
+              <p class="text-xs text-gray-500 mt-1">
+                Hỗ trợ YouTube (watch, youtu.be, shorts) và Google Drive (file/d, open?id). Hệ thống sẽ tự embed.
+              </p>
             </div>
             <div>
               <label class="text-sm text-gray-600">Mô tả (alt text)</label>
@@ -102,7 +106,7 @@
             <button class="px-4 py-2 bg-gray-900 text-white rounded">Thêm video</button>
             <a th:href="@{/admin/vendor-service-media}" class="ml-2 px-4 py-2 border rounded">Về danh sách</a>
           </div>
-          <p class="text-xs text-gray-500 mt-3">Chấp nhận http(s) hợp lệ hoặc đuôi .mp4 / .webm.</p>
+          <p class="text-xs text-gray-500 mt-3">Chấp nhận http(s) hợp lệ, YouTube/Drive, hoặc đuôi .mp4 / .webm.</p>
         </form>
       </div>
     </main>
@@ -119,12 +123,10 @@
 
     function filter() {
       const vid = v.value;
-      // khóa service + inputs nếu chưa chọn vendor
       const enable = !!vid;
       s.disabled = !enable;
       extras.forEach(el => { if (el) el.disabled = !enable; });
 
-      // lọc danh sách dịch vụ theo vendor
       [...s.options].forEach(opt => {
         if (opt.value === '') { opt.hidden = false; return; }
         opt.hidden = !(enable && opt.getAttribute('data-vendor-id') === vid);
@@ -136,9 +138,7 @@
     filter();
   }
 
-  // Upload ảnh: khóa file input cho tới khi chọn vendor
   bindCascading('vendor1','vs1',['filesInput1']);
-  // Thêm video: khóa URL/alt/sort cho tới khi chọn vendor
   bindCascading('vendor2','vs2',['urlInput','altInput','orderInput']);
 </script>
 <!-- Validation Scripts -->

@@ -16,9 +16,14 @@
       <h1 class="text-2xl font-semibold mb-4">Sửa media</h1>
 
       <div class="mb-4">
-        <div class="w-full aspect-video bg-black flex items-center justify-center rounded">
+        <div class="w-full aspect-video bg-black flex items-center justify-center rounded overflow-hidden">
           <img th:if="${m.mediaType.name() == 'IMAGE'}" th:src="${m.url}" class="w-full h-full object-cover" alt="">
-          <video th:if="${m.mediaType.name() == 'VIDEO'}" th:src="${m.url}" controls preload="none" class="w-full h-full object-cover"></video>
+          <iframe th:if="${m.mediaType.name() == 'VIDEO' and @utils.isIframePreferred(m.url)}"
+                  th:src="${@utils.normalizeVideoUrl(m.url)}"
+                  class="w-full h-full" frameborder="0" loading="lazy" allowfullscreen
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+          <video th:if="${m.mediaType.name() == 'VIDEO' and !@utils.isIframePreferred(m.url)}"
+                 th:src="${m.url}" controls preload="metadata" class="w-full h-full object-cover"></video>
         </div>
       </div>
 
@@ -36,8 +41,16 @@
 
         <div>
           <label class="block text-sm text-gray-600">URL</label>
-          <input class="w-full border rounded p-2" th:value="${m.url}" th:readonly="${m.mediaType.name() == 'IMAGE'}">
-          <p class="text-xs text-gray-500 mt-1" th:if="${m.mediaType.name() == 'IMAGE'}">Ảnh đã upload không cho sửa URL.</p>
+          <input name="url" class="w-full border rounded p-2"
+                 th:value="${m.url}"
+                 th:readonly="${m.mediaType.name() == 'IMAGE'}"
+                 th:attr="placeholder=${m.mediaType.name() == 'VIDEO'} ? 'YouTube, Google Drive hoặc .mp4/.webm' : 'URL ảnh'">
+          <p class="text-xs text-gray-500 mt-1" th:if="${m.mediaType.name() == 'VIDEO'}">
+            Hỗ trợ YouTube/Drive. Hệ thống tự chuyển sang embed khi hiển thị.
+          </p>
+          <p class="text-xs text-gray-500 mt-1" th:if="${m.mediaType.name() == 'IMAGE'}">
+            Ảnh đã upload không cho sửa URL.
+          </p>
         </div>
 
         <div>

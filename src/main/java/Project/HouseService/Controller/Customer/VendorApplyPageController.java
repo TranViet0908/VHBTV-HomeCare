@@ -21,10 +21,14 @@ public class VendorApplyPageController {
     @GetMapping("/apply")
     public String applyPage(Authentication auth, Model model, jakarta.servlet.http.HttpSession session) {
         Long uid = resolveUserId(auth, session);
-        // Nếu đã có đơn PENDING thì chuyển sang trang kết quả với trạng thái exists
+        // Nếu đã có đơn PENDING thì chuyển sang trang kết quả với trạng thái e2xists
         if (uid != null) {
             VendorApplication a = service.myPending(uid);
             if (a != null) return "redirect:/customer/vendor/result?status=exists";
+
+            // Lấy dữ liệu pre-fill từ User và CustomerProfile
+            java.util.Map<String, String> preFillData = service.getPreFillData(uid);
+            model.addAttribute("preFillData", preFillData);
         }
         model.addAttribute("userId", uid);
         return "customer/vendor/apply";

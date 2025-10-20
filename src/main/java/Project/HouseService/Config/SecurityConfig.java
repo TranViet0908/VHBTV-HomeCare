@@ -118,7 +118,7 @@ public class SecurityConfig {
         );
 
         http.authorizeHttpRequests(reg -> reg
-                .requestMatchers("/", "/login", "/register",
+                .requestMatchers("/", "/about", "/login", "/register",
                         "/css/**", "/js/**", "/images/**", "/uploads/**", "/favicon.ico",
                         "/customer/chat", "/customer/chat/**",
                         "/customer/chatbot", "/customer/chatbot/**",

@@ -33,7 +33,7 @@ CREATE TABLE `customer_wishlist_vendor` (
   KEY `idx_cwv_vendor` (`vendor_id`),
   CONSTRAINT `fk_cwv_customer` FOREIGN KEY (`customer_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_cwv_vendor` FOREIGN KEY (`vendor_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -42,7 +42,7 @@ CREATE TABLE `customer_wishlist_vendor` (
 
 LOCK TABLES `customer_wishlist_vendor` WRITE;
 /*!40000 ALTER TABLE `customer_wishlist_vendor` DISABLE KEYS */;
-INSERT INTO `customer_wishlist_vendor` VALUES (1,14,9005,'2025-10-16 10:13:17'),(2,14,9004,'2025-10-16 10:13:17'),(3,14,9003,'2025-10-16 10:13:17');
+INSERT INTO `customer_wishlist_vendor` VALUES (4,14,15,'2025-10-19 17:50:09'),(5,14,9,'2025-10-19 17:50:11'),(6,14,1,'2025-10-19 17:50:14'),(7,14,10,'2025-10-20 08:14:13');
 /*!40000 ALTER TABLE `customer_wishlist_vendor` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -55,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-19 22:42:08
+-- Dump completed on 2025-10-20 17:51:47

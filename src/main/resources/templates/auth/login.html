@@ -48,34 +48,8 @@
 </head>
 <body class="hero-pattern min-h-screen flex items-center justify-center">
 <!-- Header -->
-<header class="fixed top-0 left-0 w-full bg-gradient-to-r from-blue-600 to-purple-700 shadow-md z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <!-- Logo -->
-        <a class="flex items-center space-x-2 text-white font-bold text-xl hover:text-yellow-300 transition" href="/">
-            <i class="fas fa-plus-circle"></i>
-            <span>VHBTV HomeCare</span>
-        </a>
+<th:block th:replace="~{layouts/header :: siteHeader}"></th:block>
 
-        <!-- Navigation -->
-        <nav class="hidden md:flex items-center space-x-8">
-            <a class="text-gray-200 hover:text-white transition" href="/">Trang chủ</a>
-            <a class="text-gray-200 hover:text-white transition" href="/about">Giới thiệu</a>
-            <a class="text-gray-200 hover:text-white transition" href="/contact">Liên hệ</a>
-        </nav>
-
-        <!-- Action Buttons -->
-        <div class="flex items-center space-x-4">
-            <a class="bg-yellow-400 text-gray-900 px-4 py-2 rounded-xl font-semibold hover:bg-yellow-300 transition"
-               href="/register">
-                Đăng ký
-            </a>
-            <a class="bg-white/20 text-white px-4 py-2 rounded-xl border border-white/30 hover:bg-white/30 transition"
-               href="/login">
-                Đăng nhập
-            </a>
-        </div>
-    </div>
-</header>
 <div class="container mx-auto px-4">
     <div class="max-w-md mx-auto">
         <!-- Logo and Brand -->
@@ -178,4 +152,5 @@
     <script th:src="@{/js/validate/core.js}"></script>
     <script th:src="@{/js/validate/admin-auth-login.js}"></script>
 </body>
+
 </html>

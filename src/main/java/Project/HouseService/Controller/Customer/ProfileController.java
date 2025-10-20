@@ -89,21 +89,11 @@ public class ProfileController {
 
     /** Form chỉnh sửa hồ sơ. */
     @GetMapping("/edit")
-    @Transactional(readOnly = true)
-    public String editForm(Authentication auth, Model model) {
-        String username = auth.getName();
-        User user = profileService.requireUserByUsername(username);
-        CustomerProfile cp = profileService.ensureProfile(user);
-
-        // để preview ảnh trong form nếu cần
-        String avatarUrl = profileService.buildAvatarUrl(user);
-        model.addAttribute("avatarUrl", avatarUrl);
-
-        model.addAttribute("user", user);
-        model.addAttribute("profile", cp);
-        return "customer/profile/edit";
+    public String editForm() {
+        return "redirect:/customer/profile";
     }
 
+    /** Submit chỉnh sửa hồ sơ + upload avatar (tuỳ chọn). */
     /** Submit chỉnh sửa hồ sơ + upload avatar (tuỳ chọn). */
     @PostMapping("/edit")
     public String editSubmit(Authentication auth,
@@ -127,25 +117,26 @@ public class ProfileController {
                 dob = LocalDate.parse(dobStr.trim());
                 if (dob.isAfter(LocalDate.now())) {
                     ra.addFlashAttribute("error", "Ngày sinh không hợp lệ");
-                    return "redirect:/customer/profile/edit";
+                    return "redirect:/customer/profile";
                 }
             } catch (DateTimeParseException e) {
                 ra.addFlashAttribute("error", "Định dạng ngày sinh không hợp lệ");
-                return "redirect:/customer/profile/edit";
+                return "redirect:/customer/profile";
             }
         }
 
         // Upload avatar (chuẩn hóa public URL)
         String savedPath = null;
         if (avatar != null && !avatar.isEmpty()) {
-            if (avatar.getSize() > 2 * 1024 * 1024) {
-                ra.addFlashAttribute("error", "Ảnh quá lớn (tối đa 2MB)");
-                return "redirect:/customer/profile/edit";
+            long MAX = 10L * 1024 * 1024; // 10MB
+            if (avatar.getSize() > MAX) {
+                ra.addFlashAttribute("error", "Ảnh quá lớn (tối đa 10MB)");
+                return "redirect:/customer/profile";
             }
             String ctype = avatar.getContentType();
             if (ctype == null || !ctype.toLowerCase().startsWith("image/")) {
                 ra.addFlashAttribute("error", "Tệp không phải ảnh hợp lệ");
-                return "redirect:/customer/profile/edit";
+                return "redirect:/customer/profile";
             }
 
             String original = org.springframework.util.StringUtils.cleanPath(Objects.requireNonNull(avatar.getOriginalFilename()));
@@ -165,7 +156,7 @@ public class ProfileController {
                 savedPath = "/uploads/avatars/" + user.getId() + "/" + fname;
             } catch (IOException e) {
                 ra.addFlashAttribute("error", "Lỗi lưu ảnh đại diện");
-                return "redirect:/customer/profile/edit";
+                return "redirect:/customer/profile";
             }
         }
 
@@ -175,7 +166,7 @@ public class ProfileController {
             );
         } catch (IllegalArgumentException ex) {
             ra.addFlashAttribute("error", ex.getMessage());
-            return "redirect:/customer/profile/edit";
+            return "redirect:/customer/profile";
         }
 
         ra.addFlashAttribute("success", "Cập nhật hồ sơ thành công");
@@ -184,15 +175,11 @@ public class ProfileController {
 
     /** Form đổi mật khẩu. */
     @GetMapping("/security")
-    @Transactional(readOnly = true)
-    public String securityForm(Authentication auth, Model model) {
-        String username = auth.getName();
-        User user = profileService.requireUserByUsername(username);
-        model.addAttribute("user", user);
-        return "customer/profile/security";
+    public String securityForm() {
+        return "redirect:/customer/profile";
     }
 
-    /** Submit đổi mật khẩu. */
+    /** Submit đổi mật khẩu: mọi thông báo quay về /customer/profile */
     @PostMapping("/security")
     public String securitySubmit(Authentication auth,
                                  @RequestParam("current_password") String currentPassword,
@@ -201,16 +188,24 @@ public class ProfileController {
                                  RedirectAttributes ra) {
         if (newPassword == null || !newPassword.equals(confirmPassword)) {
             ra.addFlashAttribute("error", "Xác nhận mật khẩu không khớp");
-            return "redirect:/customer/profile/security";
+            return "redirect:/customer/profile";
         }
+
+        // (tuỳ chọn) kiểm tra độ dài tối thiểu
+        if (newPassword.length() < 6) {
+            ra.addFlashAttribute("error", "Mật khẩu mới phải từ 6 ký tự");
+            return "redirect:/customer/profile";
+        }
+
         String username = auth.getName();
         User user = profileService.requireUserByUsername(username);
         try {
             profileService.changePassword(user, currentPassword, newPassword);
         } catch (IllegalArgumentException ex) {
             ra.addFlashAttribute("error", ex.getMessage());
-            return "redirect:/customer/profile/security";
+            return "redirect:/customer/profile";
         }
+
         ra.addFlashAttribute("success", "Đổi mật khẩu thành công");
         return "redirect:/customer/profile";
     }

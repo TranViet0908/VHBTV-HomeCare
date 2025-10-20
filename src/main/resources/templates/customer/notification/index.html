@@ -8,45 +8,26 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * {
-            font-family: 'Inter', sans-serif;
-        }
-        .notification-card {
-            transition: all 0.3s ease;
-        }
-        .notification-card:hover {
-            transform: translateX(4px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .notification-unread {
-            background: linear-gradient(to right, #EFF6FF, #FFFFFF);
-            border-left: 4px solid #3B82F6;
-        }
-        .notification-read {
-            background: #FFFFFF;
-            border-left: 4px solid transparent;
-        }
-        .tab-button {
-            transition: all 0.3s ease;
-        }
-        .tab-button.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        .badge-count {
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
+        * { font-family: 'Inter', sans-serif; }
+        .notification-card { transition: all 0.3s ease; }
+        .notification-card:hover { transform: translateX(4px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .notification-unread { background: linear-gradient(to right, #EFF6FF, #FFFFFF); border-left: 4px solid #3B82F6; }
+        .notification-read { background: #FFFFFF; border-left: 4px solid transparent; }
+        .tab-button { transition: all 0.3s ease; }
+        .tab-button.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .badge-count { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
     </style>
+
+    <!-- CSRF (Spring Security) -->
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
 </head>
 <body class="bg-gray-50">
 <th:block th:replace="~{layouts/header :: siteHeader}"></th:block>
 
-<!-- Page Header -->
-<section class="bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 py-12">
+<!-- thêm padding top để không bị header che -->
+<section class="bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 py-12 pt-24 md:pt-28">
     <div class="container mx-auto px-4">
         <div class="max-w-6xl mx-auto">
             <div class="flex items-center justify-between">
@@ -56,12 +37,10 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <button onclick="markAllAsRead()" class="px-6 py-3 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-all">
-                        <i class="fas fa-check-double mr-2"></i>
-                        Đánh dấu đã đọc tất cả
+                        <i class="fas fa-check-double mr-2"></i> Đánh dấu đã đọc tất cả
                     </button>
                     <button onclick="deleteAllRead()" class="px-6 py-3 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-all">
-                        <i class="fas fa-trash mr-2"></i>
-                        Xóa đã đọc
+                        <i class="fas fa-trash mr-2"></i> Xóa đã đọc
                     </button>
                 </div>
             </div>
@@ -69,7 +48,6 @@
     </div>
 </section>
 
-<!-- Notification Tabs & Content -->
 <section class="py-8">
     <div class="container mx-auto px-4">
         <div class="max-w-6xl mx-auto">
@@ -77,399 +55,112 @@
             <div class="bg-white rounded-xl shadow-sm p-2 mb-6">
                 <div class="flex flex-wrap gap-2">
                     <button class="tab-button active px-6 py-3 rounded-lg font-medium" data-tab="all">
-                        <i class="fas fa-bell mr-2"></i>
-                        Tất cả
-                        <span class="badge-count ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full" th:text="${unreadCount}">12</span>
+                        <i class="fas fa-bell mr-2"></i> Tất cả
+                        <span id="badgeAll" class="badge-count ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full"
+                              th:attr="data-count=${unreadCount}" th:text="${unreadCount}">0</span>
                     </button>
-                    <button class="tab-button px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-100" data-tab="orders">
-                        <i class="fas fa-shopping-bag mr-2"></i>
-                        Đơn hàng
-                        <span class="badge-count ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full" th:text="${orderNotifCount}">5</span>
+                    <button class="tab-button px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-100" data-tab="order">
+                        <i class="fas fa-shopping-bag mr-2"></i> Đơn hàng
+                        <span id="badgeOrders" class="badge-count ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full"
+                              th:attr="data-count=${orderNotifCount}" th:text="${orderNotifCount}">0</span>
                     </button>
-                    <button class="tab-button px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-100" data-tab="payments">
-                        <i class="fas fa-credit-card mr-2"></i>
-                        Thanh toán
-                        <span class="badge-count ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full" th:text="${paymentNotifCount}">3</span>
+                    <button class="tab-button px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-100" data-tab="payment">
+                        <i class="fas fa-credit-card mr-2"></i> Thanh toán
+                        <span id="badgePayments" class="badge-count ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full"
+                              th:attr="data-count=${paymentNotifCount}" th:text="${paymentNotifCount}">0</span>
                     </button>
                     <button class="tab-button px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-100" data-tab="wishlist">
-                        <i class="fas fa-heart mr-2"></i>
-                        Yêu thích
-                        <span class="badge-count ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full" th:text="${wishlistNotifCount}">2</span>
+                        <i class="fas fa-heart mr-2"></i> Yêu thích
+                        <span id="badgeWishlist" class="badge-count ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full"
+                              th:attr="data-count=${wishlistNotifCount}" th:text="${wishlistNotifCount}">0</span>
                     </button>
-                    <button class="tab-button px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-100" data-tab="promotions">
-                        <i class="fas fa-gift mr-2"></i>
-                        Khuyến mãi
-                        <span class="badge-count ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full" th:text="${promoNotifCount}">2</span>
+                    <button class="tab-button px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-100" data-tab="promotion">
+                        <i class="fas fa-gift mr-2"></i> Khuyến mãi
+                        <span id="badgePromotions" class="badge-count ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full"
+                              th:attr="data-count=${promoNotifCount}" th:text="${promoNotifCount}">0</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Notifications List -->
+            <!-- Dynamic list -->
             <div class="space-y-4" id="notificationsList">
-
-                <!-- Order Notifications -->
-                <div class="notification-card notification-unread bg-white rounded-xl shadow-sm p-6 cursor-pointer"
-                     data-type="orders" data-read="false"
+                <div class="notification-card bg-white rounded-xl shadow-sm p-6 cursor-pointer"
                      th:each="notif : ${notifications}"
-                     th:classappend="${notif.isRead ? 'notification-read' : 'notification-unread'}"
+                     th:classappend="${notif.isRead} ? ' notification-read' : ' notification-unread'"
+                     th:attr="data-id=${notif.id},data-read=${notif.isRead},data-type=${#strings.toLowerCase(notif.type)}"
                      th:onclick="'viewNotification(' + ${notif.id} + ')'">
                     <div class="flex items-start space-x-4">
+
                         <!-- Icon -->
                         <div class="flex-shrink-0">
                             <div class="w-12 h-12 rounded-full flex items-center justify-center"
-                                 th:classappend="${notif.type == 'ORDER' ? 'bg-blue-100 text-blue-600' :
-                                                     notif.type == 'PAYMENT' ? 'bg-green-100 text-green-600' :
-                                                     notif.type == 'WISHLIST' ? 'bg-pink-100 text-pink-600' :
-                                                     notif.type == 'PROMOTION' ? 'bg-orange-100 text-orange-600' :
-                                                     'bg-gray-100 text-gray-600'}">
+                                 th:classappend="${
+                                   notif.type == 'ORDER' ? ' bg-blue-100 text-blue-600' :
+                                   notif.type == 'PAYMENT' ? ' bg-green-100 text-green-600' :
+                                   notif.type == 'WISHLIST' ? ' bg-pink-100 text-pink-600' :
+                                   notif.type == 'PROMOTION' ? ' bg-orange-100 text-orange-600' : ' bg-gray-100 text-gray-600'}">
                                 <i class="fas"
-                                   th:classappend="${notif.type == 'ORDER' ? 'fa-shopping-bag' :
-                                                       notif.type == 'PAYMENT' ? 'fa-credit-card' :
-                                                       notif.type == 'WISHLIST' ? 'fa-heart' :
-                                                       notif.type == 'PROMOTION' ? 'fa-gift' :
-                                                       'fa-bell'}"></i>
+                                   th:classappend="${
+                                     notif.type == 'ORDER' ? ' fa-shopping-bag' :
+                                     notif.type == 'PAYMENT' ? ' fa-credit-card' :
+                                     notif.type == 'WISHLIST' ? ' fa-heart' :
+                                     notif.type == 'PROMOTION' ? ' fa-gift' : ' fa-bell'}"></i>
                             </div>
                         </div>
 
                         <!-- Content -->
                         <div class="flex-1 min-w-0">
                             <div class="flex items-start justify-between mb-2">
-                                <h3 class="text-lg font-semibold text-gray-900" th:text="${notif.title}">
-                                    Đơn hàng #SO-V15-0001 đã được xác nhận
-                                </h3>
+                                <h3 class="text-lg font-semibold text-gray-900" th:text="${notif.title}">Tiêu đề</h3>
                                 <button class="text-gray-400 hover:text-red-500 transition-colors"
                                         th:onclick="'deleteNotification(' + ${notif.id} + ', event)'">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
-                            <p class="text-gray-600 mb-3" th:text="${notif.message}">
-                                Vendor NamTun đã xác nhận đơn hàng của bạn. Dịch vụ sẽ được thực hiện vào 21/09/2025 lúc 09:00.
-                            </p>
+
+                            <p class="text-gray-600 mb-3" th:text="${notif.message}">Nội dung</p>
+
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center space-x-4 text-sm text-gray-500">
-                                        <span>
-                                            <i class="far fa-clock mr-1"></i>
-                                            <span th:text="${#temporals.format(notif.createdAt, 'dd/MM/yyyy HH:mm')}">20/09/2025 14:30</span>
-                                        </span>
-                                    <span th:if="${!notif.isRead}" class="px-2 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-medium">
-                                            Chưa đọc
-                                        </span>
+                                    <span>
+                                        <i class="far fa-clock mr-1"></i>
+                                            <span th:text="${#temporals.format(
+                                                T(java.time.ZonedDateTime).ofInstant(
+                                                    notif.createdAt.minus(T(java.time.Duration).ofHours(7)),
+                                                    T(java.time.ZoneId).systemDefault()
+                                                ),
+                                                'dd/MM/yyyy HH:mm'
+                                        )}">--/--/---- --:--</span>
+                                    </span>
+                                    <span th:if="${!notif.isRead}" class="px-2 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-medium">Chưa đọc</span>
                                 </div>
-                                <a th:href="@{/customer/orders/detail(id=${notif.relatedId})}"
-                                   class="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                                    Xem chi tiết <i class="fas fa-arrow-right ml-1"></i>
-                                </a>
+
+<!--                                &lt;!&ndash; Link chi tiết theo loại &ndash;&gt;-->
+<!--                                <th:block th:switch="${notif.relatedType}">-->
+<!--                                    <a th:case="'SERVICE_ORDER'" th:href="@{/customer/orders/detail(id=${notif.relatedId})}"-->
+<!--                                       class="text-blue-600 hover:text-blue-700 font-medium text-sm">-->
+<!--                                        Xem chi tiết <i class="fas fa-arrow-right ml-1"></i>-->
+<!--                                    </a>-->
+
+<!--                                    <a th:case="'PAYMENT'" th:href="@{/customer/payments/detail(id=${notif.relatedId})}"-->
+<!--                                       class="text-blue-600 hover:text-blue-700 font-medium text-sm">-->
+<!--                                        Xem chi tiết <i class="fas fa-arrow-right ml-1"></i>-->
+<!--                                    </a>-->
+
+<!--                                    <a th:case="'VENDOR_SERVICE'" th:href="@{/services/vendors/{id}(id=${notif.relatedId})}"-->
+<!--                                       class="text-blue-600 hover:text-blue-700 font-medium text-sm">-->
+<!--                                        Xem chi tiết <i class="fas fa-arrow-right ml-1"></i>-->
+<!--                                    </a>-->
+
+<!--                                    <a th:case="'COUPON'" th:href="@{/customer/coupons}"-->
+<!--                                       class="text-blue-600 hover:text-blue-700 font-medium text-sm">-->
+<!--                                        Xem chi tiết <i class="fas fa-arrow-right ml-1"></i>-->
+<!--                                    </a>-->
+<!--                                </th:block>-->
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Static Example Notifications (for demo) -->
-
-                <!-- Order Confirmed -->
-                <div class="notification-card notification-unread bg-white rounded-xl shadow-sm p-6 cursor-pointer" data-type="orders" data-read="false">
-                    <div class="flex items-start space-x-4">
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
-                                <i class="fas fa-shopping-bag"></i>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-start justify-between mb-2">
-                                <h3 class="text-lg font-semibold text-gray-900">Đơn hàng #SO-V15-0001 đã được xác nhận</h3>
-                                <button class="text-gray-400 hover:text-red-500 transition-colors" onclick="deleteNotification(this, event)">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <p class="text-gray-600 mb-3">
-                                Vendor NamTun đã xác nhận đơn hàng của bạn. Dịch vụ sẽ được thực hiện vào 21/09/2025 lúc 09:00.
-                            </p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-4 text-sm text-gray-500">
-                                    <span><i class="far fa-clock mr-1"></i>2 giờ trước</span>
-                                    <span class="px-2 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-medium">Chưa đọc</span>
-                                </div>
-                                <a href="/customer/orders/detail?id=11" class="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                                    Xem chi tiết <i class="fas fa-arrow-right ml-1"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Payment Success -->
-                <div class="notification-card notification-read bg-white rounded-xl shadow-sm p-6 cursor-pointer" data-type="payments" data-read="true">
-                    <div class="flex items-start space-x-4">
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-start justify-between mb-2">
-                                <h3 class="text-lg font-semibold text-gray-900">Thanh toán thành công</h3>
-                                <button class="text-gray-400 hover:text-red-500 transition-colors" onclick="deleteNotification(this, event)">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <p class="text-gray-600 mb-3">
-                                Bạn đã thanh toán thành công 585.000đ cho đơn hàng #SO-V15-0001 qua VNPAY.
-                            </p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-4 text-sm text-gray-500">
-                                    <span><i class="far fa-clock mr-1"></i>5 giờ trước</span>
-                                </div>
-                                <a href="/customer/orders/detail?id=11" class="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                                    Xem hóa đơn <i class="fas fa-arrow-right ml-1"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Order Completed -->
-                <div class="notification-card notification-unread bg-white rounded-xl shadow-sm p-6 cursor-pointer" data-type="orders" data-read="false">
-                    <div class="flex items-start space-x-4">
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
-                                <i class="fas fa-check-double"></i>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-start justify-between mb-2">
-                                <h3 class="text-lg font-semibold text-gray-900">Đơn hàng #SO-V15-0002 đã hoàn thành</h3>
-                                <button class="text-gray-400 hover:text-red-500 transition-colors" onclick="deleteNotification(this, event)">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <p class="text-gray-600 mb-3">
-                                Dịch vụ "Sửa ống nước rò rỉ" đã được hoàn thành. Hãy đánh giá trải nghiệm của bạn!
-                            </p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-4 text-sm text-gray-500">
-                                    <span><i class="far fa-clock mr-1"></i>1 ngày trước</span>
-                                    <span class="px-2 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-medium">Chưa đọc</span>
-                                </div>
-                                <a href="/customer/orders/detail?id=12" class="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                                    Đánh giá ngay <i class="fas fa-star ml-1"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Wishlist Price Drop -->
-                <div class="notification-card notification-unread bg-white rounded-xl shadow-sm p-6 cursor-pointer" data-type="wishlist" data-read="false">
-                    <div class="flex items-start space-x-4">
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center">
-                                <i class="fas fa-tag"></i>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-start justify-between mb-2">
-                                <h3 class="text-lg font-semibold text-gray-900">Giảm giá dịch vụ yêu thích!</h3>
-                                <button class="text-gray-400 hover:text-red-500 transition-colors" onclick="deleteNotification(this, event)">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <p class="text-gray-600 mb-3">
-                                "Giặt sofa 3 chỗ" đang giảm giá 20% - chỉ còn 400.000đ. Đặt ngay trước khi hết!
-                            </p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-4 text-sm text-gray-500">
-                                    <span><i class="far fa-clock mr-1"></i>3 giờ trước</span>
-                                    <span class="px-2 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-medium">Chưa đọc</span>
-                                </div>
-                                <a href="/services/vendors/6" class="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                                    Đặt ngay <i class="fas fa-arrow-right ml-1"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Service Available Again -->
-                <div class="notification-card notification-read bg-white rounded-xl shadow-sm p-6 cursor-pointer" data-type="wishlist" data-read="true">
-                    <div class="flex items-start space-x-4">
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center">
-                                <i class="fas fa-heart"></i>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-start justify-between mb-2">
-                                <h3 class="text-lg font-semibold text-gray-900">Dịch vụ đã có sẵn trở lại</h3>
-                                <button class="text-gray-400 hover:text-red-500 transition-colors" onclick="deleteNotification(this, event)">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <p class="text-gray-600 mb-3">
-                                "Vệ sinh điều hòa treo tường" từ vendor NamTun đã có sẵn trở lại. Đặt lịch ngay!
-                            </p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-4 text-sm text-gray-500">
-                                    <span><i class="far fa-clock mr-1"></i>2 ngày trước</span>
-                                </div>
-                                <a href="/services/vendors/12" class="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                                    Xem dịch vụ <i class="fas fa-arrow-right ml-1"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- New Coupon -->
-                <div class="notification-card notification-unread bg-white rounded-xl shadow-sm p-6 cursor-pointer" data-type="promotions" data-read="false">
-                    <div class="flex items-start space-x-4">
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center">
-                                <i class="fas fa-gift"></i>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-start justify-between mb-2">
-                                <h3 class="text-lg font-semibold text-gray-900">Mã giảm giá mới dành cho bạn!</h3>
-                                <button class="text-gray-400 hover:text-red-500 transition-colors" onclick="deleteNotification(this, event)">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <p class="text-gray-600 mb-3">
-                                Nhận ngay mã <span class="font-bold text-orange-600">VHBTV10</span> giảm 10% tối đa 100.000đ cho đơn hàng tiếp theo. Có hiệu lực đến 31/12/2025.
-                            </p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-4 text-sm text-gray-500">
-                                    <span><i class="far fa-clock mr-1"></i>1 giờ trước</span>
-                                    <span class="px-2 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-medium">Chưa đọc</span>
-                                </div>
-                                <button onclick="copyCoupon('VHBTV10')" class="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                                    Sao chép mã <i class="fas fa-copy ml-1"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Coupon Expiring Soon -->
-                <div class="notification-card notification-read bg-white rounded-xl shadow-sm p-6 cursor-pointer" data-type="promotions" data-read="true">
-                    <div class="flex items-start space-x-4">
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
-                                <i class="fas fa-exclamation-triangle"></i>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-start justify-between mb-2">
-                                <h3 class="text-lg font-semibold text-gray-900">Mã giảm giá sắp hết hạn!</h3>
-                                <button class="text-gray-400 hover:text-red-500 transition-colors" onclick="deleteNotification(this, event)">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <p class="text-gray-600 mb-3">
-                                Mã <span class="font-bold text-red-600">CLEAN50K</span> giảm 50.000đ sẽ hết hạn vào 05/10/2025. Sử dụng ngay!
-                            </p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-4 text-sm text-gray-500">
-                                    <span><i class="far fa-clock mr-1"></i>1 ngày trước</span>
-                                </div>
-                                <a href="/services" class="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                                    Đặt dịch vụ <i class="fas fa-arrow-right ml-1"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Order Cancelled -->
-                <div class="notification-card notification-read bg-white rounded-xl shadow-sm p-6 cursor-pointer" data-type="orders" data-read="true">
-                    <div class="flex items-start space-x-4">
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
-                                <i class="fas fa-times-circle"></i>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-start justify-between mb-2">
-                                <h3 class="text-lg font-semibold text-gray-900">Đơn hàng #SO-V15-0001 đã bị hủy</h3>
-                                <button class="text-gray-400 hover:text-red-500 transition-colors" onclick="deleteNotification(this, event)">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <p class="text-gray-600 mb-3">
-                                Đơn hàng của bạn đã bị hủy theo yêu cầu. Số tiền 585.000đ sẽ được hoàn lại trong 3-5 ngày làm việc.
-                            </p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-4 text-sm text-gray-500">
-                                    <span><i class="far fa-clock mr-1"></i>3 ngày trước</span>
-                                </div>
-                                <a href="/customer/orders/detail?id=11" class="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                                    Xem chi tiết <i class="fas fa-arrow-right ml-1"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Payment Failed -->
-                <div class="notification-card notification-read bg-white rounded-xl shadow-sm p-6 cursor-pointer" data-type="payments" data-read="true">
-                    <div class="flex items-start space-x-4">
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
-                                <i class="fas fa-exclamation-circle"></i>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-start justify-between mb-2">
-                                <h3 class="text-lg font-semibold text-gray-900">Thanh toán thất bại</h3>
-                                <button class="text-gray-400 hover:text-red-500 transition-colors" onclick="deleteNotification(this, event)">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <p class="text-gray-600 mb-3">
-                                Thanh toán cho đơn hàng #SO-V15-0003 không thành công. Vui lòng thử lại hoặc chọn phương thức khác.
-                            </p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-4 text-sm text-gray-500">
-                                    <span><i class="far fa-clock mr-1"></i>4 ngày trước</span>
-                                </div>
-                                <a href="/customer/checkout/confirm?orderId=13" class="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                                    Thử lại <i class="fas fa-redo ml-1"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Welcome Message -->
-                <div class="notification-card notification-read bg-white rounded-xl shadow-sm p-6 cursor-pointer" data-type="all" data-read="true">
-                    <div class="flex items-start space-x-4">
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center">
-                                <i class="fas fa-hand-sparkles"></i>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-start justify-between mb-2">
-                                <h3 class="text-lg font-semibold text-gray-900">Chào mừng đến với VHBTV HomeCare!</h3>
-                                <button class="text-gray-400 hover:text-red-500 transition-colors" onclick="deleteNotification(this, event)">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <p class="text-gray-600 mb-3">
-                                Cảm ơn bạn đã đăng ký! Khám phá hàng trăm dịch vụ chăm sóc nhà cửa chất lượng cao từ các vendor uy tín.
-                            </p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-4 text-sm text-gray-500">
-                                    <span><i class="far fa-clock mr-1"></i>1 tuần trước</span>
-                                </div>
-                                <a href="/services" class="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                                    Khám phá dịch vụ <i class="fas fa-arrow-right ml-1"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
 
             <!-- Empty State -->
@@ -483,9 +174,8 @@
 
             <!-- Load More -->
             <div class="text-center mt-8">
-                <button class="px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:border-blue-600 hover:text-blue-600 transition-all">
-                    Xem thêm thông báo
-                    <i class="fas fa-chevron-down ml-2"></i>
+                <button id="btnLoadMore" class="px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:border-blue-600 hover:text-blue-600 transition-all">
+                    Xem thêm thông báo <i class="fas fa-chevron-down ml-2"></i>
                 </button>
             </div>
         </div>
@@ -494,187 +184,240 @@
 
 <th:block th:replace="~{layouts/footer :: siteFooter}"></th:block>
 
-<!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 <script>
-    // Tab switching
-    document.querySelectorAll('.tab-button').forEach(button => {
-        button.addEventListener('click', function() {
-            // Update active tab
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active', 'text-white');
-                btn.classList.add('text-gray-600');
-            });
-            this.classList.add('active', 'text-white');
-            this.classList.remove('text-gray-600');
+    // ===== CSRF helpers =====
+    function getMeta(name){
+        const el = document.querySelector(`meta[name="${name}"]`);
+        return el ? el.getAttribute('content') : null;
+    }
+    function csrfHeaders(){
+        const token = getMeta('_csrf');
+        const header = getMeta('_csrf_header') || 'X-CSRF-TOKEN';
+        return token ? { [header]: token } : {};
+    }
 
-            // Filter notifications
-            const tab = this.dataset.tab;
-            const notifications = document.querySelectorAll('.notification-card');
+    // ===== Helpers =====
+    function showToast(message, type='info') {
+        const toast = document.createElement('div');
+        toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 ${
+            type==='success'?'bg-green-500':type==='error'?'bg-red-500':'bg-blue-500'
+        }`;
+        toast.innerHTML = `<div class="flex items-center space-x-2">
+            <i class="fas ${type==='success'?'fa-check-circle':type==='error'?'fa-exclamation-circle':'fa-info-circle'}"></i>
+            <span>${message}</span></div>`;
+        document.body.appendChild(toast);
+        anime({targets: toast, translateX:[100,0], opacity:[0,1], duration:300, easing:'easeOutQuad'});
+        setTimeout(()=>anime({targets: toast, translateX:[0,100], opacity:[1,0], duration:300, easing:'easeInQuad', complete:()=>toast.remove()}), 3000);
+    }
+    function updateBadge(el, val){
+        if(!el) return;
+        el.dataset.count = String(val);
+        el.textContent = String(val);
+        el.style.display = (Number(val)>0) ? 'inline-block':'none';
+    }
+    function currentCounts(){
+        return {
+            all: Number(document.getElementById('badgeAll')?.dataset.count || 0),
+            orders: Number(document.getElementById('badgeOrders')?.dataset.count || 0),
+            payments: Number(document.getElementById('badgePayments')?.dataset.count || 0),
+            wishlist: Number(document.getElementById('badgeWishlist')?.dataset.count || 0),
+            promotions: Number(document.getElementById('badgePromotions')?.dataset.count || 0),
+        };
+    }
+    function typeKey(t){
+        switch(String(t).toUpperCase()){
+            case 'ORDER': return 'order';
+            case 'PAYMENT': return 'payment';
+            case 'WISHLIST': return 'wishlist';
+            case 'PROMOTION': return 'promotion';
+            default: return 'all';
+        }
+    }
+    const mapId = {order:'badgeOrders', payment:'badgePayments', wishlist:'badgeWishlist', promotion:'badgePromotions'};
 
-            notifications.forEach(notif => {
-                if (tab === 'all') {
-                    notif.style.display = 'block';
-                } else {
-                    if (notif.dataset.type === tab) {
-                        notif.style.display = 'block';
-                    } else {
-                        notif.style.display = 'none';
-                    }
-                }
+    // ===== Tab switching =====
+    document.querySelectorAll('.tab-button').forEach(btn=>{
+        btn.addEventListener('click', function(){
+            document.querySelectorAll('.tab-button').forEach(b=>{ b.classList.remove('active','text-white'); b.classList.add('text-gray-600'); });
+            this.classList.add('active','text-white'); this.classList.remove('text-gray-600');
+            const tab=this.dataset.tab;
+            document.querySelectorAll('.notification-card').forEach(n=>{
+                if(tab==='all'){ n.style.display='block'; }
+                else { n.style.display = (n.dataset.type===tab)?'block':'none'; }
             });
-
-            // Animate filtered notifications
-            anime({
-                targets: '.notification-card:not([style*="display: none"])',
-                translateX: [20, 0],
-                opacity: [0, 1],
-                delay: anime.stagger(50),
-                duration: 400,
-                easing: 'easeOutQuad'
-            });
+            anime({targets: '.notification-card:not([style*="display: none"])', translateX:[20,0], opacity:[0,1], delay: anime.stagger(50), duration:400, easing:'easeOutQuad'});
         });
     });
 
-    // Mark all as read
-    function markAllAsRead() {
-        document.querySelectorAll('.notification-unread').forEach(notif => {
-            notif.classList.remove('notification-unread');
-            notif.classList.add('notification-read');
-            notif.dataset.read = 'true';
-
-            const badge = notif.querySelector('.badge-count');
-            if (badge) badge.remove();
+    // ===== Actions =====
+    async function markAllAsRead(){
+        const res = await fetch('/customer/notifications/read-all', {
+            method:'POST',
+            headers:{ 'X-Requested-With':'XMLHttpRequest', ...csrfHeaders() }
         });
-
-        // Update badge counts
-        document.querySelectorAll('.badge-count').forEach(badge => {
-            badge.textContent = '0';
-            badge.style.display = 'none';
+        if(!res.ok){ showToast('Lỗi đánh dấu đã đọc', 'error'); return; }
+        document.querySelectorAll('.notification-card').forEach(n=>{
+            n.classList.remove('notification-unread'); n.classList.add('notification-read'); n.dataset.read='true';
         });
-
-        // Show success message
-        showToast('Đã đánh dấu tất cả thông báo là đã đọc', 'success');
+        updateBadge(document.getElementById('badgeAll'), 0);
+        updateBadge(document.getElementById('badgeOrders'), 0);
+        updateBadge(document.getElementById('badgePayments'), 0);
+        updateBadge(document.getElementById('badgeWishlist'), 0);
+        updateBadge(document.getElementById('badgePromotions'), 0);
+        showToast('Đã đánh dấu tất cả thông báo là đã đọc','success');
     }
 
-    // Delete all read notifications
-    function deleteAllRead() {
-        const readNotifications = document.querySelectorAll('.notification-read');
+    async function deleteAllRead(){
+        const cards = Array.from(document.querySelectorAll('.notification-card.notification-read'));
+        if(cards.length===0){ showToast('Không có thông báo đã đọc để xóa','info'); return; }
+        if(!confirm(`Bạn có chắc muốn xóa ${cards.length} thông báo đã đọc?`)) return;
 
-        if (readNotifications.length === 0) {
-            showToast('Không có thông báo đã đọc để xóa', 'info');
-            return;
-        }
-
-        if (confirm(`Bạn có chắc muốn xóa ${readNotifications.length} thông báo đã đọc?`)) {
-            readNotifications.forEach(notif => {
-                anime({
-                    targets: notif,
-                    translateX: [0, 100],
-                    opacity: [1, 0],
-                    duration: 300,
-                    easing: 'easeInQuad',
-                    complete: () => notif.remove()
-                });
+        for(const n of cards){
+            const id = n.dataset.id;
+            await fetch(`/customer/notifications/${id}`, {
+                method:'DELETE',
+                headers:{ 'X-Requested-With':'XMLHttpRequest', ...csrfHeaders() }
             });
+            anime({targets:n, translateX:[0,100], opacity:[1,0], duration:300, easing:'easeInQuad', complete:()=>n.remove()});
+        }
+        checkEmpty();
+        showToast('Đã xóa thông báo đã đọc','success');
+    }
 
-            showToast('Đã xóa thông báo đã đọc', 'success');
+    async function deleteNotification(id, evt){
+        if(evt) evt.stopPropagation();
+        const card = document.querySelector(`.notification-card[data-id="${id}"]`);
+        await fetch(`/customer/notifications/${id}`, {
+            method:'DELETE',
+            headers:{ 'X-Requested-With':'XMLHttpRequest', ...csrfHeaders() }
+        });
+        anime({targets: card, translateX:[0,100], opacity:[1,0], duration:300, easing:'easeInQuad', complete:()=>card.remove()});
+        const read = card?.dataset.read==='true';
+        if(!read){
+            const allEl = document.getElementById('badgeAll');
+            updateBadge(allEl, Math.max(0, Number(allEl.dataset.count||0)-1));
+            const key = card?.dataset.type;
+            const el = document.getElementById(mapId[key]);
+            updateBadge(el, Math.max(0, Number(el?.dataset.count||0)-1));
+        }
+        checkEmpty();
+    }
+
+    async function viewNotification(id){
+        const res = await fetch(`/customer/notifications/${id}/read`, {
+            method:'POST',
+            headers:{ 'X-Requested-With':'XMLHttpRequest', ...csrfHeaders() }
+        });
+        if(!res.ok){ showToast('Không thể đánh dấu đã đọc', 'error'); return; }
+        const card = document.querySelector(`.notification-card[data-id="${id}"]`);
+        if(card){
+            card.classList.remove('notification-unread'); card.classList.add('notification-read'); card.dataset.read='true';
+            const allEl = document.getElementById('badgeAll');
+            updateBadge(allEl, Math.max(0, Number(allEl.dataset.count||0)-1));
+            const key = card.dataset.type;
+            const el = document.getElementById(mapId[key]);
+            updateBadge(el, Math.max(0, Number(el?.dataset.count||0)-1));
         }
     }
 
-    // Delete single notification
-    function deleteNotification(element, event) {
-        event.stopPropagation();
-        const notifCard = element.closest('.notification-card');
-
-        anime({
-            targets: notifCard,
-            translateX: [0, 100],
-            opacity: [1, 0],
-            duration: 300,
-            easing: 'easeInQuad',
-            complete: () => notifCard.remove()
-        });
-    }
-
-    // View notification (mark as read)
-    function viewNotification(id) {
-        // Mark as read logic here
-        console.log('Viewing notification:', id);
-    }
-
-    // Copy coupon code
-    function copyCoupon(code) {
-        navigator.clipboard.writeText(code).then(() => {
-            showToast(`Đã sao chép mã ${code}`, 'success');
-        });
-    }
-
-    // Toast notification
-    function showToast(message, type = 'info') {
-        const toast = document.createElement('div');
-        toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 ${
-            type === 'success' ? 'bg-green-500' :
-            type === 'error' ? 'bg-red-500' :
-            'bg-blue-500'
-        }`;
-        toast.innerHTML = `
-            <div class="flex items-center space-x-2">
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-                <span>${message}</span>
-            </div>
-        `;
-        document.body.appendChild(toast);
-
-        anime({
-            targets: toast,
-            translateX: [100, 0],
-            opacity: [0, 1],
-            duration: 300,
-            easing: 'easeOutQuad'
-        });
-
-        setTimeout(() => {
-            anime({
-                targets: toast,
-                translateX: [0, 100],
-                opacity: [1, 0],
-                duration: 300,
-                easing: 'easeInQuad',
-                complete: () => toast.remove()
+    // ===== SSE =====
+    (function initSSE(){
+        try{
+            const es = new EventSource('/customer/notifications/sse');
+            es.addEventListener('unread-count', e=>{
+                const val = isNaN(Number(e.data)) ? 0 : Number(e.data);
+                updateBadge(document.getElementById('badgeAll'), val);
             });
-        }, 3000);
+            es.addEventListener('notification', e=>{
+                const n = JSON.parse(e.data);
+                prependNotification(n);
+                const allEl = document.getElementById('badgeAll');
+                updateBadge(allEl, Number(allEl.dataset.count||0)+1);
+                const key = typeKey(n.type);
+                const el = document.getElementById(mapId[key]);
+                if(el) updateBadge(el, Number(el.dataset.count||0)+1);
+            });
+        }catch(_){}
+    })();
+
+    function prependNotification(n){
+        const list = document.getElementById('notificationsList');
+        const el = document.createElement('div');
+        el.className = 'notification-card notification-unread bg-white rounded-xl shadow-sm p-6 cursor-pointer';
+        el.dataset.id = n.id;
+        el.dataset.read = 'false';
+        el.dataset.type = typeKey(n.type); // order|payment|wishlist|promotion
+
+        const iconClass = (n.type==='ORDER')?'fa-shopping-bag':
+                          (n.type==='PAYMENT')?'fa-credit-card':
+                          (n.type==='WISHLIST')?'fa-heart':
+                          'fa-gift';
+        const bgClass = (n.type==='ORDER')?'bg-blue-100 text-blue-600':
+                        (n.type==='PAYMENT')?'bg-green-100 text-green-600':
+                        (n.type==='WISHLIST')?'bg-pink-100 text-pink-600':
+                        'bg-orange-100 text-orange-600';
+
+        const href = (n.relatedType==='SERVICE_ORDER')?(`/customer/orders/detail?id=${n.relatedId}`):
+                     (n.relatedType==='PAYMENT')?(`/customer/payments/detail?id=${n.relatedId}`):
+                     (n.relatedType==='VENDOR_SERVICE')?(`/services/vendors/${n.relatedId}`):
+                     '/customer/coupons';
+
+        el.onclick = ()=>viewNotification(n.id);
+        el.innerHTML = `
+            <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 ${bgClass} rounded-full flex items-center justify-center">
+                        <i class="fas ${iconClass}"></i>
+                    </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-start justify-between mb-2">
+                        <h3 class="text-lg font-semibold text-gray-900">${n.title||''}</h3>
+                        <button class="text-gray-400 hover:text-red-500 transition-colors" onclick="deleteNotification(${n.id}, event)">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <p class="text-gray-600 mb-3">${n.message||''}</p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4 text-sm text-gray-500">
+                            <span><i class="far fa-clock mr-1"></i>vừa xong</span>
+                            <span class="px-2 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-medium">Chưa đọc</span>
+                        </div>
+<!--                        <a href="${href}" class="text-blue-600 hover:text-blue-700 font-medium text-sm">-->
+<!--                            Xem chi tiết <i class="fas fa-arrow-right ml-1"></i>-->
+<!--                        </a>-->
+                    </div>
+                </div>
+            </div>`;
+        list.prepend(el);
+        anime({targets: el, translateY:[-10,0], opacity:[0,1], duration:350, easing:'easeOutQuad'});
+        checkEmpty();
     }
 
-    // Animate notifications on load
-    document.addEventListener('DOMContentLoaded', function() {
-        anime({
-            targets: '.notification-card',
-            translateY: [20, 0],
-            opacity: [0, 1],
-            delay: anime.stagger(50),
-            duration: 600,
-            easing: 'easeOutQuad'
-        });
+    // ===== Load more (demo) =====
+    document.getElementById('btnLoadMore')?.addEventListener('click', async ()=>{
+        showToast('Đã tải hết dữ liệu hiện có','info');
+    });
+
+    function checkEmpty(){
+        const any = document.querySelector('.notification-card') !== null;
+        document.getElementById('emptyState').classList.toggle('hidden', any);
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+        anime({targets: '.notification-card', translateY:[20,0], opacity:[0,1], delay: anime.stagger(50), duration:600, easing:'easeOutQuad'});
+        checkEmpty();
     });
 
     // Dropdown hồ sơ
     document.addEventListener("DOMContentLoaded", () => {
         const btn = document.getElementById("userMenuBtn");
         const dropdown = document.getElementById("userDropdown");
-
         if (btn && dropdown) {
-            btn.addEventListener("click", () => {
-                dropdown.classList.toggle("hidden");
-            });
-
-            window.addEventListener("click", (e) => {
-                if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
-                    dropdown.classList.add("hidden");
-                }
-            });
+            btn.addEventListener("click", () => dropdown.classList.toggle("hidden"));
+            window.addEventListener("click", (e) => { if (!btn.contains(e.target) && !dropdown.contains(e.target)) dropdown.classList.add("hidden"); });
         }
     });
-</script>
-</body>
+</script></body>
 </html>

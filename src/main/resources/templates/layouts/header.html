@@ -20,7 +20,7 @@
                     <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium" th:href="@{/}">
                         <i class="fas fa-house mr-1"></i>Trang chủ
                     </a>
-                    <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium" href="#about">
+                    <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium" th:href="@{/about}">
                         <i class="fas fa-info-circle mr-1"></i>Giới thiệu
                     </a>
                     <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium"
@@ -96,7 +96,8 @@
                                th:href="@{/customer/orders}">
                                 <i class="fas fa-shopping-cart mr-2 w-4"></i>Đơn hàng của tôi
                             </a>
-                            <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center" href="/user/notifications">
+                            <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center"
+                               th:href="@{/customer/notifications/page}">
                                 <i class="fas fa-bell mr-2 w-4"></i>Thông báo
                             </a>
 
@@ -140,8 +141,8 @@
                 <a class="block py-2 text-gray-700 hover:text-blue-600 font-medium flex items-center" href="#home">
                     <i class="fas fa-house mr-2 w-4"></i>Trang chủ
                 </a>
-                <a class="block py-2 text-gray-700 hover:text-blue-600 font-medium flex items-center" href="#about">
-                    <i class="fas fa-info-circle mr-2 w-4"></i>Giới thiệu
+                <a class="text-gray-700 hover:text-blue-600 transition duration-300 font-medium" th:href="@{/about}">
+                    <i class="fas fa-info-circle mr-1"></i>Giới thiệu
                 </a>
                 <a class="block py-2 text-gray-700 hover:text-blue-600 font-medium flex items-center" th:href="@{/services}">
                     <i class="fas fa-tools mr-2 w-4"></i>Dịch vụ

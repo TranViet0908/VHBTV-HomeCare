@@ -43,7 +43,9 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <h2 class="text-4xl font-bold mb-2"
-                            th:text="'Chào mừng, ' + (greetingName != null ? greetingName : 'Vendor') + '!'">
+                            th:text="|Chào mừng, ${vendorProfile != null and !#strings.isEmpty(vendorProfile.displayName)
+                                ? vendorProfile.displayName
+                                : (#strings.isEmpty(greetingName) ? 'Vendor' : greetingName)}!|">
                             Chào mừng, Vendor!
                         </h2>
 

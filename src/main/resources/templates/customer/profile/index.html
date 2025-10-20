@@ -403,16 +403,33 @@
 
     // Preview avatar after choose
     if (fileInp) {
-      fileInp.addEventListener('change', function (e) {
-        var file = e.target.files && e.target.files[0];
-        if (!file || !imgEl) return;
-        var url = URL.createObjectURL(file);
-        imgEl.onload = function () { URL.revokeObjectURL(url); };
-        imgEl.src = url;
-        imgEl.classList.remove('hidden');
-        if (fbEl) fbEl.classList.add('hidden');
-      });
+  fileInp.addEventListener('change', function (e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file || !imgEl) return;
+
+    // Validate: chỉ nhận ảnh và <= 10MB
+    var MAX = 10 * 1024 * 1024; // 10MB
+    if (!file.type.startsWith('image/')) {
+      e.target.value = '';
+      window.showModal('Chỉ cho phép tải lên tệp hình ảnh.');
+      return;
     }
+    if (file.size > MAX) {
+      var mb = (file.size / (1024*1024)).toFixed(2);
+      e.target.value = '';
+      window.showModal('Kích thước ảnh tối đa 10MB. Tệp của bạn: ' + mb + 'MB.');
+      return;
+    }
+
+    // Preview
+    var url = URL.createObjectURL(file);
+    imgEl.onload = function () { URL.revokeObjectURL(url); };
+    imgEl.src = url;
+    imgEl.classList.remove('hidden');
+    if (fbEl) fbEl.classList.add('hidden');
+  });
+}
+
   });
 </script>
 

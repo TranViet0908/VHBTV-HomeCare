@@ -108,24 +108,38 @@ public class ProfileService {
                               String phone,
                               String avatarPathOrNull) {
 
+        // Chỉ check uniqueness khi email THAY ĐỔI so với giá trị hiện tại
         if (email != null && email.trim().length() > 0) {
-            Long cnt = em.createQuery(
-                            "SELECT COUNT(u) FROM User u WHERE u.email = :e AND u.id <> :id", Long.class)
-                    .setParameter("e", email.trim())
-                    .setParameter("id", user.getId())
-                    .getSingleResult();
-            if (cnt != null && cnt > 0) throw new IllegalArgumentException("Email đã được dùng");
-            user.setEmail(email.trim());
+            String newEmail = email.trim();
+            String currentEmail = user.getEmail();
+
+            // Chỉ check nếu email thay đổi
+            if (!newEmail.equals(currentEmail)) {
+                Long cnt = em.createQuery(
+                                "SELECT COUNT(u) FROM User u WHERE u.email = :e AND u.id <> :id", Long.class)
+                        .setParameter("e", newEmail)
+                        .setParameter("id", user.getId())
+                        .getSingleResult();
+                if (cnt != null && cnt > 0) throw new IllegalArgumentException("Email đã được dùng");
+            }
+            user.setEmail(newEmail);
         }
 
+        // Chỉ check uniqueness khi phone THAY ĐỔI so với giá trị hiện tại
         if (phone != null && phone.trim().length() > 0) {
-            Long cnt = em.createQuery(
-                            "SELECT COUNT(u) FROM User u WHERE u.phone = :p AND u.id <> :id", Long.class)
-                    .setParameter("p", phone.trim())
-                    .setParameter("id", user.getId())
-                    .getSingleResult();
-            if (cnt != null && cnt > 0) throw new IllegalArgumentException("Số điện thoại đã được dùng");
-            user.setPhone(phone.trim());
+            String newPhone = phone.trim();
+            String currentPhone = user.getPhone();
+
+            // Chỉ check nếu phone thay đổi
+            if (!newPhone.equals(currentPhone)) {
+                Long cnt = em.createQuery(
+                                "SELECT COUNT(u) FROM User u WHERE u.phone = :p AND u.id <> :id", Long.class)
+                        .setParameter("p", newPhone)
+                        .setParameter("id", user.getId())
+                        .getSingleResult();
+                if (cnt != null && cnt > 0) throw new IllegalArgumentException("Số điện thoại đã được dùng");
+            }
+            user.setPhone(newPhone);
         }
 
         // Chuẩn hóa URL avatar về dạng /uploads/** để WebConfig hiện tại phục vụ đúng

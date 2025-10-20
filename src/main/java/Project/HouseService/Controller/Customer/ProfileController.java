@@ -87,23 +87,6 @@ public class ProfileController {
         return "customer/profile/index";
     }
 
-    /** Form chỉnh sửa hồ sơ. */
-    @GetMapping("/edit")
-    @Transactional(readOnly = true)
-    public String editForm(Authentication auth, Model model) {
-        String username = auth.getName();
-        User user = profileService.requireUserByUsername(username);
-        CustomerProfile cp = profileService.ensureProfile(user);
-
-        // để preview ảnh trong form nếu cần
-        String avatarUrl = profileService.buildAvatarUrl(user);
-        model.addAttribute("avatarUrl", avatarUrl);
-
-        model.addAttribute("user", user);
-        model.addAttribute("profile", cp);
-        return "customer/profile/edit";
-    }
-
     /** Submit chỉnh sửa hồ sơ + upload avatar (tuỳ chọn). */
     @PostMapping("/edit")
     public String editSubmit(Authentication auth,
@@ -127,11 +110,11 @@ public class ProfileController {
                 dob = LocalDate.parse(dobStr.trim());
                 if (dob.isAfter(LocalDate.now())) {
                     ra.addFlashAttribute("error", "Ngày sinh không hợp lệ");
-                    return "redirect:/customer/profile/edit";
+                    return "redirect:/customer/profile";
                 }
             } catch (DateTimeParseException e) {
                 ra.addFlashAttribute("error", "Định dạng ngày sinh không hợp lệ");
-                return "redirect:/customer/profile/edit";
+                return "redirect:/customer/profile";
             }
         }
 
@@ -140,12 +123,12 @@ public class ProfileController {
         if (avatar != null && !avatar.isEmpty()) {
             if (avatar.getSize() > 2 * 1024 * 1024) {
                 ra.addFlashAttribute("error", "Ảnh quá lớn (tối đa 2MB)");
-                return "redirect:/customer/profile/edit";
+                return "redirect:/customer/profile";
             }
             String ctype = avatar.getContentType();
             if (ctype == null || !ctype.toLowerCase().startsWith("image/")) {
                 ra.addFlashAttribute("error", "Tệp không phải ảnh hợp lệ");
-                return "redirect:/customer/profile/edit";
+                return "redirect:/customer/profile";
             }
 
             String original = org.springframework.util.StringUtils.cleanPath(Objects.requireNonNull(avatar.getOriginalFilename()));
@@ -165,7 +148,7 @@ public class ProfileController {
                 savedPath = "/uploads/avatars/" + user.getId() + "/" + fname;
             } catch (IOException e) {
                 ra.addFlashAttribute("error", "Lỗi lưu ảnh đại diện");
-                return "redirect:/customer/profile/edit";
+                return "redirect:/customer/profile";
             }
         }
 
@@ -175,7 +158,7 @@ public class ProfileController {
             );
         } catch (IllegalArgumentException ex) {
             ra.addFlashAttribute("error", ex.getMessage());
-            return "redirect:/customer/profile/edit";
+            return "redirect:/customer/profile";
         }
 
         ra.addFlashAttribute("success", "Cập nhật hồ sơ thành công");

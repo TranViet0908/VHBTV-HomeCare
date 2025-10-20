@@ -273,7 +273,7 @@ public class CartService {
 
         Map<String,Object> out = new LinkedHashMap<>();
         out.put("cartId", cart.getId());
-        out.put("status", cart.getStatus().name());
+        out.put("status", cart.getStatus() != null ? cart.getStatus().name() : "ACTIVE");
         out.put("items", arr);
         out.put("total", total);
         out.put("discount", discount);

@@ -12,12 +12,38 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     .tab-btn.active { background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:#fff; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, -20px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translate(-50%, 0); }
+      to { opacity: 0; transform: translate(-50%, -20px); }
+    }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+    .animate-fade-out { animation: fadeOut 0.3s ease-out; }
   </style>
 </head>
 <body class="bg-gray-50">
 <!-- sửa fragment name cho khớp file header -->
 <div th:replace="~{layouts/header :: siteHeader}"></div>
 <div class="h-20 md:h-16"></div>
+
+<!-- Flash Messages -->
+<div th:if="${success}" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in">
+  <div class="bg-green-500 text-white px-6 py-4 rounded-lg shadow-xl flex items-center space-x-3">
+    <i class="fas fa-check-circle text-2xl"></i>
+    <span th:text="${success}">Thành công</span>
+  </div>
+</div>
+
+<div th:if="${error}" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in">
+  <div class="bg-red-500 text-white px-6 py-4 rounded-lg shadow-xl flex items-center space-x-3">
+    <i class="fas fa-exclamation-circle text-2xl"></i>
+    <span th:text="${error}">Có lỗi xảy ra</span>
+  </div>
+</div>
+
 <section class="bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 py-12">
   <div class="container mx-auto px-4">
     <div class="max-w-6xl mx-auto">
@@ -326,6 +352,18 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
 
+    // ===== Auto-hide flash messages after 4 seconds =====
+    const flashMessages = document.querySelectorAll('[th\\:if*="success"], [th\\:if*="error"]');
+    flashMessages.forEach(msg => {
+      if (msg.querySelector('.bg-green-500, .bg-red-500')) {
+        setTimeout(() => {
+          msg.classList.remove('animate-fade-in');
+          msg.classList.add('animate-fade-out');
+          setTimeout(() => msg.remove(), 300);
+        }, 4000);
+      }
+    });
+
     // ===== Modal helpers (global) =====
     const modal = document.getElementById('appModal');
     const modalMsg = document.getElementById('appModalMsg');
@@ -426,5 +464,10 @@
     </div>
   </div>
 </div>
+
+<!-- Validation Scripts -->
+<script src="/js/validate/core.js"></script>
+<script src="/js/validate/customer-profile-edit.js"></script>
+<script src="/js/validate/customer-profile-security.js"></script>
 </body>
 </html>
